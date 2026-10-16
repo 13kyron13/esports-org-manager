@@ -453,6 +453,20 @@ function drawMap(dots,t){
   else {g.fillStyle=c("--mute");g.font="11px system-ui";g.textAlign="center";g.fillText("Loading official CS2 radar…",160,110)}
   // The real radar image is square, so gameplay markers are mapped into its square viewport.
   const mapPos=d=>{const [x,y]=pos(d,t);return[mx+(x/320)*mw,y]};
+  // Show active firefights whenever opposing players come within engagement range,
+  // even if the statistical round result does not eliminate either player.
+  if(t>=.38&&t<=.94){
+    const friendly=dots.filter(d=>d.side===0&&(d.die===null||t<d.die));
+    const enemies=dots.filter(d=>d.side===1&&(d.die===null||t<d.die));
+    friendly.forEach(a=>enemies.forEach(b=>{
+      const [ax,ay]=pos(a,t),[bx,by]=pos(b,t),dist=Math.hypot(ax-bx,ay-by);
+      if(dist<=34){
+        const [x1,y1]=mapPos(a),[x2,y2]=mapPos(b);
+        g.save();g.globalAlpha=.55+.35*Math.abs(Math.sin(t*42+a.seed));g.strokeStyle=(Math.floor(t*22+a.seed)%2)?c("--bad"):c("--text");g.lineWidth=1.6;g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.stroke();
+        const pulse=.5+.5*Math.abs(Math.sin(t*55+b.seed));g.fillStyle="#ffffff";g.beginPath();g.arc(x1+(x2-x1)*pulse,y1+(y2-y1)*pulse,1.8,0,Math.PI*2);g.fill();g.restore();
+      }
+    }));
+  }
   dots.forEach(d=>{
     if(d.die!==null&&t>=d.die){
       const [x,y]=mapPos(d);
@@ -484,9 +498,9 @@ function animateRound(win,done){
     for(const d of candidates){
       // A player can only be eliminated if an opposing player is nearby during the engagement.
       // Distances use the same radar coordinate system as the minimap markers.
-      let best=null,bestDist=24,bestTime=0;
-      for(let ti=0;ti<15;ti++){
-        const tt=.48+ti*.03,[x,y]=pos(d,tt);
+      let best=null,bestDist=34,bestTime=0;
+      for(let ti=0;ti<31;ti++){
+        const tt=.42+ti*.018,[x,y]=pos(d,tt);
         for(const enemy of opp){
           if(enemy.die!==null&&enemy.die<tt)continue;
           const [ex,ey]=pos(enemy,tt),dist=Math.hypot(x-ex,y-ey);
