@@ -416,17 +416,40 @@ function makeDots(){
  let path=radarPath(map,from,target);if(!path){const key=isT?(p.role==="AWPer"?"tm":site==="a"?"ta":"tb"):(i===4?"cm":i<2?"ca":"cb");path=routeFor(map,key).map(q=>[...q])}
  if(!isT&&path.length>1){const last=path[path.length-1];path.push([Math.max(0,Math.min(320,last[0]+(i%2?2:-2))),Math.max(0,Math.min(220,last[1]+(i===4?0:(i%2?2:-2))))])}
  return{side,lab,role:p.role,x0:path[0][0],y0:path[0][1],path,tx:path[path.length-1][0],ty:path[path.length-1][1],die:null,seed:i*7+side*17,isT,map,from,target}};
- const own=S.roster.map((p,i)=>mk(0,i,p,INI[p.role])),roles=["Entry","AWPer","IGL","Lurker","Support"],opp=roles.map((role,i)=>mk(1,i,{role},["E","A","I","L","S"][i]));return own.concat(opp)
+ const own=S.roster.map((p,i)=>mk(0,i,p,INI[p.role])),roles=["Entry","AWPer","IGL","Lurker","Support"],opp=roles.map((role,i)=>mk(1,i,{role},["E","A","I","L","S"][i]));
+ const all=own.concat(opp);
+ // Spread players across the spawn area instead of stacking all five on one pixel.
+ all.forEach((d,i)=>{const lane=i%5,offsets=[[-9,-4],[-4,5],[2,-6],[7,4],[11,0]],o=offsets[lane];d.path=d.path.map(q=>[...q]);d.path[0]=[Math.max(0,Math.min(320,d.path[0][0]+o[0])),Math.max(0,Math.min(220,d.path[0][1]+o[1]))];d.x0=d.path[0][0];d.y0=d.path[0][1];d.stopT=1});
+ // Find the first real encounter and hold both players there: they can no longer run
+ // straight through one another and then shoot from the opposite side.
+ const contact=18,step=.01;
+ for(let ti=15;ti<=96;ti++){const tt=ti*step;
+   for(const a of own)for(const b of opp){
+     if(a.stopT<1||b.stopT<1)continue;
+     const pa=rawPos(a,tt),pb=rawPos(b,tt);
+     if(Math.hypot(pa[0]-pb[0],pa[1]-pb[1])<=contact&&lineOfSight(map,pa,pb)){a.stopT=tt;b.stopT=tt}
+   }
+ }
+ return all
 }
-function pos(d,tt){
-  // Three readable phases: leave spawn, travel through connected lanes, then settle/engage.
+function rawPos(d,tt){
   let travel=Math.max(0,Math.min(1,(tt-.04)/.82));
   if(d.role==="Lurker")travel=Math.pow(travel,1.28);
   const eased=travel*travel*(3-2*travel);
   const [x,y]=routePoint(d.path||[[d.x0,d.y0],[d.tx,d.ty]],eased);
   const settle=tt>.82?Math.min(1,(tt-.82)/.18):0;
-  const sway=(d.role==="Lurker"?4:1.4)*settle;
+  const sway=(d.role==="Lurker"?2.2:.6)*settle;
   return[Math.max(0,Math.min(320,x+Math.sin((d.seed||0)+tt*12)*sway)),Math.max(0,Math.min(220,y+Math.cos((d.seed||0)+tt*12)*sway))];
+}
+function pos(d,tt){return rawPos(d,Math.min(tt,d.stopT??1))}
+function lineOfSight(map,a,b){
+ const grid=radarWalkGrid(map);if(!grid)return false;
+ const n=grid.n,walk=grid.walk;
+ const ax=Math.max(0,Math.min(n-1,Math.round(a[0]/320*(n-1)))),ay=Math.max(0,Math.min(n-1,Math.round(a[1]/220*(n-1))));
+ const bx=Math.max(0,Math.min(n-1,Math.round(b[0]/320*(n-1)))),by=Math.max(0,Math.min(n-1,Math.round(b[1]/220*(n-1))));
+ const steps=Math.max(Math.abs(bx-ax),Math.abs(by-ay));
+ for(let i=1;i<steps;i++){const x=Math.round(ax+(bx-ax)*i/steps),y=Math.round(ay+(by-ay)*i/steps);if(!walk[y*n+x])return false}
+ return true;
 }
 const RADAR_URLS={
   "Mirage":"https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/images/radars/de_mirage_radar_psd.png",
@@ -453,14 +476,13 @@ function drawMap(dots,t){
   else {g.fillStyle=c("--mute");g.font="11px system-ui";g.textAlign="center";g.fillText("Loading official CS2 radar…",160,110)}
   // The real radar image is square, so gameplay markers are mapped into its square viewport.
   const mapPos=d=>{const [x,y]=pos(d,t);return[mx+(x/320)*mw,y]};
-  // Show active firefights whenever opposing players come within engagement range,
-  // even if the statistical round result does not eliminate either player.
+  // Draw firefights only for nearby opponents with a clear line of sight.
   if(t>=.38&&t<=.94){
     const friendly=dots.filter(d=>d.side===0&&(d.die===null||t<d.die));
     const enemies=dots.filter(d=>d.side===1&&(d.die===null||t<d.die));
     friendly.forEach(a=>enemies.forEach(b=>{
       const [ax,ay]=pos(a,t),[bx,by]=pos(b,t),dist=Math.hypot(ax-bx,ay-by);
-      if(dist<=34){
+      if(dist<=18&&lineOfSight(mapName,[ax,ay],[bx,by])){
         const [x1,y1]=mapPos(a),[x2,y2]=mapPos(b);
         g.save();g.globalAlpha=.55+.35*Math.abs(Math.sin(t*42+a.seed));g.strokeStyle=(Math.floor(t*22+a.seed)%2)?c("--bad"):c("--text");g.lineWidth=1.6;g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.stroke();
         const pulse=.5+.5*Math.abs(Math.sin(t*55+b.seed));g.fillStyle="#ffffff";g.beginPath();g.arc(x1+(x2-x1)*pulse,y1+(y2-y1)*pulse,1.8,0,Math.PI*2);g.fill();g.restore();
@@ -496,14 +518,13 @@ function animateRound(win,done){
     const candidates=[...arr].sort((a,b)=>((a.seed*13)%19)-((b.seed*13)%19)).slice(0,n);
     let assigned=0;
     for(const d of candidates){
-      // A player can only be eliminated if an opposing player is nearby during the engagement.
-      // Distances use the same radar coordinate system as the minimap markers.
-      let best=null,bestDist=34,bestTime=0;
+      // Eliminations require a close encounter with a clear radar-grid line of sight.
+      let best=null,bestDist=18,bestTime=0;
       for(let ti=0;ti<31;ti++){
         const tt=.42+ti*.018,[x,y]=pos(d,tt);
         for(const enemy of opp){
           if(enemy.die!==null&&enemy.die<tt)continue;
-          const [ex,ey]=pos(enemy,tt),dist=Math.hypot(x-ex,y-ey);
+          const [ex,ey]=pos(enemy,tt),dist=Math.hypot(x-ex,y-ey);if(dist<=18&&!lineOfSight(m.mapName,[x,y],[ex,ey]))continue;
           if(dist<bestDist){best=enemy;bestDist=dist;bestTime=tt}
         }
         if(best)break;
@@ -512,7 +533,7 @@ function animateRound(win,done){
     }
     return assigned;
   };
-  // Match results remain statistical, but visible eliminations now require close-range contact.
+  // Statistical round results are unchanged; visual combat now respects contact and line of sight.
   kill(me,win?R(1,3):R(3,5),th);kill(th,win?R(3,5):R(1,3),me);
   const D=FAST?900:3000,t0=performance.now();
   (function f(now){const t=SKIP?1:Math.min(1,(now-t0)/D);drawMap(dots,t);if(t<1)requestAnimationFrame(f);else{log(`Round phase: ${t>=1?"engagements resolved":"rotation complete"}.`,"m");done()}})(t0);
