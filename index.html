@@ -479,6 +479,24 @@ function drawMap(dots,t){
   else {g.fillStyle=c("--mute");g.font="11px system-ui";g.textAlign="center";g.fillText("Loading official CS2 radar…",160,110)}
   // The real radar image is square, so gameplay markers are mapped into its square viewport.
   const mapPos=d=>{const [x,y]=pos(d,t);return[mx+(x/320)*mw,y]};
+  // Visible C4 asset: carried to the selected site, planted, then detonated to end the round.
+  const bomb=S.match?.roundEvent;
+  if(bomb?.type==="bomb"&&t>=bomb.plantAt){
+    const bx=mx+(bomb.bombPos[0]/320)*mw,by=bomb.bombPos[1];
+    if(t<bomb.explodeAt){
+      const pulse=.5+.5*Math.sin(t*35);
+      g.save();g.fillStyle="#d9273f";g.fillRect(bx-7,by-6,14,12);
+      g.strokeStyle="#fff";g.lineWidth=1;g.strokeRect(bx-7,by-6,14,12);
+      g.fillStyle="#fff";g.font="bold 7px system-ui";g.textAlign="center";g.textBaseline="middle";g.fillText("C4",bx,by);
+      g.fillStyle="#ff5268";g.globalAlpha=.7;g.beginPath();g.arc(bx,by,10+pulse*3,0,Math.PI*2);g.strokeStyle="#ff5268";g.stroke();g.restore();
+      g.fillStyle="#fff";g.font="bold 8px system-ui";g.textAlign="center";g.fillText("C4 PLANTED · "+bomb.site,bx,by-13);
+    }else{
+      const p=Math.min(1,(t-bomb.explodeAt)/.04),radius=8+p*28;
+      g.save();g.globalAlpha=1-p*.65;g.fillStyle="#ffb52e";g.beginPath();g.arc(bx,by,radius,0,Math.PI*2);g.fill();
+      g.strokeStyle="#ff4c35";g.lineWidth=3;g.beginPath();g.arc(bx,by,radius+5,0,Math.PI*2);g.stroke();
+      g.fillStyle="#fff";g.font="bold 10px system-ui";g.textAlign="center";g.textBaseline="middle";g.fillText("BOOM!",bx,by-22);g.restore();
+    }
+  }
   // Draw firefights only for nearby opponents with a clear line of sight.
   if(t>=.38&&t<=.94){
     const friendly=dots.filter(d=>d.side===0&&(d.die===null||t<d.die));
