@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Esports Org Manager – Update 8.6</title>
+<title>Esports Org Manager – Update 8.7</title>
 <style>
 :root{--bg:#0a0a0f;--card:#14141c;--text:#f2f3f7;--mute:#8d93a3;--line:#242430;--acc:#2ee68a;--on:#04130a;--good:#2ee68a;--bad:#ff5d6c;--btn:#1d1d28;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -341,11 +341,11 @@ function draw(){
   const decision=isDecisionRound(m),mp=mapProfile(m.mapName);
   $("score").innerHTML=`${m.me} – ${m.them}<small>${mp.name} · ${mp.style} · ${m.bo>1?`Map ${m.map}/${m.maps.length} · Series ${m.sw}-${m.sl} · `:""}Round ${Math.min(m.round+1,24)} · Timeouts left: ${m.timeouts}</small>`;
   const c=$("ctrls");
-  if(m.done){c.innerHTML=`<button class="pri" onclick="finish()">${(m.me>m.them?m.sw+1:m.sw)>=(m.bo+1)/2||(m.me>m.them?m.sl:m.sl+1)>=(m.bo+1)/2?"Finish match":"Next map"}</button>`;return}
+  if(m.done){c.innerHTML=`<button class="pri" onclick="finish()">${(m.me>m.them?m.sw+1:m.sw)>=(m.bo+1)/2||(m.me>m.them?m.sl:m.sl+1)>=(m.bo+1)/2?"Finish match":"Next map"}</button><button onclick="autoplayMatch()">⏩ Autoplay remaining match</button>`;return}
   const T=[["aggro","Aggressive"],["default","Default"],["save","Save / eco"]];
   const tacticButtons=decision?T.map(([k,l])=>`<button class="${m.tactic==k?"sel":""}" onclick="S.match.tactic='${k}';draw()">${l}</button>`).join(""):"";
   c.innerHTML=`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0"><label for="matchMode">Gameplay</label><select id="matchMode" onchange="setControlMode(this.value)" style="font:inherit;padding:8px;border-radius:8px;background:var(--btn);color:var(--text);border:1px solid var(--line)"><option value="round" ${m.controlMode==="round"?"selected":""}>Round by round</option><option value="important" ${(!m.controlMode||m.controlMode==="important")?"selected":""}>Important rounds</option><option value="map" ${m.controlMode==="map"?"selected":""}>Sim whole map</option></select></div><div class="decision"><b>${decision?"Tactical decision":"Automatic simulation"}</b><div class="note">${decision?`Key round: choose a plan for ${mp.name}. ${mp.style==="Aim duels"?"Aim-focused play gets a small boost.":mp.style==="Utility"?"Default play is steadier on this map.":mp.style==="Fast executes"?"Aggressive play gets a small boost.":"Tactics have different risk and reward."}`:"The match runs automatically until the next important round."}</div>${tacticButtons}</div>`+
-  `<div><button class="pri" ${m.busy?"disabled":""} onclick="advanceGameplay()">${m.controlMode==="round"?"Play next round":m.controlMode==="map"?"Sim whole map":decision?"Play important round + auto-sim":"Continue to important round"}</button>${m.busy?'<button onclick="SKIP=true">Skip ⏭</button>':''}<button ${m.timeouts<1||m.busy?"disabled":""} onclick="timeout()">Call timeout</button><button onclick="FAST=!FAST;draw()">${FAST?"⏩ Fast":"▶ Normal"}</button></div>`;
+  `<div><button class="pri" ${m.busy?"disabled":""} onclick="advanceGameplay()">${m.controlMode==="round"?"Play next round":m.controlMode==="map"?"Sim whole map":decision?"Play important round + auto-sim":"Continue to important round"}</button><button ${m.busy?"disabled":""} onclick="autoplayMatch()">⏩ Autoplay match</button>${m.busy?'<button onclick="SKIP=true">Skip ⏭</button>':''}<button ${m.timeouts<1||m.busy?"disabled":""} onclick="timeout()">Call timeout</button><button onclick="FAST=!FAST;draw()">${FAST?"⏩ Fast":"▶ Normal"}</button></div>`;
 }
 function advanceGameplay(){const m=S.match;if(!m||m.busy||m.done)return;if(m.controlMode==="map"){simToEnd();draw();return}if(m.controlMode==="round"){playRound(false);return}playRound(false,()=>{let n=0;while(!m.done&&!isDecisionRound(m)&&n++<24)playRound(true);draw()})}
 function timeout(){const m=S.match;if(m.timeouts<1)return;m.timeouts--;m.streakThem=0;m.tobuff=3;log("Timeout called. Opponent momentum reset, your team refocuses.","m");draw()}
@@ -599,6 +599,7 @@ function animateRound(win,done){
 }
 function weightedPick(){const w=S.roster.map(p=>rating(p)*(p.role=="Entry"||p.role=="AWPer"?1.3:1));let r=Math.random()*w.reduce((a,b)=>a+b,0);for(let i=0;i<w.length;i++){r-=w[i];if(r<=0)return S.roster[i]}return S.roster[0]}
 function simToEnd(){let g=0;while(!S.match.done&&g++<40)playRound(true)}
+function autoplayMatch(){if(!S.match||S.match.busy)return;let guard=0;while(S.match&&guard++<5){const m=S.match;if(!m.done)simToEnd();if(S.match!==m)break;if(m.done)finish();else break}if(S.match){draw();render()}}
 function finish(){
   const m=S.match,won=m.me>m.them;improveMapFamiliarity(m.mapName,won);won?m.sw++:m.sl++;
   const need=(m.bo+1)/2;
