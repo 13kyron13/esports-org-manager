@@ -440,7 +440,7 @@ const RADAR_URLS={
 const RADAR_CACHE={};let LAST_DOTS=[],LAST_T=0;
 function radarFor(name){
   const url=RADAR_URLS[name]||RADAR_URLS.Mirage;
-  if(!RADAR_CACHE[url]){const im=new Image();im.onload=()=>{if(S.match&&S.match.mapName===name)drawMap(LAST_DOTS,LAST_T)};im.onerror=()=>{im.failed=true};im.src=url;RADAR_CACHE[url]=im}
+  if(!RADAR_CACHE[url]){const im=new Image();im.crossOrigin="anonymous";im.onload=()=>{delete WALK_CACHE[name];if(S.match&&S.match.mapName===name)drawMap(LAST_DOTS,LAST_T)};im.onerror=()=>{im.failed=true};im.src=url;RADAR_CACHE[url]=im}
   return RADAR_CACHE[url];
 }
 function drawMap(dots,t){
