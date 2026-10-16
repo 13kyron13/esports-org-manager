@@ -1,16 +1,17 @@
 # Roadmap
 
-This roadmap records planned work for Esports Org Manager. Planned features below are **not yet implemented unless explicitly stated**.
+This roadmap records the status of work on Esports Org Manager.
 
-## Update 8.2 — CS2 Movement & Navigation
+## Update 8.2 — CS2 Movement & Navigation — implemented first pass
 
-Priority: fix the current unrealistic minimap movement.
+- [x] Map-specific waypoint routes for Mirage, Inferno, Nuke, Ancient, Anubis, Dust II, and Vertigo.
+- [x] Separate T/CT spawn positions and side switch after 12 rounds.
+- [x] Role-aware movement, site attacks, mid support, lurker pacing, and CT defensive holds.
+- [x] Visible round phases: spawn/setup, execute/rotate, engagements, and round result.
+- [ ] Visual validation and route tuning against each exact radar image.
+- [ ] More reactive rotations, utility use, bomb plant/retake logic, and individual combat simulation.
 
-- Use map-specific Terrorist and Counter-Terrorist spawn locations.
-- Define connected waypoint routes that follow walkable areas and avoid walls.
-- Support believable round behaviour: rushes, site holds, rotations, lurks, and flanks.
-- Add round phases and more purposeful engagements.
-- Validate routes on each supported map before treating them as complete.
+Note: navigation is currently driven by hand-authored radar-coordinate waypoint paths, not extracted CS2 navmeshes. Treat this as a substantial first pass, not a claim of pixel-perfect in-game pathfinding.
 
 ## Update 9 — Transfer Overhaul
 
@@ -29,5 +30,5 @@ Priority: fix the current unrealistic minimap movement.
 
 ## Status notes
 
-- Current repository build: Update 8.1.
-- Update 8.2 is planned; the minimap movement problems are not represented as fixed in this build.
+- Current repository build: Update 8.2.
+- The earlier arbitrary straight-line movement has been replaced with map-specific waypoint routes; visual route tuning remains a known follow-up task.
