@@ -471,7 +471,10 @@ function drawMap(dots,t){
 }
 
 function animateRound(win,done){
-  const m=S.match;m.busy=true;SKIP=false;draw();
+  const m=S.match;
+  const radar=radarFor(m?.mapName||"Mirage");
+  if(radar&&!radar.complete&&!radar.failed){radar.addEventListener("load",()=>animateRound(win,done),{once:true});radar.addEventListener("error",()=>animateRound(win,done),{once:true});return}
+  m.busy=true;SKIP=false;draw();
   const dots=makeDots(),me=dots.slice(0,5),th=dots.slice(5);
   const phase=m.tactic==="aggro"?"fast execute":m.tactic==="save"?"eco / safe setup":m.tactic==="default"?"default execute":"tactical setup";
   log(`R${m.round+1} setup: ${me[0]?.isT?"Your team attack":"Your team defend"} · ${phase} on ${m.mapName}.`,"m");
