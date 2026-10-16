@@ -361,6 +361,14 @@ function playRound(instant,after){
   t+=Math.min(m.streakMe,3)*1.2-Math.min(m.streakThem,3)*1.2;
   const p=1/(1+Math.exp(-(mine-theirs+t)/8));
   const win=Math.random()<p;
+  // A T-side win can come from a C4 explosion even when players remain alive.
+  m.roundEvent=null;
+  const ownT=m.round<12;
+  if(win===ownT&&Math.random()<.48){
+    const anchors=NAV_ANCHORS[m.mapName]||NAV_ANCHORS.Mirage;
+    const siteKey=m.tactic==="aggro"?(m.round%2?"b":"a"):(m.round%4<2?"a":"b");
+    m.roundEvent={type:"bomb",site:siteKey.toUpperCase(),bombPos:[anchors[siteKey][0]*320,anchors[siteKey][1]*220],plantAt:.55,explodeAt:.88};
+  }
   if(instant){apply(win)}else{animateRound(win,()=>apply(win))}
   function apply(win){
   m.busy=false;m.round++;
@@ -535,12 +543,9 @@ function animateRound(win,done){
   const dots=makeDots(),me=dots.slice(0,5),th=dots.slice(5),ownT=m.round<12;
   const phase=m.tactic==="aggro"?"fast execute":m.tactic==="save"?"eco / safe setup":m.tactic==="default"?"default execute":"tactical setup";
   log(`R${m.round+1} setup: ${ownT?"Your team attack":"Your team defend"} · ${phase} on ${m.mapName}.`,"m");
-  // The T side can win either by eliminating the defenders or by planting and exploding the C4.
-  // Bomb rounds deliberately leave survivors; the explosion, not a team wipe, resolves the round.
-  const bombRound=(win===ownT)&&Math.random()<.48;
-  const anchors=NAV_ANCHORS[m.mapName]||NAV_ANCHORS.Mirage;
-  const siteKey=(m.tactic==="aggro"?(m.round%2?"b":"a"):(m.round%4<2?"a":"b"));
-  m.roundEvent=bombRound?{type:"bomb",site:siteKey.toUpperCase(),bombPos:[anchors[siteKey][0]*320,anchors[siteKey][1]*220],plantAt:.58,explodeAt:.96}:null;
+  // The round outcome is chosen in playRound so it also works in instant/whole-map simulation.
+  const bombRound=m.roundEvent?.type==="bomb";
+  const siteKey=(m.roundEvent?.site||"A").toLowerCase();
   const kill=(arr,n,opp)=>{
     const candidates=[...arr].sort((a,b)=>((a.seed*13)%19)-((b.seed*13)%19)).slice(0,n);
     for(let ci=0;ci<candidates.length;ci++){
