@@ -375,13 +375,54 @@ function playRound(instant,after){
   }
 }
 let FAST=false,SKIP=false;
-const SITES={A:[160,34],B:[160,186],M:[160,110]};
 const INI={IGL:"I",AWPer:"A",Entry:"E",Lurker:"L",Support:"S"};
+// Each route is a connected sequence of walkable lane/connector points in radar coordinates.
+// Coordinates are approximate radar positions, not world-unit navigation meshes.
+const NAV={
+"Mirage":{ts:[160,202],cs:[160,18],ta:[[160,202],[150,174],[148,143],[160,112],[190,92],[222,70],[232,48]],tb:[[160,202],[130,178],[100,153],[78,123],[72,88],[84,57]],tm:[[160,202],[160,174],[160,145],[160,112]],ca:[[160,18],[190,25],[218,38],[232,48]],cb:[[160,18],[128,25],[99,39],[84,57]],cm:[[160,18],[160,44],[160,76],[160,112]]},
+"Inferno":{ts:[160,202],cs:[160,18],ta:[[160,202],[190,184],[220,161],[242,132],[250,101],[242,72],[226,50]],tb:[[160,202],[130,186],[100,165],[75,139],[66,108],[78,78]],tm:[[160,202],[160,174],[160,145],[160,112]],ca:[[160,18],[192,30],[220,47],[239,68],[242,94]],cb:[[160,18],[128,28],[99,48],[78,78]],cm:[[160,18],[160,48],[160,78],[160,112]]},
+"Nuke":{ts:[160,202],cs:[160,18],ta:[[160,202],[192,183],[218,159],[230,130],[224,99],[210,72],[208,48]],tb:[[160,202],[128,182],[104,157],[96,129],[104,102],[124,78],[128,52]],tm:[[160,202],[160,174],[160,145],[160,112]],ca:[[160,18],[185,29],[205,44],[208,48]],cb:[[160,18],[138,28],[126,42],[128,52]],cm:[[160,18],[160,48],[160,78],[160,112]]},
+"Ancient":{ts:[160,202],cs:[160,18],ta:[[160,202],[190,182],[214,160],[232,136],[242,112],[230,87],[220,63]],tb:[[160,202],[130,182],[105,160],[82,138],[70,112],[82,86],[96,64]],tm:[[160,202],[160,174],[160,145],[160,112]],ca:[[160,18],[188,28],[210,44],[220,63]],cb:[[160,18],[130,28],[108,44],[96,64]],cm:[[160,18],[160,48],[160,78],[160,112]]},
+"Anubis":{ts:[160,202],cs:[160,18],ta:[[160,202],[190,183],[215,162],[238,139],[250,112],[240,85],[226,62]],tb:[[160,202],[130,183],[105,162],[82,139],[70,112],[82,85],[96,62]],tm:[[160,202],[160,174],[160,145],[160,112]],ca:[[160,18],[190,28],[214,43],[226,62]],cb:[[160,18],[130,28],[108,43],[96,62]],cm:[[160,18],[160,48],[160,78],[160,112]]},
+"Dust II":{ts:[160,202],cs:[160,18],ta:[[160,202],[190,184],[218,162],[240,138],[250,110],[246,82],[234,56]],tb:[[160,202],[130,181],[104,156],[86,128],[80,98],[91,69],[105,48]],tm:[[160,202],[160,174],[160,145],[160,112]],ca:[[160,18],[190,28],[218,40],[234,56]],cb:[[160,18],[130,28],[112,38],[105,48]],cm:[[160,18],[160,48],[160,78],[160,112]]},
+"Vertigo":{ts:[160,202],cs:[160,18],ta:[[160,202],[130,184],[106,164],[90,139],[100,113],[128,91],[160,72],[190,54],[212,38]],tb:[[160,202],[190,184],[214,162],[230,138],[220,113],[192,91],[160,72],[130,54],[108,38]],tm:[[160,202],[160,174],[160,145],[160,112]],ca:[[160,18],[174,28],[194,34],[212,38]],cb:[[160,18],[146,28],[126,34],[108,38]],cm:[[160,18],[160,48],[160,78],[160,112]]}
+};
+function routeFor(map,key){const n=NAV[map]||NAV.Mirage;return n[key]||n.tm}
+function routePoint(path,p){if(path.length===1)return path[0];const lengths=[];let total=0;for(let i=1;i<path.length;i++){const dx=path[i][0]-path[i-1][0],dy=path[i][1]-path[i-1][1],len=Math.hypot(dx,dy);lengths.push(len);total+=len}let dist=Math.max(0,Math.min(1,p))*total;for(let i=0;i<lengths.length;i++){if(dist<=lengths[i]){const a=path[i],b=path[i+1],k=lengths[i]?dist/lengths[i]:0;return[a[0]+(b[0]-a[0])*k,a[1]+(b[1]-a[1])*k]}dist-=lengths[i]}return path[path.length-1]}
 function makeDots(){
-  const mk=(side,i,lab)=>{const name=S.match?.mapName||"Mirage";const targets={"Mirage":[[160,42],[160,178],[160,110]],"Inferno":[[48,178],[272,42],[160,110]],"Nuke":[[105,50],[215,152],[160,110]],"Ancient":[[62,112],[258,112],[160,110]],"Anubis":[[55,112],[265,112],[160,110]],"Dust II":[[62,54],[258,166],[160,110]],"Vertigo":[[160,52],[160,168],[160,110]]};const ts=targets[name]||targets.Mirage;const site=ts[pick([0,1,2])];return{side,lab,x0:side?292:28,y0:50+i*30,tx:site[0]+(side?22:-22)+R(-10,10),ty:site[1]+R(-14,14),die:null}};
-  return S.roster.map((p,i)=>mk(0,i,INI[p.role])).concat([0,1,2,3,4].map(i=>mk(1,i,"")));
+  const m=S.match,map=m?.mapName||"Mirage",round=m?.round||0,ownT=round<12,plan=m?.tactic||"default";
+  const attackSite=plan==="aggro"?(round%2?"B":"A"):(round%4<2?"A":"B");
+  const mk=(side,i,p,lab)=>{
+    const isT=side===0?ownT:!ownT;
+    let path;
+    if(isT){
+      const key=p.role==="Lurker"?(attackSite==="A"?"tb":"ta"):p.role==="AWPer"?"tm":attackSite==="A"?"ta":"tb";
+      path=routeFor(map,key).map(q=>[...q]);
+      if(p.role==="Lurker"){path=routeFor(map,attackSite==="A"?"tb":"ta").map(q=>[...q]);path.push(...routeFor(map,attackSite==="A"?"ta":"tb").slice(-2).map(q=>[q[0]+(attackSite==="A"?-8:8),q[1]+4]))}
+      if(plan==="aggro"&&p.role!=="Lurker"){path=routeFor(map,attackSite==="A"?"ta":"tb").map(q=>[...q])}
+    }else{
+      const key=i===4?"cm":i<2?"ca":"cb";
+      path=routeFor(map,key).map(q=>[...q]);
+      // CTs hold lanes after taking their defensive positions; they do not all collapse to one point.
+      const last=path[path.length-1];path.push([last[0]+(i%2?7:-7),last[1]+(i===4?0:(i%2?5:-5))]);
+    }
+    const start=path[0],end=path[path.length-1];
+    return{side,lab,role:p.role,x0:start[0],y0:start[1],path,tx:end[0],ty:end[1],die:null,seed:i*7+side*17,isT};
+  };
+  const own=S.roster.map((p,i)=>mk(0,i,p,INI[p.role]));
+  const enemyRoles=["Entry","AWPer","IGL","Lurker","Support"];
+  const opp=enemyRoles.map((role,i)=>mk(1,i,{role},["E","A","I","L","S"][i]));
+  return own.concat(opp);
 }
-function pos(d,tt){const k=1-Math.pow(1-Math.min(1,tt/0.7),2);return[d.x0+(d.tx-d.x0)*k,d.y0+(d.ty-d.y0)*k]}
+function pos(d,tt){
+  // Three readable phases: leave spawn, travel through connected lanes, then settle/engage.
+  const travel=Math.max(0,Math.min(1,(tt-.04)/.82));
+  const eased=travel*travel*(3-2*travel);
+  const [x,y]=routePoint(d.path||[[d.x0,d.y0],[d.tx,d.ty]],eased);
+  const settle=tt>.82?Math.min(1,(tt-.82)/.18):0;
+  const sway=(d.role==="Lurker"?4:1.4)*settle;
+  return[Math.max(0,Math.min(320,x+Math.sin((d.seed||0)+tt*12)*sway)),Math.max(0,Math.min(220,y+Math.cos((d.seed||0)+tt*12)*sway))];
+}
 const RADAR_URLS={
   "Mirage":"https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/images/radars/de_mirage_radar_psd.png",
   "Inferno":"https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/images/radars/de_inferno_radar_psd.png",
@@ -424,10 +465,13 @@ function drawMap(dots,t){
 function animateRound(win,done){
   const m=S.match;m.busy=true;SKIP=false;draw();
   const dots=makeDots(),me=dots.slice(0,5),th=dots.slice(5);
-  const kill=(arr,n,opp)=>[...arr].sort(()=>Math.random()-.5).slice(0,n).forEach(d=>{d.die=0.18+Math.random()*0.7;d.killer=pick(opp)});
-  kill(me,win?R(0,4):5,th);kill(th,win?5:R(0,4),me);
-  const D=FAST?900:2600,t0=performance.now();
-  (function f(now){const t=SKIP?1:Math.min(1,(now-t0)/D);drawMap(dots,t);if(t<1)requestAnimationFrame(f);else done()})(t0);
+  const phase=m.tactic==="aggro"?"fast execute":m.tactic==="save"?"eco / safe setup":m.tactic==="default"?"default execute":"tactical setup";
+  log(`R${m.round+1} setup: ${me[0]?.isT?"Your team attack":"Your team defend"} · ${phase} on ${m.mapName}.`,"m");
+  const kill=(arr,n,opp)=>[...arr].sort((a,b)=>((a.seed*13)%19)-((b.seed*13)%19)).slice(0,n).forEach((d,i)=>{d.die=0.48+((d.seed*7+i*11)%42)/100;d.killer=opp[(d.seed+i)%opp.length]});
+  // Round result drives casualties, but deaths happen after the teams have travelled their routes.
+  kill(me,win?R(1,3):R(3,5),th);kill(th,win?R(3,5):R(1,3),me);
+  const D=FAST?900:3000,t0=performance.now();
+  (function f(now){const t=SKIP?1:Math.min(1,(now-t0)/D);drawMap(dots,t);if(t<1)requestAnimationFrame(f);else{log(`Round phase: ${t>=1?"engagements resolved":"rotation complete"}.`,"m");done()}})(t0);
 }
 function weightedPick(){const w=S.roster.map(p=>rating(p)*(p.role=="Entry"||p.role=="AWPer"?1.3:1));let r=Math.random()*w.reduce((a,b)=>a+b,0);for(let i=0;i<w.length;i++){r-=w[i];if(r<=0)return S.roster[i]}return S.roster[0]}
 function simToEnd(){let g=0;while(!S.match.done&&g++<40)playRound(true)}
