@@ -398,7 +398,7 @@ function makeDots(){
     if(isT){
       const key=p.role==="Lurker"?(attackSite==="A"?"tb":"ta"):p.role==="AWPer"?"tm":attackSite==="A"?"ta":"tb";
       path=routeFor(map,key).map(q=>[...q]);
-      if(p.role==="Lurker"){path=routeFor(map,attackSite==="A"?"tb":"ta").map(q=>[...q]);path.push(...routeFor(map,attackSite==="A"?"ta":"tb").slice(-2).map(q=>[q[0]+(attackSite==="A"?-8:8),q[1]+4]))}
+      if(p.role==="Lurker"){path=routeFor(map,attackSite==="A"?"ta":"tb").map(q=>[...q])}
       if(plan==="aggro"&&p.role!=="Lurker"){path=routeFor(map,attackSite==="A"?"ta":"tb").map(q=>[...q])}
     }else{
       const key=i===4?"cm":i<2?"ca":"cb";
@@ -416,7 +416,8 @@ function makeDots(){
 }
 function pos(d,tt){
   // Three readable phases: leave spawn, travel through connected lanes, then settle/engage.
-  const travel=Math.max(0,Math.min(1,(tt-.04)/.82));
+  let travel=Math.max(0,Math.min(1,(tt-.04)/.82));
+  if(d.role==="Lurker")travel=Math.pow(travel,1.28);
   const eased=travel*travel*(3-2*travel);
   const [x,y]=routePoint(d.path||[[d.x0,d.y0],[d.tx,d.ty]],eased);
   const settle=tt>.82?Math.min(1,(tt-.82)/.18):0;
@@ -459,6 +460,9 @@ function drawMap(dots,t){
       if(d.lab){g.fillStyle="#ffffff";g.font="bold 8px system-ui";g.textAlign="center";g.textBaseline="middle";g.fillText(d.lab,x,y+.5)}
     }
   });
+  const phase=t<.18?"SPAWN / SETUP":t<.68?(S.match?.tactic==="aggro"?"FAST EXECUTE":"EXECUTE / ROTATE"):t<.9?"ENGAGEMENTS":"ROUND RESULT";
+  g.fillStyle="rgba(8,10,16,.82)";g.fillRect(7,198,126,14);
+  g.fillStyle=c("--text");g.font="bold 8px system-ui";g.textAlign="left";g.textBaseline="middle";g.fillText(phase,12,205);
   g.fillStyle=c("--text");g.font="bold 10px system-ui";g.textAlign="left";g.textBaseline="top";g.fillText(mapName.toUpperCase(),8,7);
 }
 
