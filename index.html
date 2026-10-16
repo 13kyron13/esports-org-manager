@@ -327,7 +327,7 @@ function launchMatch(){
     if(S.focus==="men"){growStat(p,"men",R(2,5)+Math.floor((staffOf("Head Coach")?.skill||0)/35)+(S.facilities?.training||0));p.morale=clamp(p.morale+2,0,100)}
     if(S.focus==="rest"){p.morale=clamp(p.morale+15,0,100);growStat(p,"aim",1);growStat(p,"gs",1);growStat(p,"men",1)}
   });
-  const o={name:fx.opp.name,power:gp(fx.opp)};
+  const teamPower=power(S.roster),majorBoost=fx.label.startsWith("Major")?4:0;\n  const o={name:fx.opp.name,power:Math.max(gp(fx.opp),teamPower+R(-3,5)+majorBoost)};
   S.match={opp:o,bo:fx.bo,sw:0,sl:0,maps:[...v.maps],map:1,mapName:v.maps[0],me:0,them:0,round:0,streakMe:0,streakThem:0,controlMode:"important",tactic:(S.strategy==="aggressive"?"aggro":S.strategy==="disciplined"?"default":"default"),timeouts:2,tobuff:0,next:0,done:false};
   S.veto=null;S.prepared=null;$("veto").style.display="none";$("match").style.display="block";showTab("play");$("feed").innerHTML="";
   $("mTitle").textContent=`${fx.label} vs ${o.name} · Bo${fx.bo}`;setTimeout(()=>drawMap(makeDots(),0),0);
@@ -358,7 +358,7 @@ function playRound(instant,after){
   t+=m.next;m.next=m.tactic=="save"?6:0;
   if(m.tobuff>0){t+=3;m.tobuff--}
   t+=Math.min(m.streakMe,3)*1.2-Math.min(m.streakThem,3)*1.2;
-  const p=1/(1+Math.exp(-(mine-theirs+t)/9));
+  const p=1/(1+Math.exp(-(mine-theirs+t)/8));
   const win=Math.random()<p;
   if(instant){apply(win)}else{animateRound(win,()=>apply(win))}
   function apply(win){
