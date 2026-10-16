@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Esports Org Manager – Update 8.5</title>
+<title>Esports Org Manager – Update 8.6</title>
 <style>
 :root{--bg:#0a0a0f;--card:#14141c;--text:#f2f3f7;--mute:#8d93a3;--line:#242430;--acc:#2ee68a;--on:#04130a;--good:#2ee68a;--bad:#ff5d6c;--btn:#1d1d28;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -360,24 +360,29 @@ function playRound(instant,after){
   if(m.tobuff>0){t+=3;m.tobuff--}
   t+=Math.min(m.streakMe,3)*1.2-Math.min(m.streakThem,3)*1.2;
   const p=1/(1+Math.exp(-(mine-theirs+t)/8));
-  const win=Math.random()<p;
-  // A T-side win can come from a C4 explosion even when players remain alive.
+  let win=Math.random()<p;
+  // Bomb rounds can end in either a C4 explosion (T win) or a successful CT defuse.
   m.roundEvent=null;
   const ownT=m.round<12;
-  if(win===ownT&&Math.random()<.48){
+  const bombRound=Math.random()<.30;
+  if(bombRound){
     const anchors=NAV_ANCHORS[m.mapName]||NAV_ANCHORS.Mirage;
     const siteKey=m.tactic==="aggro"?(m.round%2?"b":"a"):(m.round%4<2?"a":"b");
-    m.roundEvent={type:"bomb",site:siteKey.toUpperCase(),bombPos:[anchors[siteKey][0]*320,anchors[siteKey][1]*220],plantAt:.55,explodeAt:.88};
+    const defused=Math.random()<.35;
+    m.roundEvent={type:"bomb",site:siteKey.toUpperCase(),bombPos:[anchors[siteKey][0]*320,anchors[siteKey][1]*220],plantAt:.40,defuseStart:.57,defuseEnd:.83,explodeAt:.88,outcome:defused?"defuse":"explode"};
+    win=defused?!ownT:ownT;
   }
   if(instant){apply(win)}else{animateRound(win,()=>apply(win))}
   function apply(win){
   m.busy=false;m.round++;
   if(win){m.me++;m.streakMe++;m.streakThem=0;
     const hero=weightedPick();hero.mvp++;
-    if(m.roundEvent?.type==="bomb")log(`R${m.round}: C4 planted at ${m.roundEvent.site} and exploded! Your team wins the round.`,"w");
+    if(m.roundEvent?.type==="bomb"&&m.roundEvent.outcome==="defuse")log(`R${m.round}: Your team defuses the C4 at ${m.roundEvent.site} with seconds to spare!`,"w");
+    else if(m.roundEvent?.type==="bomb")log(`R${m.round}: C4 planted at ${m.roundEvent.site} and exploded! Your team wins the round.`,"w");
     else log(`R${m.round}: ${pick([hero.name+" ("+hero.role+") wins a 1v"+R(2,3)+" clutch",hero.name+" opens with a triple",hero.name+" hits a huge "+(hero.role=="AWPer"?"AWP double":"spray")+" to seal the round","Your team wins after a full-site fight"])}.`,"w");
   }else{m.them++;m.streakThem++;m.streakMe=0;
-    if(m.roundEvent?.type==="bomb")log(`R${m.round}: Opponents plant the C4 at ${m.roundEvent.site}; it explodes and they win the round.`,"l");
+    if(m.roundEvent?.type==="bomb"&&m.roundEvent.outcome==="defuse")log(`R${m.round}: Opponents defuse the C4 at ${m.roundEvent.site}; the retake succeeds.`,"l");
+    else if(m.roundEvent?.type==="bomb")log(`R${m.round}: Opponents plant at ${m.roundEvent.site}; the C4 explodes and they win.`,"l");
     else log(`R${m.round}: ${pick([m.opp.name+" read the rotate and take it","Your team loses the retake",""+m.opp.name+" win the decisive duels","A mistimed peek costs the round"])}.`,"l");
   }
   m.roundEvent=null;
@@ -491,7 +496,15 @@ function drawMap(dots,t){
   const bomb=S.match?.roundEvent;
   if(bomb?.type==="bomb"&&t>=bomb.plantAt){
     const bx=mx+(bomb.bombPos[0]/320)*mw,by=bomb.bombPos[1];
-    if(t<bomb.explodeAt){
+    if(bomb.outcome==="defuse"&&t>=bomb.defuseStart&&t<bomb.defuseEnd){
+      const progress=Math.max(0,Math.min(1,(t-bomb.defuseStart)/(bomb.defuseEnd-bomb.defuseStart)));
+      g.save();g.fillStyle="#d9273f";g.fillRect(bx-7,by-6,14,12);g.strokeStyle="#fff";g.lineWidth=1;g.strokeRect(bx-7,by-6,14,12);
+      g.fillStyle="#fff";g.font="bold 7px system-ui";g.textAlign="center";g.textBaseline="middle";g.fillText("C4",bx,by);
+      g.fillStyle="#10151c";g.fillRect(bx-23,by-22,46,6);g.fillStyle="#58d68d";g.fillRect(bx-22,by-21,44*progress,4);
+      g.fillStyle="#fff";g.font="bold 8px system-ui";g.textAlign="center";g.fillText("DEFUSING "+Math.floor(progress*100)+"%",bx,by-29);g.restore();
+    }else if(bomb.outcome==="defuse"&&t>=bomb.defuseEnd){
+      g.save();g.strokeStyle="#58d68d";g.lineWidth=3;g.beginPath();g.arc(bx,by,10,0,Math.PI*2);g.stroke();g.fillStyle="#fff";g.font="bold 8px system-ui";g.textAlign="center";g.fillText("DEFUSED",bx,by-15);g.restore();
+    }else if(t<bomb.explodeAt){
       const pulse=.5+.5*Math.sin(t*35);
       g.save();g.fillStyle="#d9273f";g.fillRect(bx-7,by-6,14,12);
       g.strokeStyle="#fff";g.lineWidth=1;g.strokeRect(bx-7,by-6,14,12);
@@ -577,7 +590,8 @@ function animateRound(win,done){
     drawMap(dots,t);
     if(t<1)requestAnimationFrame(f);
     else{
-      if(m.roundEvent?.type==="bomb")log(`C4 detonated at ${m.roundEvent.site} — round over.`,"m");
+      if(m.roundEvent?.type==="bomb"&&m.roundEvent.outcome==="defuse")log(`DEFUSE COMPLETE at ${m.roundEvent.site}! The C4 is disabled.`,"m");
+      else if(m.roundEvent?.type==="bomb")log(`C4 detonated at ${m.roundEvent.site} — round over.`,"m");
       else log("Round phase: engagements resolved.","m");
       done()
     }
