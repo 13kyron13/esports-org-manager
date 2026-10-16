@@ -376,43 +376,47 @@ function playRound(instant,after){
 }
 let FAST=false,SKIP=false;
 const INI={IGL:"I",AWPer:"A",Entry:"E",Lurker:"L",Support:"S"};
-// Each route is a connected sequence of walkable lane/connector points in radar coordinates.
-// Coordinates are approximate radar positions, not world-unit navigation meshes.
-const NAV={
-"Mirage":{ts:[160,202],cs:[160,18],ta:[[160,202],[150,174],[148,143],[160,112],[190,92],[222,70],[232,48]],tb:[[160,202],[130,178],[100,153],[78,123],[72,88],[84,57]],tm:[[160,202],[160,174],[160,145],[160,112]],ca:[[160,18],[190,25],[218,38],[232,48]],cb:[[160,18],[128,25],[99,39],[84,57]],cm:[[160,18],[160,44],[160,76],[160,112]]},
-"Inferno":{ts:[160,202],cs:[160,18],ta:[[160,202],[190,184],[220,161],[242,132],[250,101],[242,72],[226,50]],tb:[[160,202],[130,186],[100,165],[75,139],[66,108],[78,78]],tm:[[160,202],[160,174],[160,145],[160,112]],ca:[[160,18],[192,30],[220,47],[239,68],[242,94]],cb:[[160,18],[128,28],[99,48],[78,78]],cm:[[160,18],[160,48],[160,78],[160,112]]},
-"Nuke":{ts:[160,202],cs:[160,18],ta:[[160,202],[192,183],[218,159],[230,130],[224,99],[210,72],[208,48]],tb:[[160,202],[128,182],[104,157],[96,129],[104,102],[124,78],[128,52]],tm:[[160,202],[160,174],[160,145],[160,112]],ca:[[160,18],[185,29],[205,44],[208,48]],cb:[[160,18],[138,28],[126,42],[128,52]],cm:[[160,18],[160,48],[160,78],[160,112]]},
-"Ancient":{ts:[160,202],cs:[160,18],ta:[[160,202],[190,182],[214,160],[232,136],[242,112],[230,87],[220,63]],tb:[[160,202],[130,182],[105,160],[82,138],[70,112],[82,86],[96,64]],tm:[[160,202],[160,174],[160,145],[160,112]],ca:[[160,18],[188,28],[210,44],[220,63]],cb:[[160,18],[130,28],[108,44],[96,64]],cm:[[160,18],[160,48],[160,78],[160,112]]},
-"Anubis":{ts:[160,202],cs:[160,18],ta:[[160,202],[190,183],[215,162],[238,139],[250,112],[240,85],[226,62]],tb:[[160,202],[130,183],[105,162],[82,139],[70,112],[82,85],[96,62]],tm:[[160,202],[160,174],[160,145],[160,112]],ca:[[160,18],[190,28],[214,43],[226,62]],cb:[[160,18],[130,28],[108,43],[96,62]],cm:[[160,18],[160,48],[160,78],[160,112]]},
-"Dust II":{ts:[160,202],cs:[160,18],ta:[[160,202],[190,184],[218,162],[240,138],[250,110],[246,82],[234,56]],tb:[[160,202],[130,181],[104,156],[86,128],[80,98],[91,69],[105,48]],tm:[[160,202],[160,174],[160,145],[160,112]],ca:[[160,18],[190,28],[218,40],[234,56]],cb:[[160,18],[130,28],[112,38],[105,48]],cm:[[160,18],[160,48],[160,78],[160,112]]},
-"Vertigo":{ts:[160,202],cs:[160,18],ta:[[160,202],[130,184],[106,164],[90,139],[100,113],[128,91],[160,72],[190,54],[212,38]],tb:[[160,202],[190,184],[214,162],[230,138],[220,113],[192,91],[160,72],[130,54],[108,38]],tm:[[160,202],[160,174],[160,145],[160,112]],ca:[[160,18],[174,28],[194,34],[212,38]],cb:[[160,18],[146,28],[126,34],[108,38]],cm:[[160,18],[160,48],[160,78],[160,112]]}
+const NAV_ANCHORS={
+"Mirage":{t:[.50,.88],ct:[.86,.43],a:[.83,.36],b:[.22,.28],mid:[.50,.48]},
+"Inferno":{t:[.12,.74],ct:[.68,.38],a:[.88,.34],b:[.49,.20],mid:[.48,.50]},
+"Nuke":{t:[.12,.54],ct:[.82,.53],a:[.80,.70],b:[.58,.39],mid:[.52,.52]},
+"Ancient":{t:[.50,.90],ct:[.70,.12],a:[.80,.40],b:[.24,.23],mid:[.50,.48]},
+"Anubis":{t:[.50,.90],ct:[.55,.22],a:[.75,.20],b:[.28,.46],mid:[.50,.50]},
+"Dust II":{t:[.50,.91],ct:[.60,.20],a:[.84,.18],b:[.18,.18],mid:[.50,.50]},
+"Vertigo":{t:[.50,.89],ct:[.50,.20],a:[.65,.20],b:[.18,.20],mid:[.50,.50]}
 };
+const NAV={
+"Mirage":{ta:[[160,194],[150,174],[148,143],[160,112],[190,92],[222,70],[232,48]],tb:[[160,194],[130,178],[100,153],[78,123],[72,88],[84,57]],tm:[[160,194],[160,174],[160,145],[160,112]],ca:[[275,95],[260,85],[232,70]],cb:[[275,95],[220,75],[150,70],[84,57]],cm:[[275,95],[230,100],[190,110],[160,112]]},
+"Inferno":{ta:[[38,163],[58,153],[75,139],[100,115],[130,95],[175,75],[240,75]],tb:[[38,163],[50,145],[65,125],[80,110],[105,90],[140,65]],tm:[[38,163],[70,150],[100,130],[150,115]],ca:[[218,84],[235,75],[250,65]],cb:[[218,84],[180,80],[140,65]],cm:[[218,84],[180,105],[150,115]]},
+"Nuke":{ta:[[38,119],[65,120],[90,125],[120,130],[150,145],[185,155],[220,155]],tb:[[38,119],[65,105],[90,90],[120,82],[150,78],[175,70]],tm:[[38,119],[70,119],[110,120],[150,125]],ca:[[282,117],[260,130],[240,150],[220,155]],cb:[[282,117],[245,95],[210,80],[175,70]],cm:[[282,117],[245,115],[200,120],[150,125]]},
+"Ancient":{ta:[[160,198],[160,175],[175,155],[195,135],[220,115],[250,95]],tb:[[160,198],[130,180],[105,155],[85,130],[75,100],[75,65]],tm:[[160,198],[160,170],[160,140],[160,110]],ca:[[204,26],[220,45],[240,65],[250,95]],cb:[[204,26],[170,35],[130,45],[100,65],[75,100]],cm:[[204,26],[185,50],[165,75],[160,110]]},
+"Anubis":{ta:[[160,198],[180,180],[205,160],[230,140],[250,115],[245,85],[230,60]],tb:[[160,198],[135,180],[110,160],[85,140],[65,115],[75,85],[95,60]],tm:[[160,198],[160,170],[160,140],[160,110]],ca:[[170,48],[190,55],[215,60],[230,60]],cb:[[170,48],[145,55],[120,60],[95,60]],cm:[[170,48],[165,75],[160,110]]},
+"Dust II":{ta:[[160,200],[175,180],[190,155],[205,130],[230,105],[255,80],[270,45]],tb:[[160,200],[140,180],[120,155],[95,130],[75,100],[65,70],[55,45]],tm:[[160,200],[160,175],[160,145],[160,115]],ca:[[192,44],[220,40],[250,40],[270,45]],cb:[[192,44],[150,45],[100,45],[55,45]],cm:[[192,44],[180,70],[165,90],[160,115]]},
+"Vertigo":{ta:[[160,196],[135,175],[115,150],[100,125],[125,105],[160,85],[195,65],[212,42]],tb:[[160,196],[185,175],[205,150],[220,125],[200,105],[160,85],[130,65],[108,42]],tm:[[160,196],[160,170],[160,140],[160,110]],ca:[[160,44],[180,42],[195,42],[212,42]],cb:[[160,44],[140,42],[125,42],[108,42]],cm:[[160,44],[160,70],[160,90],[160,110]]}
+};
+const WALK_CACHE={};
+function radarWalkGrid(map){
+ const im=RADAR_CACHE[RADAR_URLS[map]||RADAR_URLS.Mirage];if(!im||!im.complete||!im.naturalWidth)return null;if(WALK_CACHE[map])return WALK_CACHE[map];
+ try{const n=56,cv=document.createElement("canvas");cv.width=n;cv.height=n;const cx=cv.getContext("2d",{willReadFrequently:true});cx.drawImage(im,0,0,n,n);const px=cx.getImageData(0,0,n,n).data,walk=new Uint8Array(n*n);for(let y=0;y<n;y++)for(let x=0;x<n;x++){const k=(y*n+x)*4;walk[y*n+x]=px[k+3]>60&&(px[k]+px[k+1]+px[k+2])>55?1:0}return WALK_CACHE[map]={n,walk}}catch(e){return null}
+}
+function radarPath(map,from,to){
+ const grid=radarWalkGrid(map);if(!grid)return null;const n=grid.n,walk=grid.walk,idx=(x,y)=>y*n+x;
+ const nearest=(u,v)=>{const sx=Math.max(0,Math.min(n-1,Math.round(u*(n-1)))),sy=Math.max(0,Math.min(n-1,Math.round(v*(n-1))));if(walk[idx(sx,sy)])return[sx,sy];for(let r=1;r<n;r++)for(let y=Math.max(0,sy-r);y<=Math.min(n-1,sy+r);y++)for(let x=Math.max(0,sx-r);x<=Math.min(n-1,sx+r);x++)if(Math.max(Math.abs(x-sx),Math.abs(y-sy))===r&&walk[idx(x,y)])return[x,y];return null};
+ const a=nearest(from[0],from[1]),b=nearest(to[0],to[1]);if(!a||!b)return null;const start=idx(a[0],a[1]),end=idx(b[0],b[1]),cost=new Float32Array(n*n),prev=new Int32Array(n*n),open=new Uint8Array(n*n),closed=new Uint8Array(n*n);cost.fill(Infinity);prev.fill(-1);cost[start]=0;open[start]=1;
+ const heuristic=q=>Math.hypot(q%n-end%n,Math.floor(q/n)-Math.floor(end/n)),dirs=[[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,-1],[-1,1],[1,1]];
+ for(let step=0;step<n*n;step++){let cur=-1,best=Infinity;for(let q=0;q<open.length;q++)if(open[q]&&!closed[q]){const f=cost[q]+heuristic(q);if(f<best){best=f;cur=q}}if(cur<0)break;if(cur===end)break;closed[cur]=1;const x=cur%n,y=Math.floor(cur/n);for(const [dx,dy] of dirs){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=n||yy>=n)continue;const q=idx(xx,yy);if(!walk[q]||closed[q])continue;if(dx&&dy&&(!walk[idx(x+dx,y)]||!walk[idx(x,y+dy)]))continue;const nc=cost[cur]+(dx&&dy?1.414:1);if(nc<cost[q]){cost[q]=nc;prev[q]=cur;open[q]=1}}}
+ if(start!==end&&prev[end]===-1)return null;const out=[];for(let q=end;q!==-1;q=prev[q]){out.push([q%n/(n-1)*320,Math.floor(q/n)/(n-1)*220]);if(q===start)break}out.reverse();return out.length>1?out:null
+}
 function routeFor(map,key){const n=NAV[map]||NAV.Mirage;return n[key]||n.tm}
 function routePoint(path,p){if(path.length===1)return path[0];const lengths=[];let total=0;for(let i=1;i<path.length;i++){const dx=path[i][0]-path[i-1][0],dy=path[i][1]-path[i-1][1],len=Math.hypot(dx,dy);lengths.push(len);total+=len}let dist=Math.max(0,Math.min(1,p))*total;for(let i=0;i<lengths.length;i++){if(dist<=lengths[i]){const a=path[i],b=path[i+1],k=lengths[i]?dist/lengths[i]:0;return[a[0]+(b[0]-a[0])*k,a[1]+(b[1]-a[1])*k]}dist-=lengths[i]}return path[path.length-1]}
 function makeDots(){
-  const m=S.match,map=m?.mapName||"Mirage",round=m?.round||0,ownT=round<12,plan=m?.tactic||"default";
-  const attackSite=plan==="aggro"?(round%2?"B":"A"):(round%4<2?"A":"B");
-  const mk=(side,i,p,lab)=>{
-    const isT=side===0?ownT:!ownT;
-    let path;
-    if(isT){
-      const key=p.role==="Lurker"?(attackSite==="A"?"tb":"ta"):p.role==="AWPer"?"tm":attackSite==="A"?"ta":"tb";
-      path=routeFor(map,key).map(q=>[...q]);
-      if(p.role==="Lurker"){path=routeFor(map,attackSite==="A"?"ta":"tb").map(q=>[...q])}
-      if(plan==="aggro"&&p.role!=="Lurker"){path=routeFor(map,attackSite==="A"?"ta":"tb").map(q=>[...q])}
-    }else{
-      const key=i===4?"cm":i<2?"ca":"cb";
-      path=routeFor(map,key).map(q=>[...q]);
-      // CTs hold lanes after taking their defensive positions; they do not all collapse to one point.
-      const last=path[path.length-1];path.push([last[0]+(i%2?7:-7),last[1]+(i===4?0:(i%2?5:-5))]);
-    }
-    const start=path[0],end=path[path.length-1];
-    return{side,lab,role:p.role,x0:start[0],y0:start[1],path,tx:end[0],ty:end[1],die:null,seed:i*7+side*17,isT};
-  };
-  const own=S.roster.map((p,i)=>mk(0,i,p,INI[p.role]));
-  const enemyRoles=["Entry","AWPer","IGL","Lurker","Support"];
-  const opp=enemyRoles.map((role,i)=>mk(1,i,{role},["E","A","I","L","S"][i]));
-  return own.concat(opp);
+ const m=S.match,map=m?.mapName||"Mirage",round=m?.round||0,ownT=round<12,plan=m?.tactic||"default",anchors=NAV_ANCHORS[map]||NAV_ANCHORS.Mirage;
+ const site=plan==="aggro"?(round%2?"b":"a"):(round%4<2?"a":"b");
+ const mk=(side,i,p,lab)=>{const isT=side===0?ownT:!ownT,from=isT?anchors.t:anchors.ct;let target=isT?(p.role==="AWPer"?anchors.mid:p.role==="Lurker"?(site==="a"?anchors.b:anchors.a):anchors[site]):i===4?anchors.mid:i<2?anchors.a:anchors.b;
+ let path=radarPath(map,from,target);if(!path){const key=isT?(p.role==="AWPer"?"tm":site==="a"?"ta":"tb"):(i===4?"cm":i<2?"ca":"cb");path=routeFor(map,key).map(q=>[...q])}
+ if(!isT&&path.length>1){const last=path[path.length-1];path.push([Math.max(0,Math.min(320,last[0]+(i%2?2:-2))),Math.max(0,Math.min(220,last[1]+(i===4?0:(i%2?2:-2))))])}
+ return{side,lab,role:p.role,x0:path[0][0],y0:path[0][1],path,tx:path[path.length-1][0],ty:path[path.length-1][1],die:null,seed:i*7+side*17,isT,map,from,target}};
+ const own=S.roster.map((p,i)=>mk(0,i,p,INI[p.role])),roles=["Entry","AWPer","IGL","Lurker","Support"],opp=roles.map((role,i)=>mk(1,i,{role},["E","A","I","L","S"][i]));return own.concat(opp)
 }
 function pos(d,tt){
   // Three readable phases: leave spawn, travel through connected lanes, then settle/engage.
