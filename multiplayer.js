@@ -219,7 +219,31 @@
   async function finalizeExpiredRound(league) {
     if(uid!==league.owner||!leagueRef||league.roundReplay?.status!=="live")return;
     if(Date.now()<Number(league.roundReplay.startedAt)+Number(league.roundReplay.durationMs||12000))return;
-    await advanceRound(league);
+    const now=Date.now();
+    const tx=await leagueRef.transaction(current=>{
+      const live=current?.roundReplay;
+      if(!current||live?.status!=="live"||now<Number(live.startedAt)+Number(live.durationMs||12000))return;
+      const results=live.results||[];
+      current.fixtures=(current.fixtures||[]).map(f=>{
+        const r=results.find(x=>x.fixtureId===f.id);
+        if(!r||f.status!=="live")return f;
+        const next={...f,homeScore:r.homeScore,awayScore:r.awayScore,status:"played",playedAt:new Date().toISOString()};
+        delete next.liveHomeScore; delete next.liveAwayScore;
+        return next;
+      });
+      current.roundReplay={...live,status:"complete",completedAt:new Date().toISOString()};
+      current.updatedAt=new Date().toISOString();
+      return current;
+    },undefined,false);
+    if(!tx.committed)return;
+    const updated=tx.snapshot.val();
+    if(!(updated.fixtures||[]).some(f=>f.status==="scheduled")) {
+      const table=scoreRows(updated);
+      await leagueRef.update({status:"complete",champion:table[0]?.uid||null,updatedAt:new Date().toISOString()});
+      setStatus("Season complete! "+(table[0]?.name||"The winner")+" wins the league.");
+    } else {
+      setStatus("Round "+updated.roundReplay.round+" is complete. Start the next round when ready.");
+    }
   }
   function scoreDuringReplay(finalScore, progress, winner) {
     if(progress>=1)return finalScore;
