@@ -486,7 +486,7 @@
   await roomRef.update({teams:nextTeams,phase:"management",seasonNumber:(+room.seasonNumber||1)+1,week:0,seasonTeams:teams,fixtures:fixtures(teams),standings,weekReadyAt:Date.now()+30000,replay:null,lastReplay:null,champion:null});
   if(S)S._mpNextYearReady=false;
  }
- async function tick(){if(!mpCareer||!room)return;if(uid===room.owner){if(room.phase==="management"&&Date.now()>=room.weekReadyAt)startReplay().catch(e=>stat(e.message));if(room.phase==="live"&&room.replay&&Date.now()>=room.replay.startedAt+room.replay.durationMs)finishReplay().catch(e=>stat(e.message))}banner()}
+ async function tick(){if(!mpCareer||!room)return;if(uid===room.owner){if(room.phase==="management"&&Date.now()>=room.weekReadyAt)startReplay().catch(e=>stat(e.message));if(room.phase==="live"&&room.replay&&Date.now()>=room.replay.startedAt+room.replay.durationMs)finishReplay().catch(e=>stat(e.message))}if(room.phase==="management"||room.phase==="live")banner()}
  function ownFixture(){return(room?.fixtures?.[room.week]||[]).find(f=>f.a===uid||f.b===uid)}
  function syncLocal(){
   if(!mpCareer||!room?.seasonTeams||!room.standings)return;
