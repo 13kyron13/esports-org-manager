@@ -319,6 +319,19 @@ Earlier conversation roadmap items (finances, market/transfers, contracts/drama,
 ## Track H — Expand to more esports titles
 
 ### H1. Data-driven game framework
+
+- [ ] **Organisation-wide game switcher:** a persistent selector in the main navigation lets the manager switch between CS2, Valorant and future game divisions without restarting the career.
+- [ ] **Independent division state:** each game keeps its own roster, bench, academy/Tier 2 squad, staff assignments, tactics, map/agent pool, league table, schedule, results, contracts and division-specific records.
+- [ ] **Resume exactly where you left off:** switching games restores that division's last screen/context and all its current season state; switching must not advance its calendar or simulate matches in the background unless a later, clearly labelled world-tick feature is intentionally added.
+- [ ] **Shared organisation layer:** cash, ownership, brand, sponsors, facilities and board/owner objectives belong to the organisation. Each division also has its own budget allocation, performance targets, popularity and return-on-investment reporting.
+- [ ] **Cross-division overview:** one dashboard compares all divisions' form, upcoming fixtures, standings, finances, staff needs and alerts, with quick links to open each team.
+- [ ] **Division setup and expansion:** create/unlock a division, select its game, set its starting roster and league, and decide how much budget/staff support to allocate. Expansion should have a real cost and risk.
+- [ ] **Game-specific depth, not reskins:** every title needs its own complete management loop, player attributes/roles, recruitment market, tactics, match rules, competition structure, calendar, progression and AI rivals.
+- [ ] **CS2 stays fully featured:** retain the existing CS2 match simulator and management systems while refactoring title-specific logic behind a division boundary.
+- [ ] **Valorant as the next complete division:** its own roster and market, Duelist/Initiator/Controller/Sentinel/IGL/Flex role coverage, agent compositions, map pool, economy and side rules, match simulator, tournament calendar and rival organisations.
+- [ ] **More titles later:** add another game only when it has a distinctive playable simulation and management loop, rather than a cosmetic tab.
+- [ ] **Safe persistence:** saves store the shared organisation plus each division separately, include schema versions, and preserve every division when switching games or loading an older save.
+- [ ] **Cross-division staff and player rules:** staff can be dedicated to one division or shared at a cost/capacity trade-off; transfers between games are allowed only where sensible and should never silently convert incompatible player data.
 - [ ] Separate shared organisation systems from title-specific rules.
 - [ ] Each game defines its own roles, stats, match format, calendar, economy, roster size and competitive scene.
 - [ ] Avoid hard-coding CS2 assumptions into every future game.
@@ -451,7 +464,7 @@ This order prioritises foundational systems and avoids building later features o
 5. Add persistence, export/import saves and automated regression tests before large new systems.
 6. Build sponsor deals, brand, content, merch and facilities.
 7. Add living-world rival teams, dynamic storylines, player careers and meta changes.
-8. Implement the shared multi-title framework, then add Valorant as the first expansion.
+8. Build the multi-division state model and persistent game switcher, then implement Valorant as a genuinely separate, fully featured division.
 9. Polish UX, accessibility, balancing, achievements and optional sandbox/modding features.
 
 ## Definition of done for each update
