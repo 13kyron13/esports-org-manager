@@ -160,6 +160,17 @@ Earlier conversation roadmap items (finances, market/transfers, contracts/drama,
 - [ ] Contract drama should be contextual and explainable, not random punishment.
 - [ ] Include cooldowns and sensible limits on negotiations to avoid repetitive clicking.
 
+### C3. Squad inventory, lineup and depth management
+
+- [ ] **Start with five senior players:** a new organisation begins with a complete five-player main roster, so the player can compete immediately and then improve the squad.
+- [ ] **One player inventory:** every signed or scouted-and-recruited player is added to a central squad/inventory screen rather than being assigned automatically to the starting lineup.
+- [ ] **Three squad destinations:** assign each owned player to the **Main Team** (active starting five), **Bench** (senior substitutes/reserves) or **Academy Team / Tier 2** (development squad).
+- [ ] **Simple squad management:** move players between groups with clear controls, see each group's players and roles, and prevent invalid main-team lineups that do not contain five eligible players.
+- [ ] **Transfers and scouting feed the same inventory:** signing from the transfer market or recruiting a scouted player adds them to the organisation's player pool; the manager then decides where they belong.
+- [ ] **Squad status at a glance:** show active lineup, bench depth, role coverage, player availability, morale, contracts and development status.
+- [ ] **Meaningful trade-offs:** main-team players get competitive experience, bench players provide cover and can receive limited development, while academy players prioritise growth but are not available for the main team's matches unless promoted.
+- [ ] **Safe squad changes:** warn before moving a player if it leaves the active team short-handed, breaks role coverage or affects morale/playing-time expectations.
+
 ### C3. Roster fit and team chemistry
 - [ ] Role compatibility, leadership, communication, language and playstyle fit.
 - [ ] Team chemistry improves through practice and results, and can decline after conflict or major roster changes.
@@ -187,6 +198,11 @@ Earlier conversation roadmap items (finances, market/transfers, contracts/drama,
 - [ ] Avoid making scouting a pay-to-click tax: give clear value and sensible free information.
 
 ### D3. Youth academy
+- [ ] **Academy as the Tier 2 development team:** the academy is a real squad destination in the shared player inventory, not a separate disconnected list.
+- [ ] **Stronger focused training:** academy players receive a substantially higher training/development rate than senior-team players, balanced by age, potential, coaching quality and diminishing returns.
+- [ ] **Development vs competition trade-off:** academy players grow faster but primarily compete in Tier 2/academy fixtures; promotion makes them available for the senior main team or bench.
+- [ ] **Promotion and demotion:** move players between Academy, Bench and Main Team without losing their player history, contract or development progress.
+- [ ] **Academy management overview:** show current development progress, potential estimate, training focus and players ready for promotion.
 - [ ] Recruit generated prospects into an academy.
 - [ ] Prospects have age, potential range, preferred roles, growth rate, personality and development needs.
 - [ ] Academy coaches/facilities affect growth and costs.
@@ -416,7 +432,7 @@ These items were identified after comparing the original concept with this roadm
 This order prioritises foundational systems and avoids building later features on unstable simulation logic.
 
 1. Finish and validate CS2 match/navigation/objective logic (including bomb plant/defuse and correct round-end rules).
-2. Stabilise finances, contracts, transfer negotiations and AI roster building; verify existing systems before reimplementing them.
+2. Stabilise finances, contracts, transfer negotiations and AI roster building; implement the shared player inventory and Main Team / Bench / Academy assignment flow, then verify existing systems before reimplementing them.
 3. Complete staff market, scouting reports and youth academy with transparent costs and bounded bonuses.
 4. Finish competition calendars, brackets, rankings and individual awards.
 5. Add persistence, export/import saves and automated regression tests before large new systems.
