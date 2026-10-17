@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Esports Manager – Update 15.0</title>
+<title>Esports Manager – Update 19.0</title>
 <style>
 :root{--bg:#0a0a0f;--card:#14141c;--text:#f2f3f7;--mute:#8d93a3;--line:#242430;--acc:#2ee68a;--on:#04130a;--good:#2ee68a;--bad:#ff5d6c;--btn:#1d1d28;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -117,6 +117,16 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1)),pick=a=>a[Math.floor(Math.random()*a.length)];
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const ROLES=["IGL","AWPer","Entry","Lurker","Support"];
+const GAME_PROFILES={
+cs2:{name:"Counter-Strike 2",roles:ROLES,maps:[["Mirage","Balanced","Versatile mid control"],["Inferno","Utility","Utility and patient executes"],["Nuke","Rotations","Vertical rotations and timing"],["Ancient","Mid control","Structured mid control"],["Anubis","Fast executes","Quick site pressure"],["Dust II","Aim duels","Long-range mechanics"],["Vertigo","Aggression","Fast decisive rounds"]]},
+valorant:{name:"VALORANT",roles:["Duelist","Initiator","Controller","Sentinel","Flex"],maps:[["Ascent","Mid control","Mid control and site executes"],["Bind","Fast executes","Teleport rotations and close hits"],["Haven","Rotations","Three-site defensive rotations"],["Split","Utility","Vertical control and choke points"],["Lotus","Rotations","Three-site rotation pressure"],["Sunset","Mid control","Mid-lane control"],["Abyss","Aim duels","Open angles and movement"]]},
+overwatch:{name:"Overwatch",roles:["Tank","Damage","Damage","Support","Support"],maps:[["King's Row","Escort","Hybrid payload and capture"],["Midtown","Escort","Escort through a city route"],["Lijiang Tower","Control","Control-point percentage"],["Ilios","Control","Control-point percentage"],["Route 66","Escort","Payload checkpoints"],["Shambali Monastery","Escort","Escort and defensive holds"],["Esperança","Push","Push the central barricade"]]},
+league:{name:"League of Legends",roles:["Top","Jungle","Mid","ADC","Support"],maps:[["Summoner's Rift","Macro","Lane priority and neutral objectives"],["Howling Abyss","Teamfight","Constant team fights and snowballing"],["Summoner's Rift · Blue Side","Macro","Blue-side draft and objective control"],["Summoner's Rift · Red Side","Macro","Red-side draft and counter-picks"],["Summoner's Rift · Finals","Macro","High-pressure late-game decisions"]]},
+rocket:{name:"Rocket League",roles:["Striker","Playmaker","Defender","Goalkeeper","Flex"],maps:[["DFH Stadium","Standard","Balanced arena"],["Mannfield","Standard","Open sightlines"],["Champions Field","Finals","Championship arena"],["Utopia Coliseum","Open","Fast rotations"],["Forbidden Temple","Open","Read-heavy rebounds"],["Neo Tokyo","Standard","Wall play and passing"],["Urban Central","Standard","Tight recoveries"]]}
+};
+function rolesForGame(){return GAME_PROFILES[gameKey(S?.gameTitle)]?.roles||ROLES}
+function activeMapPool(){return GAME_PROFILES[gameKey(S?.gameTitle)]?.maps.map(([name,style,desc])=>({name,style,desc}))||MAPS}
+
 const MAPS=[{name:"Mirage",style:"Balanced",desc:"A balanced map with options for every role."},{name:"Inferno",style:"Utility",desc:"Utility and patient executes are rewarded."},{name:"Nuke",style:"Rotations",desc:"Game sense helps punish rotations."},{name:"Ancient",style:"Mid control",desc:"Structured mid control matters."},{name:"Anubis",style:"Fast executes",desc:"Aggressive entries get extra value."},{name:"Dust II",style:"Aim duels",desc:"Raw aim carries a little more weight."},{name:"Vertigo",style:"Aggression",desc:"Fast, decisive rounds can pay off."}];
 const NAMES=["Kairo","Vexx","Moriel","Dash","Nyx","Torque","Blitz","Rook","Sable","Quill","Ember","Fynn","Halo","Jinx","Zeph"];
 const TEAMS=["Iron Wolves","Neon Syndicate","Apex Crown","Silent Order","Redline","Storm Unit","Void Gaming","Ember Five","Nova Prime","Cobalt","Ghost Protocol","Titan Rise","Arctic Fox","Solar Flare","Black Mamba","Rogue Tide","Crimson Peak","Zenith","Hydra"];
@@ -133,7 +143,7 @@ const weekly=()=>{const wages=[...S.roster,...S.bench].reduce((s,p)=>s+p.sal,0)+
 function growStat(p,k,amount){const v=p[k];let f=v>=96?.1:v>=92?.22:v>=87?.4:v>=80?.6:v>=70?.8:1;if(p.pot&&ovr(p)>=p.pot)f*=.5;p[k]=clamp(v+Math.floor(Math.max(0,amount)*f+Math.random()),0,99)}
 function mapConf(p,mapName){return p.maps?.[mapName]??60}
 function teamMapBonus(roster,mapName){return roster.reduce((n,p)=>n+(mapConf(p,mapName)-60),0)/roster.length*0.22}
-function mapProfile(name){return MAPS.find(x=>x.name===name)||MAPS[0]}
+function mapProfile(name){return activeMapPool().find(x=>x.name===name)||MAPS.find(x=>x.name===name)||activeMapPool()[0]||MAPS[0]}
 let MID=1;const SYL=["Zy","Kro","Vel","Ax","Ren","Tor","Mik","Jax","Lun","Sol","Dre","Kae"],END=["x","on","is","a","en","ik","ar","o"];
 function mkPlayer(){const role=pick(ROLES),base=Math.round(power(S.roster))+R(-14,12),age=R(17,32),free=Math.random()<0.3,d=free?5:0;
   const p={id:MID++,name:pick(SYL)+pick(END),role,age,free,morale:70,mvp:0,
@@ -766,7 +776,7 @@ function continueCareer(){try{const slots=readSaveSlots(),auto=slots.find(x=>x.i
 function scheduleAutosave(){if(!S||$("menuOverlay")?.style.display!=="none"||S.match?.busy)return;clearTimeout(autosaveTimer);autosaveTimer=setTimeout(()=>{try{const slots=readSaveSlots(),data=packCareer(),entry={id:AUTO_SLOT,name:"Automatic save",data,updatedAt:new Date().toISOString()};const i=slots.findIndex(x=>x.id===AUTO_SLOT);if(i>=0)slots[i]=entry;else slots.unshift(entry);writeSaveSlots(slots.slice(0,20));localStorage.setItem("esportsOrgManagerSaveV8",JSON.stringify(data))}catch(e){saveStatus("Autosave unavailable: browser storage is full. Export a backup.")}},700)}
 let orgDraft={name:"Your Org",tag:"ORG",logo:"⚡",primaryColor:"#2ee68a",secondaryColor:"#171923"};
 function cleanOrgName(v,fallback){const s=String(v||"").replace(/[<>]/g,"").replace(/[^\\p{L}\\p{N} _.-]/gu,"").trim().slice(0,32);return s||fallback}
-function gameKey(name){const n=String(name||"CS2").toLowerCase();return n==="valorant"?"valorant":n==="overwatch"?"overwatch":n.includes("league")?"league":"cs2"}
+function gameKey(name){const n=String(name||"CS2").toLowerCase();if(n==="valorant")return"valorant";if(n==="overwatch")return"overwatch";if(n.includes("league"))return"league";if(n.includes("rocket"))return"rocket";return"cs2"}
 function selectStartingGame(game){selectedGame=game;document.querySelectorAll(".menu-game").forEach(x=>x.style.borderColor="var(--line)");const btn=[...document.querySelectorAll(".menu-game button")].find(x=>x.textContent.includes(game==="League of Legends"?"League":game));if(btn)btn.closest(".menu-game").style.borderColor="var(--acc)";const h=$("orgPreviewName");if(h)h.textContent=$("orgNameInput")?.value||"Your Org"}
 function bindOrgPreview(){const ids=["orgNameInput","orgTagInput","orgLogoInput","orgPrimaryInput","orgSecondaryInput"];ids.forEach(id=>{const el=$(id);if(el)el.oninput=()=>{const n=$("orgPreviewName"),t=$("orgPreviewTag"),l=$("orgPreviewLogo"),p=$("orgPreview");if(n)n.textContent=$("orgNameInput").value||"Your Org";if(t)t.textContent=($("orgTagInput").value||"ORG").toUpperCase().slice(0,5);if(l)l.textContent=$("orgLogoInput").value;if(p){p.style.borderColor=$("orgPrimaryInput").value;p.style.background=$("orgSecondaryInput").value+"55"}}});}
 function createOrganization(){orgDraft={name:cleanOrgName($("orgNameInput")?.value,"Your Org"),tag:cleanOrgName($("orgTagInput")?.value,"ORG").replace(/\\s/g,"").toUpperCase().slice(0,5)||"ORG",logo:$("orgLogoInput")?.value||"⚡",primaryColor:/^#[0-9a-f]{6}$/i.test($("orgPrimaryInput")?.value)?$("orgPrimaryInput").value:"#2ee68a",secondaryColor:/^#[0-9a-f]{6}$/i.test($("orgSecondaryInput")?.value)?$("orgSecondaryInput").value:"#171923"};if(!confirm("Found "+orgDraft.name+" with "+selectedGame+" as your starting esport?"))return;newGame();hideTitleScreen();applyOrgBrand();saveStatus("Organisation founded. Autosave is enabled.");scheduleAutosave()}
