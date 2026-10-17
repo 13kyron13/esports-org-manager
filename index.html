@@ -384,7 +384,7 @@ function draw(){
   const T=[["aggro","Aggressive"],["default","Default"],["force","Force buy"],["save","Save / eco"]];
   const tacticButtons=decision?T.map(([k,l])=>`<button class="${m.tactic==k?"sel":""}" onclick="S.match.tactic='${k}';draw()">${l}</button>`).join(""):"";
   c.innerHTML=`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0"><label for="matchMode">Gameplay</label><select id="matchMode" onchange="setControlMode(this.value)" style="font:inherit;padding:8px;border-radius:8px;background:var(--btn);color:var(--text);border:1px solid var(--line)"><option value="round" ${m.controlMode==="round"?"selected":""}>Round by round</option><option value="important" ${(!m.controlMode||m.controlMode==="important")?"selected":""}>Important rounds</option><option value="map" ${m.controlMode==="map"?"selected":""}>Sim whole map</option></select></div><div class="decision"><b>${decision?"Tactical decision":"Automatic simulation"}</b><div class="note">${decision?`Key round: choose a plan for ${mp.name}. ${mp.style==="Aim duels"?"Aim-focused play gets a small boost.":mp.style==="Utility"?"Default play is steadier on this map.":mp.style==="Fast executes"?"Aggressive play gets a small boost.":"Tactics have different risk and reward."}`:"The match runs automatically until the next important round."}</div>${tacticButtons}</div>`+
-  `<div><button class="pri" ${m.busy?"disabled":""} onclick="advanceGameplay()">${m.controlMode==="round"?"Play next round":m.controlMode==="map"?"Sim whole map":decision?"Play important round + auto-sim":"Continue to important round"}</button><button ${m.busy?"disabled":""} onclick="autoplayMatch()">⏩ Autoplay match</button>${m.busy?'<button onclick="SKIP=true">Skip ⏭</button>':''}<button ${m.timeouts<1||m.busy?"disabled":""} onclick="timeout()">Call timeout</button><button onclick="FAST=!FAST;draw()">${FAST?"⏩ Fast":"▶ Normal"}</button></div>`;
+  `<div><button class="pri" ${m.busy?"disabled":""} onclick="advanceGameplay()">${m.controlMode==="round"?"Play next round":m.controlMode==="map"?"Sim whole map":decision?"Play important round + auto-sim":"Continue to important round"}</button><button ${m.busy?"disabled":""} onclick="autoplayMatch()">⏩ Autoplay match</button>${m.busy?'<button onclick="SKIP=true">Skip ⏭</button>':''}<button ${m.timeouts<1||m.busy?"disabled":""} onclick="timeout()">Call timeout</button><label for="matchSpeed">Speed</label><select id="matchSpeed" onchange="MATCH_SPEED=Number(this.value)" style="font:inherit;padding:8px;border-radius:8px;background:var(--btn);color:var(--text);border:1px solid var(--line)"><option value="7200" ${MATCH_SPEED===7200?"selected":""}>0.5× Slow</option><option value="3600" ${MATCH_SPEED===3600?"selected":""}>1× Normal</option><option value="1800" ${MATCH_SPEED===1800?"selected":""}>2× Fast</option><option value="900" ${MATCH_SPEED===900?"selected":""}>4× Very fast</option></select></div>`;
 }
 function advanceGameplay(){const m=S.match;if(!m||m.busy||m.done)return;if(m.controlMode==="map"){simToEnd();draw();return}if(m.controlMode==="round"){playRound(false);return}playRound(false,()=>{let n=0;while(!m.done&&!isDecisionRound(m)&&n++<24)playRound(true);draw()})}
 function timeout(){const m=S.match;if(m.timeouts<1)return;m.timeouts--;m.streakThem=0;m.tobuff=3;log("Timeout called. Opponent momentum reset, your team refocuses.","m");draw()}
@@ -407,7 +407,7 @@ function playRound(instant,after){
   if(tWins?Math.random()<.55:Math.random()<.38){
     const anchors=NAV_ANCHORS[m.mapName]||NAV_ANCHORS.Mirage;
     const siteKey=m.tactic==="aggro"?(m.round%2?"b":"a"):(m.round%4<2?"a":"b");
-    m.roundEvent={type:"bomb",site:siteKey.toUpperCase(),bombPos:[anchors[siteKey][0]*320,anchors[siteKey][1]*220],plantAt:.40,defuseStart:.57,defuseEnd:.83,explodeAt:.88,outcome:tWins?"explode":"defuse"};
+    m.roundEvent={type:"bomb",site:siteKey.toUpperCase(),bombPos:[anchors[siteKey][0]*320,anchors[siteKey][1]*220],plantAt:.72,defuseStart:.79,defuseEnd:.92,explodeAt:.97,outcome:tWins?"explode":"defuse"};
   }
   if(instant){apply(win)}else{animateRound(win,()=>apply(win))}
   function apply(win){
@@ -427,7 +427,7 @@ function playRound(instant,after){
   draw();if(after)after();
   }
 }
-let FAST=false,SKIP=false;
+let MATCH_SPEED=3600,SKIP=false;
 const INI={IGL:"I",AWPer:"A",Entry:"E",Lurker:"L",Support:"S"};
 const NAV_ANCHORS={
 "Mirage":{t:[.50,.88],ct:[.86,.43],a:[.83,.36],b:[.22,.28],mid:[.50,.48]},
@@ -531,7 +531,10 @@ function drawMap(dots,t){
   const mapPos=d=>{const [x,y]=pos(d,t);return[mx+(x/320)*mw,y]};
   // Visible C4 asset: carried to the selected site, planted, then detonated to end the round.
   const bomb=S.match?.roundEvent;
-  if(bomb?.type==="bomb"&&t>=bomb.plantAt){
+  const attackers=LAST_DOTS.filter(d=>d.isT&&d.die===null);
+  const sitePoint=bomb?.type==="bomb"?bomb.bombPos:null;
+  const carrierReached=!!sitePoint&&attackers.some(d=>{const q=pos(d,t);return Math.hypot(q[0]-sitePoint[0],q[1]-sitePoint[1])<34});
+  if(bomb?.type==="bomb"&&t>=bomb.plantAt&&carrierReached){
     const bx=mx+(bomb.bombPos[0]/320)*mw,by=bomb.bombPos[1];
     if(bomb.outcome==="defuse"&&t>=bomb.defuseStart&&t<bomb.defuseEnd){
       const progress=Math.max(0,Math.min(1,(t-bomb.defuseStart)/(bomb.defuseEnd-bomb.defuseStart)));
@@ -621,7 +624,7 @@ function animateRound(win,done){
     // In elimination rounds, the losing side is fully cleared before the result resolves.
     kill(me,win?R(0,2):5,th);kill(th,win?5:R(0,2),me);
   }
-  const D=FAST?900:3600,t0=performance.now();
+  const D=MATCH_SPEED,t0=performance.now();
   (function f(now){
     const t=SKIP?1:Math.min(1,(now-t0)/D);
     drawMap(dots,t);
