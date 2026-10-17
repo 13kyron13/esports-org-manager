@@ -1,12 +1,21 @@
 # Esports Org Manager
 
-A browser-based esports organisation management game. The current repository build is **Update 13.0 — Main Menu & Career Saves**.
+A browser-based esports organisation management game. The current repository build is **Update 13.1 — Organisation Identity & Starting Esport**.
 
 ## Play
 
 https://13kyron13.github.io/esports-org-manager/
 
-## Current build: Update 13.0 — Main Menu & Career Saves
+## Current build: Update 13.1 — Organisation Identity & Starting Esport
+
+- **Implemented:** the game picker is headed “Choose Your Starting Esport” and offers CS2, VALORANT, Overwatch and League of Legends.
+- **Implemented:** organisation setup supports a custom name, short tag, emblem, primary colour and secondary colour, with a live preview.
+- **Implemented:** organisation identity can be edited later from the Org tab; the logo, name, tag and primary colour appear in the game UI.
+- **Implemented:** the organisation shares one brand and finances while adding other game divisions from Empire. Division teams use game-specific role labels and have a Manage Team prompt for renaming the team and its five players.
+- **Important limitation:** this is a first pass. The core weekly/match simulation is shared across starting games, and non-primary divisions use a simplified weekly result model rather than fully separate game-specific simulations. CS2-specific map/tactical UI is not yet rebuilt for every title.
+- **Validation:** JavaScript syntax check passed; full interactive browser QA is still needed.
+
+## Earlier build notes: Update 13.0 — Main Menu & Career Saves
 
 - **Implemented:** title screen with Continue Career, New Career, Load Career and Import Backup actions.
 - **Implemented:** new-career game picker. CS2 is playable; Valorant is shown as coming soon until its dedicated roles, maps and match simulation are implemented.
