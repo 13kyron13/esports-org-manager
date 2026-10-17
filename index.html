@@ -320,30 +320,40 @@ function beginVeto(){
   if(!S.focus){$("trainNote").textContent="Pick a training focus first.";return}
   const fx=nextFix();if(!fx)return;
   S.prepared={opp:fx.opp,bo:fx.bo,label:fx.label};
-  S.veto={pool:MAPS.map(x=>x.name),step:0,bo:fx.bo,opp:fx.opp,label:fx.label,maps:[],bans:[],pickMe:null,pickAI:null};
+  S.veto={pool:MAPS.map(x=>x.name),step:0,bo:fx.bo,opp:fx.opp,label:fx.label,maps:[],bans:[],pickMe:null,pickAI:null,playerStarts:Math.random()<0.5};
   $("veto").style.display="block";$("match").style.display="none";showTab("play");renderVeto();
 }
-function renderVeto(){const v=S.veto;if(!v)return;const isBo1=v.bo===1;let title;
-  if(isBo1)title=`Choose a map to ban (${Math.floor(v.step/2)+1}/3 of your bans). The opponent will respond automatically.`;
-  else title=({0:"Ban one map",2:"Pick your map",4:"Ban one more map"})[v.step]||"Opponent is making a map decision…";
-  $("vetoInfo").textContent=`${v.label} vs ${v.opp.name} · Best of ${v.bo===1?1:3}. ${title}`;
-  if(v.step===6){$("vetoInfo").textContent=v.label+" vs "+v.opp.name+" · Map veto complete: "+v.maps.join(" → ")+". Choose your starting side for Map 1.";$("vetoChoices").innerHTML='<button class="map-choice" onclick="chooseStartingSide(1)"><b>Start CT side</b><span>Defend first, then switch to attack at half-time.</span></button><button class="map-choice" onclick="chooseStartingSide(2)"><b>Start T side</b><span>Attack first, then switch to defence at half-time.</span></button>';return}
-  if(isBo1&&v.step%2===1){v.bans.push(pick(v.pool));v.pool=v.pool.filter(x=>!v.bans.includes(x));v.step++;if(v.step>=6){v.maps=[v.pool[0]];v.step=6;renderVeto();return}renderVeto();return}
-  if(!isBo1&&[1,3,5].includes(v.step)){
-    if(v.step===1){const b=pick(v.pool);v.bans.push(b);v.pool=v.pool.filter(x=>x!==b)}
-    if(v.step===3){v.pickAI=pick(v.pool.filter(x=>x!==v.pickMe));v.pool=v.pool.filter(x=>x!==v.pickAI);v.maps=[v.pickMe,v.pickAI]}
-    if(v.step===5){const b=pick(v.pool.filter(x=>x!==v.pickMe&&x!==v.pickAI));v.bans.push(b);v.pool=v.pool.filter(x=>x!==b)}
-    v.step++;if(v.step>=6){v.maps=[v.pickMe,v.pickAI,v.pool.find(x=>x!==v.pickMe&&x!==v.pickAI)];v.step=6;renderVeto();return}renderVeto();return;
+function renderVeto(){
+  const v=S.veto;if(!v)return;
+  if(v.step>=6){
+    $("vetoInfo").textContent=v.label+" vs "+v.opp.name+" · Map veto complete: "+v.maps.join(" → ")+". Choose your starting side for Map 1.";
+    $("vetoChoices").innerHTML='<button class="map-choice" onclick="chooseStartingSide(1)"><b>Start CT side</b><span>Defend first, then switch to attack at half-time.</span></button><button class="map-choice" onclick="chooseStartingSide(2)"><b>Start T side</b><span>Attack first, then switch to defence at half-time.</span></button>';
+    return;
   }
+  const isBo1=v.bo===1,playerActs=v.playerStarts?(v.step%2===0):(v.step%2===1);
+  const kind=isBo1?"BAN":([0,1,4,5].includes(v.step)?"BAN":"PICK");
+  if(!playerActs){
+    let choice;
+    if(kind==="BAN"){choice=pick(v.pool);v.bans.push(choice);v.pool=v.pool.filter(x=>x!==choice)}
+    else{choice=pick(v.pool);v.pickAI=choice;v.pool=v.pool.filter(x=>x!==choice)}
+    v.step++;
+    if(v.step>=6){v.maps=isBo1?[v.pool[0]]:[v.pickMe,v.pickAI,v.pool[0]];v.step=6}
+    renderVeto();return;
+  }
+  const turn=Math.floor(v.step/2)+1;
+  const actor=v.playerStarts?"You":"Opponent";
+  $("vetoInfo").textContent=v.label+" vs "+v.opp.name+" · Best of "+(isBo1?1:3)+". "+actor+" start first. Your action: "+kind+" ("+turn+"/3 of your turns).";
   const choices=v.pool.filter(x=>!v.bans.includes(x));
-  $("vetoChoices").innerHTML=choices.map(name=>{const mp=mapProfile(name);return `<button class="map-choice" onclick="vetoAction('${name}')"><b>${name}</b><span>${mp.style} · ${mp.desc}</span><span>Your roster confidence: ${Math.round(S.roster.reduce((n,p)=>n+mapConf(p,name),0)/S.roster.length)}/100</span></button>`}).join("");
+  $("vetoChoices").innerHTML=choices.map(name=>{const mp=mapProfile(name);return '<button class="map-choice" onclick="vetoAction(\''+name+'\')"><b>'+kind+" · "+name+'</b><span>'+mp.style+" · "+mp.desc+'</span><span>Your roster confidence: '+Math.round(S.roster.reduce((n,p)=>n+mapConf(p,name),0)/S.roster.length)+'/100</span></button>'}).join("");
 }
 function chooseStartingSide(choice){const v=S.veto;if(!v||v.step!==6)return;v.startingSide=choice===2?"T":"CT";launchMatch()}
-function vetoAction(name){const v=S.veto;if(!v||v.step===6||!v.pool.includes(name))return;
-  if(v.bo===1){v.bans.push(name);v.pool=v.pool.filter(x=>x!==name);v.step++;if(v.step>=6){v.maps=[v.pool[0]];launchMatch();return}renderVeto();return}
-  if(v.step===0){v.bans.push(name);v.pool=v.pool.filter(x=>x!==name);v.step=1}
-  else if(v.step===2){v.pickMe=name;v.pool=v.pool.filter(x=>x!==name);v.step=3}
-  else if(v.step===4){v.bans.push(name);v.pool=v.pool.filter(x=>x!==name);v.step=5}
+function vetoAction(name){
+  const v=S.veto;if(!v||v.step>=6||!v.pool.includes(name))return;
+  const kind=v.bo===1||[0,1,4,5].includes(v.step)?"BAN":"PICK";
+  if(kind==="BAN"){v.bans.push(name);v.pool=v.pool.filter(x=>x!==name)}
+  else{v.pickMe=name;v.pool=v.pool.filter(x=>x!==name)}
+  v.step++;
+  if(v.step>=6){v.maps=v.bo===1?[v.pool[0]]:[v.pickMe,v.pickAI,v.pool[0]];v.step=6}
   renderVeto();
 }
 function launchMatch(){
