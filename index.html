@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Esports Org Manager – Update 9.3</title>
+<title>Esports Org Manager – Update 10.0</title>
 <style>
 :root{--bg:#0a0a0f;--card:#14141c;--text:#f2f3f7;--mute:#8d93a3;--line:#242430;--acc:#2ee68a;--on:#04130a;--good:#2ee68a;--bad:#ff5d6c;--btn:#1d1d28;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -57,6 +57,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 </div>
 <div class="tab" data-tab="squad">
 <div class="card" id="ctCard" style="display:none"><h2>📝 Contract renewals</h2><div class="tw"><table id="ct"></table></div><div class="note" style="margin-top:8px">These contracts have run out. Renew at the player's new asking salary, or let them go (you need a bench player in the same role to replace a starter). You can't play until these are sorted.</div></div>
+<div class="card"><h2>🗂️ Squad inventory</h2><div class="note">All players owned by your organisation in one overview. Promote prospects to the senior bench, or start a bench player in their matching role. This first version keeps each squad&#39;s existing management rules.</div><div class="tw"><table id="squadHub"></table></div></div>
 <div class="card"><h2>🎮 Your roster</h2><div class="tw"><table id="roster"></table></div></div>
 <div class="card"><h2>💰 Finances</h2><div class="stats" id="fin"></div><div class="note" style="margin-top:8px">Wins pay $2,000 in the league. Weekly operating costs, staff salaries, academy upkeep and $750 travel costs per series apply. Major and league prizes pay out at the end. Falling more than $10,000 into debt means bankruptcy.</div></div>
 </div>
@@ -155,6 +156,14 @@ function renderInbox(){$("inbox").style.display=S.events.length?"block":"none";
   $("inboxList").innerHTML=S.events.map(e=>{const p=findP(e.pid),s=e.sid&&findP(e.sid);if(!p||(e.sid&&!s))return"";
     const T={raise:[`${p.name} wants a raise to $${salFor(p)}/wk (now $${p.sal}).`,["Give raise","Refuse"]],poach:[`A rival org offers $${(e.price||0).toLocaleString()} for ${p.name}.`,["Accept offer","Decline"]],wants:[s?`${p.name} (bench, OVR ${ovr(p)}) wants to start over ${s.name} (OVR ${ovr(s)}).`:"",["Start him","Keep on bench"]],clash:[s?`${p.name} and ${s.name} fell out in scrims.`:"",["Team meeting ($1,000)","Ignore"]]}[e.type];
     return `<div style="padding:6px 0;border-bottom:1px solid var(--line)">${T[0]}<div>${T[1].map((l,k)=>`<button class="sm" ${S.match?"disabled":""} onclick="resolveEv(${e.id},${k})">${l}</button>`).join("")}</div></div>`}).join("")}
+function renderSquadHub(){
+  const dis=S.match||S.over,rows=[];
+  S.roster.forEach(p=>rows.push({p,group:"Main Team",action:"Starter"}));
+  S.bench.forEach(p=>rows.push({p,group:"Bench",action:`<button class="sm" ${dis?"disabled":""} onclick="startP(${S.bench.indexOf(p)})">Start</button> <button class="sm" ${dis?"disabled":""} onclick="sell(${S.bench.indexOf(p)},true)">Sell</button>`}));
+  S.academy.forEach(p=>rows.push({p,group:"Academy prospect",action:`<button class="sm" ${dis||S.bench.length>=3||S.money<500?"disabled":""} onclick="promoteYouth(${p.id})">Promote to bench</button>`}));
+  S.tier2.forEach(p=>rows.push({p,group:"Tier 2",action:`<button class="sm" ${dis||S.bench.length>=3||S.money<500?"disabled":""} onclick="promoteTier(${p.id})">Promote to bench</button>`}));
+  $("squadHub").innerHTML="<tr><th>Player</th><th>Squad</th><th>Role</th><th>Age</th><th>OVR</th><th>Potential</th><th>Morale</th><th>Salary/wk</th><th>Contract</th><th>Actions</th></tr>"+rows.map(({p,group,action})=>`<tr><td>${p.name}</td><td>${group}</td><td>${p.role}</td><td>${p.age??"—"}</td><td><b>${ovr(p)}</b></td><td>${p.pot??"—"}</td><td>${p.morale??"—"}</td><td>${p.sal?"$"+p.sal:"—"}</td><td>${p.yrs===undefined?"—":p.yrs+"y"}</td><td>${action}</td></tr>`).join("")||"<tr><td colspan=10>No players in the inventory.</td></tr>";
+}
 function renderRoster(){const dis=S.match?"disabled":"";
   const row=(p,i,b)=>`<tr><td>${p.name}${b?' <span class="note">(bench)</span>':""}</td><td>${p.role}</td><td>${p.age}</td><td>${p.aim}</td><td>${p.gs}</td><td>${p.men}</td><td><b>${ovr(p)}</b></td><td><div class="bar"><i style="width:${p.morale}%"></i></div></td><td>$${p.sal}</td><td>${p.yrs}y</td><td>${p.mvp}</td><td>${b?`<button class="sm" ${dis} onclick="startP(${i})">Start</button>`:""}<button class="sm" ${dis||(!b&&!S.bench.some(x=>x.role==p.role)?"disabled":"")} onclick="sell(${i},${b})">Sell $${sellPrice(p).toLocaleString()}</button></td></tr>`;
   $("roster").innerHTML="<tr><th>Player</th><th>Role</th><th>Age</th><th>Aim</th><th>GS</th><th>Men</th><th>OVR</th><th>Morale</th><th>Salary/wk</th><th>Contract</th><th>MVP</th><th></th></tr>"+S.roster.map((p,i)=>row(p,i,false)).join("")+S.bench.map((p,i)=>row(p,i,true)).join("")}
@@ -282,7 +291,7 @@ function render(){
   const psel=$("practiceMapSelect");if(psel){psel.innerHTML=MAPS.map(x=>`<option value="${x.name}" ${((S.practiceMap||"Mirage")===x.name)?"selected":""}>${x.name}</option>`).join("");psel.disabled=!!m||!!S.over||!!S.practicedThisWeek;}const pbtn=$("practiceMapBtn");if(pbtn)pbtn.disabled=!!m||!!S.over||!!S.practicedThisWeek;const pnote=$("practiceMapNote");if(pnote)pnote.textContent=S.practicedThisWeek?`Already practiced ${S.practiceMap||"Mirage"} this match week. Playing maps still builds familiarity.`:`Practice ${S.practiceMap||"Mirage"}: each player gains map familiarity, improving performance when you play it.`;
   const stage=S.phase=="league"?`League ${Math.min(L.r+1,7)}/7`:S.phase=="major"?"Major":"Off-season";
   $("stats").innerHTML=[["Year "+S.year,stage],["Money","$"+S.money.toLocaleString()],["Record",S.w+"W – "+S.l+"L"],["Trophies","🏆 "+S.trophies],["Team power",Math.round(power(S.roster))]].map(([a,b])=>`<div class="stat"><b>${b}</b><span>${a}</span></div>`).join("");
-  renderRoster();renderFin();renderMarket();renderInbox();renderContracts();renderStaff();renderOrg();renderEmpire();
+  renderSquadHub();renderRoster();renderFin();renderMarket();renderInbox();renderContracts();renderStaff();renderOrg();renderEmpire();
   const tb=$("trainBtns");
   if(S.over){tb.innerHTML=`<button class="pri" onclick="newGame()">Start over</button>`;$("trainNote").textContent="Bankrupt! Your org fell more than $10,000 into debt."}else if(S.phase=="off"){tb.innerHTML=`<button class="pri" onclick="newYear()">Start Year ${S.year+1}</button>`;$("trainNote").textContent="Season complete. Rivals improve each year. Training and stat growth slow near 99, so plan development over multiple seasons."}
   else{const fx=nextFix();
