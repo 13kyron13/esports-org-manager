@@ -6,7 +6,7 @@ A browser-based esports organisation management game. The current repository bui
 
 Open [index.html](./index.html) in a modern desktop browser. The game is a standalone HTML file and does not require a build step or package installation.
 
-## Update 8.2
+## Current build: Update 8.2
 
 - Added map-specific waypoint routes for Mirage, Inferno, Nuke, Ancient, Anubis, Dust II, and Vertigo.
 - Added separate T and CT spawn routes and a side switch after the first 12 rounds.
@@ -18,6 +18,17 @@ Open [index.html](./index.html) in a modern desktop browser. The game is a stand
 
 Routes are hand-authored approximations mapped to the radar images, not extracted in-game navigation meshes. Movement should be more structured and avoid the old arbitrary straight-line motion, but every route still needs visual testing against the exact radar artwork. Round outcomes are still simulated statistically; the minimap animation illustrates the round rather than calculating individual player combat.
 
-## Roadmap
+## Master roadmap
 
-See [ROADMAP.md](./ROADMAP.md) for later planned updates.
+See [ROADMAP.md](./ROADMAP.md) for the full long-term plan, including:
+
+- CS2 match simulation, map vetoes, navigation, bomb planting/defusing, utility and balance.
+- Player transfers, negotiations, buyouts, contracts, morale and team chemistry.
+- Staff recruitment, scouting reports, youth academy and player development.
+- Sponsors, brand, merchandise, social media, facilities and finances.
+- Seasons, tournaments, brackets, rankings, player awards and Hall of Fame.
+- Rival organisations, dynamic storylines, meta/patch changes and player careers.
+- A data-driven multi-game framework, starting with Valorant.
+- Save/load, export/import, accessibility, testing and extra design ideas.
+
+The roadmap distinguishes existing or partially implemented work from future plans; items listed as planned are not claims about the current playable build.
