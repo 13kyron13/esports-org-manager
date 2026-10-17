@@ -543,7 +543,7 @@ function drawMap(dots,t){
   const mapPos=d=>{const [x,y]=pos(d,t);return[mx+(x/320)*mw,y]};
   // Visible C4 asset: carried to the selected site, planted, then detonated to end the round.
   const bomb=S.match?.roundEvent;
-  const attackers=LAST_DOTS.filter(d=>d.isT&&d.die===null);
+  const attackers=LAST_DOTS.filter(d=>d.isT&&(d.die===null||d.die>(bomb?.plantAt??1)));
   const sitePoint=bomb?.type==="bomb"?bomb.bombPos:null;
   // The C4 must be attached to a living attacker who reaches the selected site.
   // Render it at that player's actual position at the plant checkpoint, not at a
