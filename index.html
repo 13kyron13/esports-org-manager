@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Esports Org Manager – Update 8.9</title>
+<title>Esports Org Manager – Update 9.0</title>
 <style>
 :root{--bg:#0a0a0f;--card:#14141c;--text:#f2f3f7;--mute:#8d93a3;--line:#242430;--acc:#2ee68a;--on:#04130a;--good:#2ee68a;--bad:#ff5d6c;--btn:#1d1d28;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -157,8 +157,9 @@ function renderInbox(){$("inbox").style.display=S.events.length?"block":"none";
 function renderRoster(){const dis=S.match?"disabled":"";
   const row=(p,i,b)=>`<tr><td>${p.name}${b?' <span class="note">(bench)</span>':""}</td><td>${p.role}</td><td>${p.age}</td><td>${p.aim}</td><td>${p.gs}</td><td>${p.men}</td><td><b>${ovr(p)}</b></td><td><div class="bar"><i style="width:${p.morale}%"></i></div></td><td>$${p.sal}</td><td>${p.yrs}y</td><td>${p.mvp}</td><td>${b?`<button class="sm" ${dis} onclick="startP(${i})">Start</button>`:""}<button class="sm" ${dis||(!b&&!S.bench.some(x=>x.role==p.role)?"disabled":"")} onclick="sell(${i},${b})">Sell $${sellPrice(p).toLocaleString()}</button></td></tr>`;
   $("roster").innerHTML="<tr><th>Player</th><th>Role</th><th>Age</th><th>Aim</th><th>GS</th><th>Men</th><th>OVR</th><th>Morale</th><th>Salary/wk</th><th>Contract</th><th>MVP</th><th></th></tr>"+S.roster.map((p,i)=>row(p,i,false)).join("")+S.bench.map((p,i)=>row(p,i,true)).join("")}
-function renderFin(){const f=weekly(),$$=n=>(n<0?"−":"+")+"$"+Math.abs(n).toLocaleString();
-  $("fin").innerHTML=[["Total income / wk","+$"+f.inc.toLocaleString()],["Wages / wk","−$"+f.wages.toLocaleString()],["Running costs / wk","−$"+f.ops],["Net / wk",$$(f.net)]].map(([a,b],i)=>`<div class="stat"><b class="${i==3?(f.net<0?"no":"ok"):""}">${b}</b><span>${a}</span></div>`).join("")}
+function renderFin(){const f=weekly(),money=n=>(n<0?"−":"")+"$"+Math.abs(Math.round(n)).toLocaleString(),runway=f.net<0?Math.max(0,Math.ceil((S.money+10000)/-f.net)):null;
+  const items=[["Total income / wk","+$"+f.inc.toLocaleString()],["Wages / wk","−$"+f.wages.toLocaleString()],["Running costs / wk","−$"+f.ops.toLocaleString()],["Net / wk",(f.net<0?"−":"+")+"$"+Math.abs(f.net).toLocaleString()],["Cash balance",money(S.money)],["Sponsor income / wk","+$"+f.sponsor.toLocaleString()],["Merch income / wk","+$"+f.merch.toLocaleString()]];
+  $("fin").innerHTML=items.map(([a,b],i)=>`<div class="stat"><b class="${i===3?(f.net<0?"no":"ok"):i===4?(S.money<0?"no":""):""}">${b}</b><span>${a}</span></div>`).join("")+`<div class="note" style="flex-basis:100%;margin-top:4px;border-left:3px solid ${f.net<0?"var(--bad)":"var(--good)"};padding:8px 10px"><b>${f.net<0?"⚠️ Cashflow warning":"✓ Cashflow positive"}</b><br>${f.net<0?`At this rate, your organisation could reach the $10,000 debt limit in about ${runway} weekly cycles. Consider cutting costs, signing sponsors, selling a player, or improving results.`:"Your estimated weekly income covers current wages and operating costs."} Cashflow is a forecast; actual balance changes when the game processes weekly/series expenses and rewards.</div>`}
 function renderMarket(){const dis=S.match||S.over;
   $("market").innerHTML="<tr><th>Player</th><th>Role</th><th>Age</th><th>Aim</th><th>GS</th><th>Men</th><th>OVR</th><th>Pot</th><th>Fee</th><th>Salary/wk</th><th></th></tr>"+S.market.map(p=>{const o=ovr(p),st=p.pot-o>=10?"★★★":p.pot-o>=5?"★★":p.pot>o?"★":"–",off=dis||S.money<p.fee||S.bench.length>=3?"disabled":"";
     return `<tr><td>${p.name}</td><td>${p.role}</td><td>${p.age}</td><td>${p.aim}</td><td>${p.gs}</td><td>${p.men}</td><td><b>${o}</b></td><td>${st}</td><td>${p.free?"Free":"$"+p.fee.toLocaleString()}</td><td>$${p.ask}</td><td><button class="sm" ${off} onclick="buy(${p.id},'fair')">Sign</button><button class="sm" ${off} onclick="buy(${p.id},'low')">Lowball</button></td></tr>`}).join("")}
