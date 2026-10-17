@@ -259,6 +259,39 @@
     if (typeof originalShowTab === "function") {
       window.showTab = function(tab) { const result=originalShowTab.apply(this,arguments); if(tab==="empire") ensurePanel(); return result; };
     }
+    // Expand the existing tutorial with a practical first-match checklist and distinct game-specific decision layers.
+    const originalShowMenuPage = window.showMenuPage;
+    if (typeof originalShowMenuPage === "function") {
+      window.showMenuPage = function(page) {
+        const result = originalShowMenuPage.apply(this, arguments);
+        if (page === "guide") {
+          const host = document.getElementById("menuContent");
+          if (host && !document.getElementById("guide195")) {
+            const section = document.createElement("div");
+            section.id = "guide195";
+            section.innerHTML = '<div class="decision"><b>Update 19.5 · Your first match-week checklist</b><ol><li>Check starter roles, contracts and weekly wages.</li><li>Choose training that targets your weakest team stat.</li><li>Scout the opponent, practise the selected map or game mode, and review your strategy.</li><li>Play the match, read the report, then adjust your roster or tactics before the next fixture.</li><li>Check finances before signing players, staff or expanding into another division.</li></ol><p class="note">Tip: do not spend all your cash on one star. A balanced roster, affordable wages and reliable preparation are usually safer over a full season.</p></div><h2>GAME-SPECIFIC STRATEGY</h2><div class="steps"><div class="step"><i>CS</i><b>Counter-Strike 2</b><span>Track round economy, save decisions, map vetoes, starting sides, utility and bomb-site control. A lost round can still be a good buy decision if it protects the next round.</span></div><div class="step"><i>V</i><b>VALORANT</b><span>Balance Duelist, Initiator, Controller and Sentinel roles. Coordinate entry utility, site executes, retakes and ultimate economy instead of judging the roster by aim alone.</span></div><div class="step"><i>OW</i><b>Overwatch</b><span>Build a Tank, Damage and Support composition around the objective. Track ultimate charge, counter-picks, team engagement timing and when to regroup rather than stagger.</span></div><div class="step"><i>LoL</i><b>League of Legends</b><span>Balance lane matchups and jungle pathing with vision, waves and objective setup. Dragons, Baron, towers and gold leads create different win conditions as the game progresses.</span></div><div class="step"><i>RL</i><b>Rocket League</b><span>Balance striker, playmaker, defender and goalkeeper strengths. Rotations, boost management, recoveries, shots and saves matter alongside raw player rating.</span></div></div><p class="note">Online friend leagues are available in the Empire tab. The league creator starts the season and records official results; standings and playoffs sync live for connected players.</p>';
+            host.appendChild(section);
+          }
+        }
+        return result;
+      };
+    }
+    // Keep identity edits durable even when the player navigates away quickly.
+    const originalSaveOrgIdentity = window.saveOrgIdentity;
+    if (typeof originalSaveOrgIdentity === "function") {
+      window.saveOrgIdentity = function() {
+        const result = originalSaveOrgIdentity.apply(this, arguments);
+        try { localStorage.setItem("esm195OrgDraft", JSON.stringify({name:S?.me?.name||"Your Org",tag:S?.me?.tag||"ORG"})); if (typeof scheduleAutosave === "function") scheduleAutosave(); } catch (_) {}
+        return result;
+      };
+    }
+    const originalCreateOrganization = window.createOrganization;
+    if (typeof originalCreateOrganization === "function") {
+      window.createOrganization = function() {
+        try { localStorage.setItem("esm195OrgDraft", JSON.stringify({name:document.getElementById("orgNameInput")?.value||"Your Org",tag:document.getElementById("orgTagInput")?.value||"ORG"})); } catch (_) {}
+        return originalCreateOrganization.apply(this, arguments);
+      };
+    }
     // Recreate panel if the game's dynamic UI re-renders.
     const target=document.querySelector(".wrap");
     if(target && window.MutationObserver) new MutationObserver(()=>{if(!$("multiplayer195"))ensurePanel()}).observe(target,{childList:true,subtree:true});
