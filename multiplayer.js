@@ -474,6 +474,18 @@
  function makeMatch(f,teams,r){const by=Object.fromEntries(teams.map(t=>[t.id,t])),a=by[f.a],b=by[f.b],rand=rng(r.code+":"+r.seasonNumber+":"+r.week+":"+f.id),p=1/(1+Math.exp(-((+a.rating||50)-(+b.rating||50))/11));let x=0,y=0,n=0,rounds=[];while(n++<24&&!(x>=13&&x-y>=2)&&!(y>=13&&y-x>=2)){if(rand()<p)x++;else y++;rounds.push({round:n,a:x,b:y,event:rand()<.15?"Clutch round":"Round "+n+" complete"})}return{id:f.id,a:f.a,b:f.b,rounds,scoreA:x,scoreB:y,winner:x>y?f.a:f.b}}
  async function startReplay(){if(uid!==room.owner||room.phase!=="management")return;const now=Date.now();const tx=await roomRef.transaction(r=>{if(!r||r.phase!=="management"||now<r.weekReadyAt)return;const fs=r.fixtures?.[r.week]||[];if(!fs.length)return;const teams=(r.seasonTeams||[]).map(t=>{if(!t.human)return t;const u=r.teams?.[t.uid]||{};return{...t,name:u.name||t.name,rating:+(u.rating||u.power)||t.rating,power:+(u.rating||u.power)||t.power,roster:u.roster||t.roster}});const matches=fs.map(f=>makeMatch(f,teams,r)),max=Math.max(...matches.map(m=>m.rounds.length));r.seasonTeams=teams;r.phase="live";r.replay={week:r.week,startedAt:now,roundMs:750,durationMs:max*750,maxRounds:max,matches,status:"live"};return r},undefined,false);if(tx.committed)stat("Week "+(tx.snapshot.val().week+1)+" is live for everyone.")}
  async function finishReplay(){if(uid!==room.owner||room.phase!=="live")return;const now=Date.now();const tx=await roomRef.transaction(r=>{if(!r||r.phase!=="live"||!r.replay||now<r.replay.startedAt+r.replay.durationMs)return;const st=r.standings;r.replay.matches.forEach(m=>{const a=st[m.a],b=st[m.b];a.rf+=m.scoreA;a.ra+=m.scoreB;b.rf+=m.scoreB;b.ra+=m.scoreA;if(m.winner===m.a){a.w++;a.pts+=3;b.l++}else{b.w++;b.pts+=3;a.l++}});r.lastReplay={...r.replay,status:"complete",completedAt:now};r.week++;r.replay=null;if(r.week>=r.fixtures.length){r.phase="complete";r.champion=Object.values(st).sort((a,b)=>b.pts-a.pts||((b.rf-b.ra)-(a.rf-a.ra))||a.id.localeCompare(b.id))[0]?.id||null;r.weekReadyAt=null}else{r.phase="management";r.weekReadyAt=now+30000}return r},undefined,false);if(tx.committed)stat(tx.snapshot.val().phase==="complete"?"Season complete!":"Next management window started.")}
+ async function restartSeasonIfReady(){
+  if(!roomRef||!room||uid!==room.owner||room.phase!=="complete")return;
+  const members=Object.values(room.teams||{});
+  if(members.length<2||!members.every(t=>t.nextYearReady))return;
+  const teams=members.map(t=>({id:t.uid,uid:t.uid,name:t.name,tag:t.tag||"",rating:+(t.rating||t.power)||50,power:+(t.rating||t.power)||50,human:true,game:t.game,logo:t.logo||"⚡"}));
+  const oldAI=(room.seasonTeams||[]).filter(t=>!t.human);
+  for(let i=0;i<8-teams.length;i++){const t=oldAI[i]||{};teams.push({id:"ai:"+i,name:t.name||AI_NAMES[i],rating:Math.min(99,(+t.rating||50)+1),power:Math.min(99,(+t.rating||50)+1),human:false,game:room.game,logo:"🤖"})}
+  const standings={};teams.forEach(t=>standings[t.id]={id:t.id,w:0,l:0,pts:0,rf:0,ra:0});
+  const nextTeams={};members.forEach(t=>nextTeams[t.uid]={...t,nextYearReady:false});
+  await roomRef.update({teams:nextTeams,phase:"management",seasonNumber:(+room.seasonNumber||1)+1,week:0,seasonTeams:teams,fixtures:fixtures(teams),standings,weekReadyAt:Date.now()+30000,replay:null,lastReplay:null,champion:null});
+  if(S)S._mpNextYearReady=false;
+ }
  async function tick(){if(!mpCareer||!room)return;if(uid===room.owner){if(room.phase==="management"&&Date.now()>=room.weekReadyAt)startReplay().catch(e=>stat(e.message));if(room.phase==="live"&&room.replay&&Date.now()>=room.replay.startedAt+room.replay.durationMs)finishReplay().catch(e=>stat(e.message))}banner()}
  function ownFixture(){return(room?.fixtures?.[room.week]||[]).find(f=>f.a===uid||f.b===uid)}
  function syncLocal(){
@@ -482,7 +494,7 @@
   const others=room.seasonTeams.filter(t=>t.id!==uid).map(t=>({uid:t.id,id:t.id,name:t.name,power:+t.rating||50,me:false,human:!!t.human,tag:t.tag||""}));
   S.ai=[...others,(aiBackup||[]).slice(7)].flat();S.lg=S.lg||{r:0,rounds:[],t:[]};S.lg.rounds=rr(8);S.lg.t=[{t:S.me,uid,id:uid,w:0,l:0,pts:0},...others.map(t=>({t,uid:t.uid,id:t.id,w:0,l:0,pts:0}))];
   S.lg.t.forEach(x=>{const v=room.standings[x.id]||{};x.w=+v.w||0;x.l=+v.l||0;x.pts=+v.pts||0});
-  S.lg.r=Math.min(room.week||0,7);S.phase=room.phase==="complete"?"off":"league";S.me.uid=uid;
+  S.lg.r=Math.min(room.week||0,7);S.phase=room.phase==="complete"?"off":"league";if(room.phase!=="complete")S._mpNextYearReady=false;S.me.uid=uid;
   if(room.phase==="complete"){const sorted=Object.values(room.standings).sort((a,b)=>b.pts-a.pts||((b.rf-b.ra)-(a.rf-a.ra))||a.id.localeCompare(b.id)),rank=sorted.findIndex(x=>x.id===uid),key=room.code+":"+room.seasonNumber;if(S._mpReward!==key){const prize=[15000,8000,4000,2000][rank]||0;S.money+=prize;if(rank===0)S.trophies++;S._mpReward=key;news("Multiplayer season finished "+(rank+1)+(rank===0?" · Champions!":"")+(prize?" · Prize $"+prize.toLocaleString():"")+".")}}
   processReplay();
  }
@@ -493,8 +505,8 @@
   if(room.phase==="lobby"){h+='<p class="note">'+ready+"/"+humans.length+" organisations ready. Use the normal career creation flow; your hub is unchanged.</p>";if(host)h+='<button class="pri" id="mpLaunch" '+(ready<2||ready!==humans.length?"disabled":"")+'>Start 8-team season</button>'}
   else if(room.phase==="management"){const left=Math.max(0,Math.ceil((room.weekReadyAt-Date.now())/1000));h+='<p class="note"><b>Week '+(room.week+1)+'/7 · Management window</b> — autoplay starts in '+left+' seconds. Manage your roster, contracts, training and finances normally.</p><div class="bar" style="height:8px"><i style="width:'+Math.max(0,Math.min(100,100-left/30*100))+'%"></i></div>';if(room.lastReplay)h+=finalScores(room,room.lastReplay)}
   else if(room.phase==="live"&&room.replay){const r=room.replay,n=Math.min(r.maxRounds,Math.floor((Date.now()-r.startedAt)/r.roundMs));h+='<p class="note"><b>🔴 Week '+(r.week+1)+'/7 live · Round '+Math.max(1,n+1)+'</b> — all matches autoplay together, round by round.</p><div class="tw"><table><thead><tr><th>Match</th><th>Live score</th><th>Round</th></tr></thead><tbody>';r.matches.forEach(m=>{let a=0,bv=0;for(const x of m.rounds){if(x.round>n)break;a=x.a;bv=x.b}const ta=room.seasonTeams.find(t=>t.id===m.a),tb=room.seasonTeams.find(t=>t.id===m.b);h+='<tr><td>'+esc(ta?.name||m.a)+' vs '+esc(tb?.name||m.b)+'</td><td><b>'+a+' – '+bv+'</b></td><td>'+esc(m.rounds[Math.min(Math.max(n-1,0),m.rounds.length-1)]?.event||"Preparing")+'</td></tr>'});h+='</tbody></table></div>'}
-  else if(room.phase==="complete"){const sorted=Object.values(room.standings||{}).sort((a,b)=>b.pts-a.pts||((b.rf-b.ra)-(a.rf-a.ra))||a.id.localeCompare(b.id));h+='<h3>🏆 Champion: '+esc(room.seasonTeams.find(t=>t.id===room.champion)?.name||"—")+'</h3><div class="tw"><table><thead><tr><th>#</th><th>Team</th><th>W</th><th>L</th><th>Pts</th><th>Round +/-</th></tr></thead><tbody>';sorted.forEach((x,i)=>{const t=room.seasonTeams.find(y=>y.id===x.id);h+='<tr><td>'+(i+1)+'</td><td>'+esc(t?.name||x.id)+'</td><td>'+x.w+'</td><td>'+x.l+'</td><td>'+x.pts+'</td><td>'+(x.rf-x.ra)+'</td></tr>'});h+='</tbody></table></div><p class="note">Your normal career remains loaded; only the league opponents and shared match results are multiplayer.</p>'}
-  b.innerHTML=h;if($("mpLaunch"))$("mpLaunch").onclick=()=>launch().catch(e=>stat(e.message));if(room.standings)sharedTable();
+  else if(room.phase==="complete"){const sorted=Object.values(room.standings||{}).sort((a,b)=>b.pts-a.pts||((b.rf-b.ra)-(a.rf-a.ra))||a.id.localeCompare(b.id));h+='<h3>🏆 Champion: '+esc(room.seasonTeams.find(t=>t.id===room.champion)?.name||"—")+'</h3><div class="tw"><table><thead><tr><th>#</th><th>Team</th><th>W</th><th>L</th><th>Pts</th><th>Round +/-</th></tr></thead><tbody>';sorted.forEach((x,i)=>{const t=room.seasonTeams.find(y=>y.id===x.id);h+='<tr><td>'+(i+1)+'</td><td>'+esc(t?.name||x.id)+'</td><td>'+x.w+'</td><td>'+x.l+'</td><td>'+x.pts+'</td><td>'+(x.rf-x.ra)+'</td></tr>'});h+='</tbody></table></div><p class="note">Your normal career remains loaded; only the league opponents and shared match results are multiplayer.</p>'+(S._mpNextYearReady?'<p class="note">Ready for the next season. Waiting for the other players.</p>':'<button class="pri" id="mpNextYear">Start Year '+(S.year+1)+'</button>')}
+  b.innerHTML=h;if($("mpLaunch"))$("mpLaunch").onclick=()=>launch().catch(e=>stat(e.message));if($("mpNextYear"))$("mpNextYear").onclick=()=>{if(typeof newYear==="function")newYear()};if(room.standings)sharedTable();
   const tb=$("trainBtns");if(tb&&mpCareer){const opts=[["aim","Aim drills"],["gs","Game sense (VOD review)"],["men","Mental coaching"],["rest","Rest & team bonding"]];tb.innerHTML=opts.map(x=>'<button class="'+(S.focus===x[0]?"sel":"")+'" onclick="setFocus(this.dataset.focus)" data-focus="'+x[0]+'">'+x[1]+'</button>').join("")+'<div class="decision" style="margin-top:8px"><b>Multiplayer autoplay</b><p class="note">Matches start automatically after the shared management window. Every round and final score is identical for all players.</p></div>'}
  }
  function finalScores(r,last){let h='<h3>Previous week · Final scores</h3><div class="tw"><table><thead><tr><th>Match</th><th>Final score</th></tr></thead><tbody>';last.matches.forEach(m=>{const a=r.seasonTeams.find(t=>t.id===m.a),b=r.seasonTeams.find(t=>t.id===m.b);h+='<tr><td>'+esc(a?.name||m.a)+' vs '+esc(b?.name||m.b)+'</td><td><b>'+m.scoreA+' – '+m.scoreB+'</b></td></tr>'});return h+'</tbody></table></div>'}
@@ -508,6 +520,15 @@
   const veto=window.beginVeto;if(veto)window.beginVeto=function(){if(mpCareer){stat("Multiplayer matches autoplay after the shared management window.");return}return veto.apply(this,arguments)};
   const next=window.nextFix;if(next)window.nextFix=function(){if(mpCareer&&room?.seasonTeams){const f=ownFixture(),id=f?(f.a===uid?f.b:f.a):null,t=room.seasonTeams.find(x=>x.id===id);if(t)return{opp:{name:t.name,power:t.rating||50},bo:1,label:"Multiplayer Week "+((room.week||0)+1)}}return next.apply(this,arguments)};
   const sched=window.sched;if(sched)window.sched=function(){const r=sched.apply(this,arguments);if(mpCareer)sharedTable();return r};
+  const oldYear=window.newYear;if(oldYear)window.newYear=function(){
+    if(mpCareer&&room?.phase==="complete"){
+      if(S._mpNextYearReady){stat("Waiting for the other players to start the next season.");return}
+      const result=oldYear.apply(this,arguments);S._mpNextYearReady=true;
+      roomRef.child("teams/"+uid).update({...snapshot(),nextYearReady:true}).then(()=>{stat("You are ready. Waiting for every other organisation.");if(uid===room.owner)restartSeasonIfReady()}).catch(e=>stat("Could not mark next-season readiness: "+e.message));
+      banner();return result;
+    }
+    return oldYear.apply(this,arguments)
+  };
  }
  function init(){hooks();addButton()}
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
