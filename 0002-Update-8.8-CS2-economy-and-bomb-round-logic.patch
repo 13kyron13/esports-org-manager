@@ -1,0 +1,108 @@
+From d290098f765476c7eaaf9876ed00c2b2f8d80e5e Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Sat, 17 Oct 2026 06:02:13 +0000
+Subject: [PATCH 2/2] Update 8.8: CS2 economy and bomb round logic
+
+---
+ index.html | 42 ++++++++++++++++++++++++++----------------
+ 1 file changed, 26 insertions(+), 16 deletions(-)
+
+diff --git a/index.html b/index.html
+index 6455b22..dfc2f95 100644
+--- a/index.html
++++ b/index.html
+@@ -3,7 +3,7 @@
+ <head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+-<title>Esports Org Manager – Update 8.7</title>
++<title>Esports Org Manager – Update 8.8</title>
+ <style>
+ :root{--bg:#0a0a0f;--card:#14141c;--text:#f2f3f7;--mute:#8d93a3;--line:#242430;--acc:#2ee68a;--on:#04130a;--good:#2ee68a;--bad:#ff5d6c;--btn:#1d1d28;
+ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@@ -329,20 +329,32 @@ function launchMatch(){
+   });
+   const teamPower=power(S.roster),majorBoost=fx.label.startsWith("Major")?4:0;
+   const o={name:fx.opp.name,power:Math.max(gp(fx.opp),teamPower+R(-3,5)+majorBoost)};
+-  S.match={opp:o,bo:fx.bo,sw:0,sl:0,maps:[...v.maps],map:1,mapName:v.maps[0],me:0,them:0,round:0,streakMe:0,streakThem:0,controlMode:"important",tactic:(S.strategy==="aggressive"?"aggro":S.strategy==="disciplined"?"default":"default"),timeouts:2,tobuff:0,next:0,done:false};
++  S.match={opp:o,bo:fx.bo,sw:0,sl:0,maps:[...v.maps],map:1,mapName:v.maps[0],me:0,them:0,round:0,streakMe:0,streakThem:0,controlMode:"important",tactic:(S.strategy==="aggressive"?"aggro":S.strategy==="disciplined"?"default":"default"),timeouts:2,tobuff:0,next:0,done:false,eco:newEco()};
+   S.veto=null;S.prepared=null;$("veto").style.display="none";$("match").style.display="block";showTab("play");$("feed").innerHTML="";
+   $("mTitle").textContent=`${fx.label} vs ${o.name} · Bo${fx.bo}`;setTimeout(()=>drawMap(makeDots(),0),0);
+   log(`Map veto complete: ${S.match.maps.join(" → ")}. ${o.name} (power ${Math.round(o.power)}) vs your team (power ${Math.round(power(S.roster))}). First to 13 rounds wins each map.`,"m");
+   render();draw();
+ }
+-function isDecisionRound(m){return m.round===0||m.round===5||m.round===11||m.me>=12||m.them>=12||m.streakMe>=3||m.streakThem>=3}
++const BUYPOW={pistol:0,full:0,force:-3.5,eco:-9},BUYN={pistol:"pistol",full:"full buy",force:"force buy",eco:"eco"};
++const newEco=()=>({me:800,them:800,lossMe:0,lossThem:0});
++function buyFor(m,side){if(m.round===0||m.round===12)return"pistol";const M=(m.eco||newEco())[side];
++  if(side==="me"){if(m.tactic==="save")return"eco";if(m.tactic==="force"&&M>=1500&&M<4700)return"force"}
++  return M>=4700?"full":M>=2400?"force":"eco"}
++function payEco(m,win,bm,bt){
++  const e=m.eco,cost={pistol:700,full:4500,force:2600,eco:400},lb=n=>Math.min(3400,1400+500*Math.max(0,n-1));
++  if(bm!=="full"||bt!=="full")log(`R${m.round}: ${BUYN[bm]} for you ($${Math.round(e.me)}), ${BUYN[bt]} for ${m.opp.name} ($${Math.round(e.them)}).`,"m");
++  e.me-=Math.min(e.me,cost[bm]*(win?.5:1));e.them-=Math.min(e.them,cost[bt]*(win?1:.5));
++  if(win){e.me+=3250;e.lossMe=0;e.lossThem++;e.them+=lb(e.lossThem)}else{e.them+=3250;e.lossThem=0;e.lossMe++;e.me+=lb(e.lossMe)}
++  e.me=Math.min(16000,e.me);e.them=Math.min(16000,e.them);
++  if(m.round===12)m.eco=newEco()}
++function isDecisionRound(m){return m.round===0||m.round===12||(m.eco&&buyFor(m,"me")!=="full")||m.round===5||m.round===11||m.me>=12||m.them>=12||m.streakMe>=3||m.streakThem>=3}
+ function draw(){
+-  const m=S.match;if(!m)return;
++  const m=S.match;if(!m)return;if(!m.eco)m.eco=newEco();
+   const decision=isDecisionRound(m),mp=mapProfile(m.mapName);
+-  $("score").innerHTML=`${m.me} – ${m.them}<small>${mp.name} · ${mp.style} · ${m.bo>1?`Map ${m.map}/${m.maps.length} · Series ${m.sw}-${m.sl} · `:""}Round ${Math.min(m.round+1,24)} · Timeouts left: ${m.timeouts}</small>`;
++  $("score").innerHTML=`${m.me} – ${m.them}<small>${mp.name} · ${mp.style} · ${m.bo>1?`Map ${m.map}/${m.maps.length} · Series ${m.sw}-${m.sl} · `:""}Round ${Math.min(m.round+1,24)} · Timeouts left: ${m.timeouts} · Money: you $${Math.round(m.eco.me)} / them $${Math.round(m.eco.them)} · next buy: ${BUYN[buyFor(m,"me")]}</small>`;
+   const c=$("ctrls");
+   if(m.done){c.innerHTML=`<button class="pri" onclick="finish()">${(m.me>m.them?m.sw+1:m.sw)>=(m.bo+1)/2||(m.me>m.them?m.sl:m.sl+1)>=(m.bo+1)/2?"Finish match":"Next map"}</button><button onclick="autoplayMatch()">⏩ Autoplay remaining match</button>`;return}
+-  const T=[["aggro","Aggressive"],["default","Default"],["save","Save / eco"]];
++  const T=[["aggro","Aggressive"],["default","Default"],["force","Force buy"],["save","Save / eco"]];
+   const tacticButtons=decision?T.map(([k,l])=>`<button class="${m.tactic==k?"sel":""}" onclick="S.match.tactic='${k}';draw()">${l}</button>`).join(""):"";
+   c.innerHTML=`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0"><label for="matchMode">Gameplay</label><select id="matchMode" onchange="setControlMode(this.value)" style="font:inherit;padding:8px;border-radius:8px;background:var(--btn);color:var(--text);border:1px solid var(--line)"><option value="round" ${m.controlMode==="round"?"selected":""}>Round by round</option><option value="important" ${(!m.controlMode||m.controlMode==="important")?"selected":""}>Important rounds</option><option value="map" ${m.controlMode==="map"?"selected":""}>Sim whole map</option></select></div><div class="decision"><b>${decision?"Tactical decision":"Automatic simulation"}</b><div class="note">${decision?`Key round: choose a plan for ${mp.name}. ${mp.style==="Aim duels"?"Aim-focused play gets a small boost.":mp.style==="Utility"?"Default play is steadier on this map.":mp.style==="Fast executes"?"Aggressive play gets a small boost.":"Tactics have different risk and reward."}`:"The match runs automatically until the next important round."}</div>${tacticButtons}</div>`+
+   `<div><button class="pri" ${m.busy?"disabled":""} onclick="advanceGameplay()">${m.controlMode==="round"?"Play next round":m.controlMode==="map"?"Sim whole map":decision?"Play important round + auto-sim":"Continue to important round"}</button><button ${m.busy?"disabled":""} onclick="autoplayMatch()">⏩ Autoplay match</button>${m.busy?'<button onclick="SKIP=true">Skip ⏭</button>':''}<button ${m.timeouts<1||m.busy?"disabled":""} onclick="timeout()">Call timeout</button><button onclick="FAST=!FAST;draw()">${FAST?"⏩ Fast":"▶ Normal"}</button></div>`;
+@@ -353,28 +365,26 @@ function playRound(instant,after){
+   const m=S.match;if(m.done||m.busy)return;
+   const profile=mapProfile(m.mapName);let mine=power(S.roster)+teamMapBonus(S.roster,m.mapName),theirs=m.opp.power+R(-2,2);mine+=(staffOf("Analyst")?.skill||0)/35;
+   let t=0;
+-  if(m.tactic=="aggro")t+=R(-7,9)+(profile.style==="Fast executes"||profile.style==="Aggression"?2:0);else if(m.tactic=="save")t-=10;else if(profile.style==="Utility"||profile.style==="Mid control")t+=1.5;
++  if(m.tactic=="aggro")t+=R(-7,9)+(profile.style==="Fast executes"||profile.style==="Aggression"?2:0);else if(profile.style==="Utility"||profile.style==="Mid control")t+=1.5;
+   if(profile.style==="Aim duels")t+=(S.roster.reduce((n,p)=>n+p.aim,0)/S.roster.length-60)*0.12;
+   if(profile.style==="Rotations")t+=(S.roster.find(p=>p.role==="IGL")?.gs-60)*0.06;
+-  t+=m.next;m.next=m.tactic=="save"?6:0;
++  if(!m.eco)m.eco=newEco();const bm=buyFor(m,"me"),bt=buyFor(m,"them");t+=BUYPOW[bm]-BUYPOW[bt];
+   if(m.tobuff>0){t+=3;m.tobuff--}
+   t+=Math.min(m.streakMe,3)*1.2-Math.min(m.streakThem,3)*1.2;
+   const p=1/(1+Math.exp(-(mine-theirs+t)/8));
+   let win=Math.random()<p;
+   // Bomb rounds can end in either a C4 explosion (T win) or a successful CT defuse.
+   m.roundEvent=null;
+-  const ownT=m.round<12;
+-  const bombRound=Math.random()<.30;
+-  if(bombRound){
++  // The skill roll above decides who wins; the bomb scenario then follows from the winner and side.
++  const ownT=m.round<12,tWins=(win===ownT);
++  if(tWins?Math.random()<.55:Math.random()<.38){
+     const anchors=NAV_ANCHORS[m.mapName]||NAV_ANCHORS.Mirage;
+     const siteKey=m.tactic==="aggro"?(m.round%2?"b":"a"):(m.round%4<2?"a":"b");
+-    const defused=Math.random()<.35;
+-    m.roundEvent={type:"bomb",site:siteKey.toUpperCase(),bombPos:[anchors[siteKey][0]*320,anchors[siteKey][1]*220],plantAt:.40,defuseStart:.57,defuseEnd:.83,explodeAt:.88,outcome:defused?"defuse":"explode"};
+-    win=defused?!ownT:ownT;
++    m.roundEvent={type:"bomb",site:siteKey.toUpperCase(),bombPos:[anchors[siteKey][0]*320,anchors[siteKey][1]*220],plantAt:.40,defuseStart:.57,defuseEnd:.83,explodeAt:.88,outcome:tWins?"explode":"defuse"};
+   }
+   if(instant){apply(win)}else{animateRound(win,()=>apply(win))}
+   function apply(win){
+-  m.busy=false;m.round++;
++  m.busy=false;m.round++;payEco(m,win,bm,bt);
+   if(win){m.me++;m.streakMe++;m.streakThem=0;
+     const hero=weightedPick();hero.mvp++;
+     if(m.roundEvent?.type==="bomb"&&m.roundEvent.outcome==="defuse")log(`R${m.round}: Your team defuses the C4 at ${m.roundEvent.site} with seconds to spare!`,"w");
+@@ -605,7 +615,7 @@ function finish(){
+   const need=(m.bo+1)/2;
+   if(m.sw<need&&m.sl<need){
+     log(`Map ${m.map} ${won?"won":"lost"} ${m.me}-${m.them}. Series ${m.sw}-${m.sl}. Next map...`,"m");
+-    Object.assign(m,{map:m.map+1,mapName:m.maps[m.map],me:0,them:0,round:0,done:false,streakMe:0,streakThem:0,timeouts:2,tobuff:0,next:0});
++    Object.assign(m,{map:m.map+1,mapName:m.maps[m.map],me:0,them:0,round:0,done:false,streakMe:0,streakThem:0,timeouts:2,tobuff:0,next:0,eco:newEco()});
+     log(`Next map: ${m.mapName}. Map confidence changes the matchup slightly.`,"m");drawMap(makeDots(),0);draw();return}
+   endSeries(m.sw>m.sl);
+ }
+-- 
+2.43.0
+

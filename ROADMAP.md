@@ -10,12 +10,16 @@ The game should reward smart long-term decisions rather than simply buying the h
 
 ## Current repository status
 
-**Current build documented by the repository:** Update 8.2 — CS2 Movement & Navigation.
+**Current build documented by the repository:** Update 8.8 — CS2 Economy & Bomb Round Logic.
 
-Implemented first pass, according to the current build notes:
+Implemented, according to the commit history and current build notes:
 - Map-specific waypoint routes for Mirage, Inferno, Nuke, Ancient, Anubis, Dust II and Vertigo.
 - Separate Terrorist/Counter-Terrorist spawn routes and side switch after 12 rounds.
 - Role-aware movement such as lurker pacing, mid support, site attacks and defensive holds.
+- Update 8.3: spawn spacing, line-of-sight-gated firefights and close-range contact for eliminations.
+- Updates 8.5–8.6: C4 plant, explosion and defuse outcomes with radar rendering and animation.
+- Update 8.7: autoplay for a whole match.
+- Update 8.8: team economy (pistol, eco, force and full buys, loss bonus, half-time reset, a Force buy tactic) and bomb outcomes that now follow the round winner and side instead of overriding the skill roll.
 - Visible spawn/setup, execute/rotate, engagement and round-result phases.
 
 Known limitations / follow-up:
@@ -51,6 +55,7 @@ Earlier conversation roadmap items (finances, market/transfers, contracts/drama,
 | Multi-game expansion | Valorant first, then other titles | Planned |
 | Living world | Meta shifts, rivalries, drama, player careers and rival ecosystems | Planned |
 | Quality & longevity | Saves, balance, accessibility, testing and polish | Ongoing |
+| Design-review additions       | Circuit tiers, role proficiency, roster rules, legal/integrity, presentation | Planned                                            |
 
 ## Track A — Core management foundation
 
@@ -109,11 +114,11 @@ Earlier conversation roadmap items (finances, market/transfers, contracts/drama,
 - [ ] Replace brittle hard-coded movement with reusable, map-specific navigation data where practical.
 - [ ] Better path choice around chokepoints, blocked routes, sites, mid and teammate positions.
 - [ ] Reactive rotations based on spotted enemies, bomb information, sound/intel and remaining time.
-- [ ] Bomb planting, plant-site choice, plant timing, defuse attempts, retakes and round-end conditions.
+- [ ] Bomb planting, plant-site choice, plant timing, defuse attempts, retakes and round-end conditions. *(Partly done: Updates 8.5–8.6 added plant/explode/defuse; 8.8 ties outcomes to the winner. Player-driven plant timing and retake logic still planned.)*
 - [ ] Round should not end just because some players are dead if the bomb is planted and can still explode; bomb explosion/defuse must be handled correctly.
 - [ ] Utility simulation: smokes, flashes, HE grenades, molotovs/incendiaries and counter-utility at a sensible abstraction level.
 - [ ] Individual engagements using aim, reaction, positioning, utility, weapon, range, role and pressure rather than only a single team-power roll.
-- [ ] Weapon/economy logic, save decisions, force buys, full buys and side-specific rules.
+- [ ] Weapon/economy logic, save decisions, force buys, full buys and side-specific rules. *(Partly done in Update 8.8: team-level economy. Per-player weapons, drops and kept gear are still planned.)*
 - [ ] Spectator clarity: combat log, kill feed, bomb timer and phase indicators.
 - [ ] Keep a fast statistical mode available so deeper simulation does not make autoplay painfully slow.
 
@@ -359,6 +364,44 @@ These are optional ideas beyond the previously agreed roadmap. Prioritise only w
 - [ ] **Optional fictional sponsors/brands and generated team identities** to avoid depending on real-world licensing.
 - [ ] **Advanced ownership decisions:** sell a stake, merge organisations or acquire another division.
 - [ ] **Retired-player transition:** former pros can become coaches, analysts or academy mentors.
+
+## Track J — Additions from design review
+
+These items were identified after comparing the original concept with this roadmap. Most are planned, not implemented. Verify against `index.html` before marking anything complete.
+
+### J1. Competitive ladder and roster rules
+
+- [ ] **Circuit tiers and qualifying path:** Tier 3, Tier 2 and Tier 1 events with open qualifiers, invites and ranking-based seeding, so the climb into Majors is part of the game.
+- [ ] **Roster continuity rule:** ranking points and invites depend on how much of the roster stays together, which discourages constant transfers.
+- [ ] **Scrims against other teams:** scrim partners improve map confidence, but risk leaking tendencies to rivals. Choosing partners becomes a decision.
+- [ ] **LAN vs online:** some players thrive or choke on stage; home-crowd advantage at big events.
+- [ ] **Rivalry derbies:** matches against a main rival carry extra hype, prize money and morale swings.
+- [ ] **Silly season:** an off-season transfer window with rumours, leaks and bidding wars.
+
+### J2. Players
+
+- [ ] **Role proficiency and retraining:** a skill level per role (rifler, AWP, IGL, lurker, support and so on), improved through scrims, so players can be retrained into new roles. This was part of the original concept.
+- [ ] **Player traits:** visible and hidden traits such as clutch, consistent, leader, mentor, injury-prone or difficult, which scouting can uncover over time. (A basic trait field exists in the current build; expand it.)
+- [ ] **Detailed player stats:** rating, ADR, opening duels, KAST, clutch record and impact, feeding awards, valuations and post-match reviews.
+- [ ] **Relationship web:** duos and friend groups, in-roster rivals and players who want to follow a friend to another organisation.
+- [ ] **Role scarcity:** good IGLs and supports are rare, and stars need the right teammates, so roster building is a puzzle rather than "buy the highest ratings".
+
+### J3. Business, legal and world events
+
+- [ ] **Legal and integrity problems:** contract disputes, tampering, match-fixing or cheating bans, plus visa and tax issues, handled as rare and explainable events.
+- [ ] **Prize splits and revenue share:** how prize money is divided between organisation, players and staff, with player revenue-share demands.
+- [ ] **Investors and franchising:** funding rounds, investors who expect returns, and franchised league slots that can be bought or lost.
+- [ ] **Wildcard events:** a tournament is cancelled, a patch lands mid-event, a rival disbands or a sponsor goes bankrupt.
+
+### J4. Presentation and platform
+
+- [ ] **Caster commentary and highlights:** generated lines during matches, replayable highlight moments and map heatmaps built from simulated movement.
+- [ ] **Playstyle identity:** roster makeup gives the team a readable style that rivals can scout and counter.
+- [ ] **Explained coach suggestions** so newer players can learn CS concepts while playing.
+- [ ] **Ironman mode:** one save, no reloading.
+- [ ] **Organisation legacy:** retired numbers, a museum screen and a history of the biggest moments.
+- [ ] **Mobile and touch support:** the current build targets desktop browsers.
+- [ ] **Distribution:** optional desktop packaging (Electron or Tauri) and release on itch.io or Steam.
 
 ## Suggested implementation order
 

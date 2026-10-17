@@ -1,18 +1,16 @@
 # Esports Org Manager
 
-A browser-based esports organisation management game. The current repository build is **Update 8.2 — CS2 Movement & Navigation**.
+A browser-based esports organisation management game. The current repository build is **Update 8.8 — CS2 Economy & Bomb Round Logic**.
 
 ## Play
 
 Open [index.html](./index.html) in a modern desktop browser. The game is a standalone HTML file and does not require a build step or package installation.
 
-## Current build: Update 8.2
+## Current build: Update 8.8
 
-- Added map-specific waypoint routes for Mirage, Inferno, Nuke, Ancient, Anubis, Dust II, and Vertigo.
-- Added separate T and CT spawn routes and a side switch after the first 12 rounds.
-- Added role-aware movement, including lurker pacing, mid support, site attacks, and defensive holds.
-- Added visible spawn/setup, execute/rotate, engagement, and round-result phases.
-- Preserved the existing manager systems and match controls.
+- Added a team economy: pistol rounds, eco, force and full buys, win and loss-bonus income, a half-time reset and a Force buy tactic. The next buy type and both teams' money show in the match header.
+- Bomb outcomes now follow the round winner and side. Previously a bomb round overrode the skill roll, so the T side won regardless of team strength.
+- Existing systems from earlier updates: waypoint movement for seven CS2 maps with side switching (8.2–8.3), C4 plant, explosion and defuse (8.5–8.6), and full-match autoplay (8.7).
 
 ## Known limitations
 
