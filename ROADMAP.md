@@ -12,7 +12,7 @@ The game should reward smart long-term decisions rather than simply buying the h
 
 ### Update 19.0 — Multi-Game Simulation & Living Esports World
 
-- **Update 16 implemented:** non-CS2 matches generate map-by-map scorelines, game-specific stat summaries, player performance ratings, MVPs and a match report. Player form, fatigue and morale respond to the result.
+- **Update 16 implemented:** CS2 and non-CS2 careers show a persistent latest-match report with player performance ratings, MVP and post-match analysis. Non-CS2 matches also generate game-specific map-by-map scorelines and objective/stat summaries. Form, fatigue and morale respond to results.
 - **Update 17 implemented:** the existing league/championship schedule can now be played from any supported starting esport; the match path routes into the selected game's scoring model.
 - **Update 18 integrated:** existing transfer offers, contract renewals, scouting, development, staff and finance systems remain part of multi-game careers; player market roles follow the selected game.
 - **Update 19 implemented:** rival team power changes over time and periodic simulated roster moves are announced in the news/history.
