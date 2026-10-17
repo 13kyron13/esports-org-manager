@@ -10,12 +10,27 @@ The game should reward smart long-term decisions rather than simply buying the h
 
 ## Current repository status
 
-### Update 15.0 — Match Preparation & Player Form
+### Update 19.0 — Multi-Game Simulation & Living Esports World
 
-- **Update 14 implemented:** once-per-match-week opponent scouting shows an estimated opponent power and grants a small team preparation bonus; Analyst staff improve the bonus.
-- **Update 15 implemented:** player form and fatigue are saved per player and included in team power. Form shifts after series results; fatigue rises through preparation and matches, Rest training lowers it, and a new season provides recovery and brings form toward neutral.
-- **Coming soon consistency:** the Empire expansion action no longer opens new non-CS2 divisions. Existing divisions stored in legacy saves remain available rather than being deleted.
-- **Validation:** JavaScript syntax checks passed. Browser playtesting, save migration checks and multi-season balance testing remain outstanding.
+- **Update 16 implemented:** non-CS2 matches generate map-by-map scorelines, game-specific stat summaries, player performance ratings, MVPs and a match report. Player form, fatigue and morale respond to the result.
+- **Update 17 implemented:** the existing league/championship schedule can now be played from any supported starting esport; the match path routes into the selected game's scoring model.
+- **Update 18 integrated:** existing transfer offers, contract renewals, scouting, development, staff and finance systems remain part of multi-game careers; player market roles follow the selected game.
+- **Update 19 implemented:** rival team power changes over time and periodic simulated roster moves are announced in the news/history.
+- **Playable titles:** CS2, VALORANT, Overwatch, League of Legends and Rocket League are selectable. Each has a distinct role list and map pool; non-CS2 games have a dedicated map ban/pick and automated best-of-three simulation with game-specific statistics.
+- **Division support:** Rocket League has been added to the organisation expansion catalogue; all listed games can be opened as divisions with game-specific roles.
+- **Known limitation:** non-CS2 matches are automated series simulations with detailed result/stat reports, not live round-by-round visual gameplay. Some legacy organisation systems still use shared abstractions and need deeper per-title balancing.
+- **Validation:** JavaScript syntax check passed. Full browser playtesting, old-save migration checks, map-veto interaction tests and multi-season balance tests remain outstanding.
+
+### Update 20.0 — Premium Experience (Planned)
+
+- Complete visual redesign with a polished esports broadcast-inspired dashboard, modular widgets, subtle transitions and consistent visual hierarchy.
+- Rich player cards with headshots/illustrations, role badges, form/fatigue indicators, career history, performance graphs and comparison tools.
+- Interactive match centre with live timelines, objective/round events, map progress, momentum, tactical pauses and post-match highlights.
+- Better competition presentation: bracket visualisations, season calendar, standings, qualification scenarios, trophy cabinet and historical records.
+- Organisation HQ with custom branding throughout the game, configurable dashboard layouts, staff/facility visuals and clearer financial forecasting.
+- Accessibility and usability pass: responsive desktop/mobile layouts, readable colour contrast, keyboard support, tooltips, confirmation flows and reduced-motion options.
+- Optional quality-of-life additions: searchable player/transfer databases, favourites/shortlists, filters, bulk actions, autosave indicators and richer save-slot previews.
+- Keep the core game free of pay-to-win mechanics; “premium experience” means production quality, clarity and depth rather than paid advantages.
 
 ### Update 13.3 — CS2-Only Playable Build
 
