@@ -10,6 +10,11 @@ The game should reward smart long-term decisions rather than simply buying the h
 
 ## Current repository status
 
+### Update 13.3 — CS2-Only Playable Build
+
+- **Implemented:** CS2 is the only selectable starting esport; VALORANT, Overwatch and League of Legends show disabled “Coming soon” cards until dedicated title-specific systems are ready.
+- **Validation:** JavaScript syntax check passed; the picker still needs interactive browser testing.
+
 ### Update 13.2 — First-Career Guide
 
 - **Implemented:** an optional How to Play page from the title screen introduces roster management, finances, training, match preparation, multi-game expansion and long-term planning.
@@ -17,7 +22,7 @@ The game should reward smart long-term decisions rather than simply buying the h
 
 ### Update 13.1 — Organisation Identity & Starting Esport
 
-- **Implemented first pass:** “Choose Your Starting Esport” picker for CS2, VALORANT, Overwatch and League of Legends.
+- **Implemented first pass:** “Choose Your Starting Esport” picker; CS2 is selectable, while VALORANT, Overwatch and League of Legends are marked Coming Soon.
 - **Implemented first pass:** organisation name, short tag, emblem selection, primary/secondary colours and a live setup preview.
 - **Implemented first pass:** edit organisation identity later from the Org tab; display organisation branding in the UI.
 - **Implemented first pass:** shared organisation finances and identity with separate game divisions; game-specific role labels for division rosters and prompts to rename a division team and its five players.
@@ -59,7 +64,7 @@ The game should reward smart long-term decisions rather than simply buying the h
 - **Complete:** persistent board confidence, three season objectives (league top four, positive cash, senior-team power growth), end-of-season reviews, confidence changes, and performance bonuses.
 - **Still to test:** balance confidence movement and board bonuses across several full careers.
 
-**Current build documented by the repository:** Update 13.2 — First-Career Guide.
+**Current build documented by the repository:** Update 13.3 — CS2-Only Playable Build.
 
 ### Update 12.3 — Bomb Result Consistency
 - **Implemented first pass:** round scoring is resolved from the bomb outcome and the current side: explosion awards the Terrorists; a completed defuse awards the Counter-Terrorists.
