@@ -1,12 +1,17 @@
 # Esports Org Manager
 
-A browser-based esports organisation management game. The current repository build is **Update 8.8 — CS2 Economy & Bomb Round Logic**.
+A browser-based esports organisation management game. The current repository build is **Update 8.9 — Balance Pass**.
 
 ## Play
 
 Open [index.html](./index.html) in a modern desktop browser. The game is a standalone HTML file and does not require a build step or package installation.
 
-## Current build: Update 8.8
+## Current build: Update 8.9
+
+- Balance pass: stat growth now slows from about 70 upward and stalls once a player reaches their potential, so rosters no longer all hit 99 by year 3. Rival teams ramp up slightly with each year, and round results use a softer win curve so upsets happen more often.
+- Measured with an automated passive manager over 6 seasons: roughly a 47% win rate, average stats near 90 by year 5 and trophies that are hard to win. A manager who uses sponsors, staff, map practice and tactics should do noticeably better.
+
+### Update 8.8
 
 - Added a team economy: pistol rounds, eco, force and full buys, win and loss-bonus income, a half-time reset and a Force buy tactic. The next buy type and both teams' money show in the match header.
 - Bomb outcomes now follow the round winner and side. Previously a bomb round overrode the skill roll, so the T side won regardless of team strength.

@@ -1,0 +1,109 @@
+From 16c9de6b3b635607e68d22095dce0001d196009f Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Sat, 17 Oct 2026 06:20:03 +0000
+Subject: [PATCH] Update 8.9: balance pass (slower stat growth, potential
+ ceiling, rival ramp, softer win curve)
+
+---
+ README.md  | 9 +++++++--
+ ROADMAP.md | 5 +++--
+ index.html | 8 ++++----
+ 3 files changed, 14 insertions(+), 8 deletions(-)
+
+diff --git a/README.md b/README.md
+index 769b21d..640cad7 100644
+--- a/README.md
++++ b/README.md
+@@ -1,12 +1,17 @@
+ # Esports Org Manager
+ 
+-A browser-based esports organisation management game. The current repository build is **Update 8.8 — CS2 Economy & Bomb Round Logic**.
++A browser-based esports organisation management game. The current repository build is **Update 8.9 — Balance Pass**.
+ 
+ ## Play
+ 
+ Open [index.html](./index.html) in a modern desktop browser. The game is a standalone HTML file and does not require a build step or package installation.
+ 
+-## Current build: Update 8.8
++## Current build: Update 8.9
++
++- Balance pass: stat growth now slows from about 70 upward and stalls once a player reaches their potential, so rosters no longer all hit 99 by year 3. Rival teams ramp up slightly with each year, and round results use a softer win curve so upsets happen more often.
++- Measured with an automated passive manager over 6 seasons: roughly a 47% win rate, average stats near 90 by year 5 and trophies that are hard to win. A manager who uses sponsors, staff, map practice and tactics should do noticeably better.
++
++### Update 8.8
+ 
+ - Added a team economy: pistol rounds, eco, force and full buys, win and loss-bonus income, a half-time reset and a Force buy tactic. The next buy type and both teams' money show in the match header.
+ - Bomb outcomes now follow the round winner and side. Previously a bomb round overrode the skill roll, so the T side won regardless of team strength.
+diff --git a/ROADMAP.md b/ROADMAP.md
+index fe5e0bb..87ecf20 100644
+--- a/ROADMAP.md
++++ b/ROADMAP.md
+@@ -10,7 +10,7 @@ The game should reward smart long-term decisions rather than simply buying the h
+ 
+ ## Current repository status
+ 
+-**Current build documented by the repository:** Update 8.8 — CS2 Economy & Bomb Round Logic.
++**Current build documented by the repository:** Update 8.9 — Balance Pass.
+ 
+ Implemented, according to the commit history and current build notes:
+ - Map-specific waypoint routes for Mirage, Inferno, Nuke, Ancient, Anubis, Dust II and Vertigo.
+@@ -19,6 +19,7 @@ Implemented, according to the commit history and current build notes:
+ - Update 8.3: spawn spacing, line-of-sight-gated firefights and close-range contact for eliminations.
+ - Updates 8.5–8.6: C4 plant, explosion and defuse outcomes with radar rendering and animation.
+ - Update 8.7: autoplay for a whole match.
++- Update 8.9: slower stat growth near the top, a potential ceiling on development, a yearly rival ramp and a softer round-win curve.
+ - Update 8.8: team economy (pistol, eco, force and full buys, loss bonus, half-time reset, a Force buy tactic) and bomb outcomes that now follow the round winner and side instead of overriding the skill roll.
+ - Visible spawn/setup, execute/rotate, engagement and round-result phases.
+ 
+@@ -123,7 +124,7 @@ Earlier conversation roadmap items (finances, market/transfers, contracts/drama,
+ - [ ] Keep a fast statistical mode available so deeper simulation does not make autoplay painfully slow.
+ 
+ ### B5. Balance and testing
+-- [ ] Calibrate team power so new organisations can compete but not dominate instantly.
++- [ ] Calibrate team power so new organisations can compete but not dominate instantly. *(First pass in Update 8.9; keep re-testing as new systems land. Money balance for passive play is still harsh and needs its own pass.)*
+ - [ ] Rival strength scales across seasons without becoming an unbeatable wall.
+ - [ ] Reduce excessive per-series rival growth and make yearly progression understandable.
+ - [ ] Test edge cases: overtime, forfeits, disconnect-like interruptions, missing players, tied scores and series completion.
+diff --git a/index.html b/index.html
+index dfc2f95..1978323 100644
+--- a/index.html
++++ b/index.html
+@@ -3,7 +3,7 @@
+ <head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+-<title>Esports Org Manager – Update 8.8</title>
++<title>Esports Org Manager – Update 8.9</title>
+ <style>
+ :root{--bg:#0a0a0f;--card:#14141c;--text:#f2f3f7;--mute:#8d93a3;--line:#242430;--acc:#2ee68a;--on:#04130a;--good:#2ee68a;--bad:#ff5d6c;--btn:#1d1d28;
+ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@@ -107,7 +107,7 @@ const salFor=p=>Math.max(300,Math.round(500+(ovr(p)-57)*35));
+ const valFor=p=>Math.round(Math.max(1500,(ovr(p)-45)**2*40+(p.age<22?Math.max(0,p.pot-ovr(p))*300:0))/100)*100;
+ const sellPrice=p=>Math.round(valFor(p)*0.8/100)*100;
+ const weekly=()=>{const wages=[...S.roster,...S.bench].reduce((s,p)=>s+p.sal,0)+(S.staff||[]).reduce((s,p)=>s+p.sal,0)+(S.tier2||[]).reduce((s,p)=>s+p.sal,0);const ops=Math.max(700,1200+(S.academy||[]).length*250+(S.merch?350:0)-(S.facilities?.bootcamp||0)*150);const gameOps=Object.values(S.divisions||{}).reduce((n,d)=>n+(d.weekly||0),0);const sponsor=(S.sponsors||[]).reduce((n,x)=>n+x.pay,0);const merch=S.merch?Math.round(100+S.followers/180+(S.facilities?.studio||0)*100):0;const inc=4000+sponsor+merch;return{inc,wages,ops:ops+gameOps,net:inc-wages-ops-gameOps,sponsor,merch}};
+-function growStat(p,k,amount){const v=p[k];const factor=v>=97?0.2:v>=93?0.4:v>=88?0.65:v>=80?0.82:1;p[k]=clamp(v+Math.max(0,Math.round(amount*factor)),0,99)}
++function growStat(p,k,amount){const v=p[k];let f=v>=96?.1:v>=92?.22:v>=87?.4:v>=80?.6:v>=70?.8:1;if(p.pot&&ovr(p)>=p.pot)f*=.5;p[k]=clamp(v+Math.floor(Math.max(0,amount)*f+Math.random()),0,99)}
+ function mapConf(p,mapName){return p.maps?.[mapName]??60}
+ function teamMapBonus(roster,mapName){return roster.reduce((n,p)=>n+(mapConf(p,mapName)-60),0)/roster.length*0.22}
+ function mapProfile(name){return MAPS.find(x=>x.name===name)||MAPS[0]}
+@@ -328,7 +328,7 @@ function launchMatch(){
+     if(S.focus==="rest"){p.morale=clamp(p.morale+15,0,100);growStat(p,"aim",1);growStat(p,"gs",1);growStat(p,"men",1)}
+   });
+   const teamPower=power(S.roster),majorBoost=fx.label.startsWith("Major")?4:0;
+-  const o={name:fx.opp.name,power:Math.max(gp(fx.opp),teamPower+R(-3,5)+majorBoost)};
++  const o={name:fx.opp.name,power:Math.max(gp(fx.opp),teamPower+R(-3,5)+majorBoost+Math.min(3,(S.year-1)*.75))};
+   S.match={opp:o,bo:fx.bo,sw:0,sl:0,maps:[...v.maps],map:1,mapName:v.maps[0],me:0,them:0,round:0,streakMe:0,streakThem:0,controlMode:"important",tactic:(S.strategy==="aggressive"?"aggro":S.strategy==="disciplined"?"default":"default"),timeouts:2,tobuff:0,next:0,done:false,eco:newEco()};
+   S.veto=null;S.prepared=null;$("veto").style.display="none";$("match").style.display="block";showTab("play");$("feed").innerHTML="";
+   $("mTitle").textContent=`${fx.label} vs ${o.name} · Bo${fx.bo}`;setTimeout(()=>drawMap(makeDots(),0),0);
+@@ -371,7 +371,7 @@ function playRound(instant,after){
+   if(!m.eco)m.eco=newEco();const bm=buyFor(m,"me"),bt=buyFor(m,"them");t+=BUYPOW[bm]-BUYPOW[bt];
+   if(m.tobuff>0){t+=3;m.tobuff--}
+   t+=Math.min(m.streakMe,3)*1.2-Math.min(m.streakThem,3)*1.2;
+-  const p=1/(1+Math.exp(-(mine-theirs+t)/8));
++  const p=1/(1+Math.exp(-(mine-theirs+t)/10));
+   let win=Math.random()<p;
+   // Bomb rounds can end in either a C4 explosion (T win) or a successful CT defuse.
+   m.roundEvent=null;
+-- 
+2.43.0
+

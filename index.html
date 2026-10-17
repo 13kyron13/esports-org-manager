@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Esports Org Manager – Update 8.8</title>
+<title>Esports Org Manager – Update 8.9</title>
 <style>
 :root{--bg:#0a0a0f;--card:#14141c;--text:#f2f3f7;--mute:#8d93a3;--line:#242430;--acc:#2ee68a;--on:#04130a;--good:#2ee68a;--bad:#ff5d6c;--btn:#1d1d28;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -107,7 +107,7 @@ const salFor=p=>Math.max(300,Math.round(500+(ovr(p)-57)*35));
 const valFor=p=>Math.round(Math.max(1500,(ovr(p)-45)**2*40+(p.age<22?Math.max(0,p.pot-ovr(p))*300:0))/100)*100;
 const sellPrice=p=>Math.round(valFor(p)*0.8/100)*100;
 const weekly=()=>{const wages=[...S.roster,...S.bench].reduce((s,p)=>s+p.sal,0)+(S.staff||[]).reduce((s,p)=>s+p.sal,0)+(S.tier2||[]).reduce((s,p)=>s+p.sal,0);const ops=Math.max(700,1200+(S.academy||[]).length*250+(S.merch?350:0)-(S.facilities?.bootcamp||0)*150);const gameOps=Object.values(S.divisions||{}).reduce((n,d)=>n+(d.weekly||0),0);const sponsor=(S.sponsors||[]).reduce((n,x)=>n+x.pay,0);const merch=S.merch?Math.round(100+S.followers/180+(S.facilities?.studio||0)*100):0;const inc=4000+sponsor+merch;return{inc,wages,ops:ops+gameOps,net:inc-wages-ops-gameOps,sponsor,merch}};
-function growStat(p,k,amount){const v=p[k];const factor=v>=97?0.2:v>=93?0.4:v>=88?0.65:v>=80?0.82:1;p[k]=clamp(v+Math.max(0,Math.round(amount*factor)),0,99)}
+function growStat(p,k,amount){const v=p[k];let f=v>=96?.1:v>=92?.22:v>=87?.4:v>=80?.6:v>=70?.8:1;if(p.pot&&ovr(p)>=p.pot)f*=.5;p[k]=clamp(v+Math.floor(Math.max(0,amount)*f+Math.random()),0,99)}
 function mapConf(p,mapName){return p.maps?.[mapName]??60}
 function teamMapBonus(roster,mapName){return roster.reduce((n,p)=>n+(mapConf(p,mapName)-60),0)/roster.length*0.22}
 function mapProfile(name){return MAPS.find(x=>x.name===name)||MAPS[0]}
@@ -328,7 +328,7 @@ function launchMatch(){
     if(S.focus==="rest"){p.morale=clamp(p.morale+15,0,100);growStat(p,"aim",1);growStat(p,"gs",1);growStat(p,"men",1)}
   });
   const teamPower=power(S.roster),majorBoost=fx.label.startsWith("Major")?4:0;
-  const o={name:fx.opp.name,power:Math.max(gp(fx.opp),teamPower+R(-3,5)+majorBoost)};
+  const o={name:fx.opp.name,power:Math.max(gp(fx.opp),teamPower+R(-3,5)+majorBoost+Math.min(3,(S.year-1)*.75))};
   S.match={opp:o,bo:fx.bo,sw:0,sl:0,maps:[...v.maps],map:1,mapName:v.maps[0],me:0,them:0,round:0,streakMe:0,streakThem:0,controlMode:"important",tactic:(S.strategy==="aggressive"?"aggro":S.strategy==="disciplined"?"default":"default"),timeouts:2,tobuff:0,next:0,done:false,eco:newEco()};
   S.veto=null;S.prepared=null;$("veto").style.display="none";$("match").style.display="block";showTab("play");$("feed").innerHTML="";
   $("mTitle").textContent=`${fx.label} vs ${o.name} · Bo${fx.bo}`;setTimeout(()=>drawMap(makeDots(),0),0);
@@ -371,7 +371,7 @@ function playRound(instant,after){
   if(!m.eco)m.eco=newEco();const bm=buyFor(m,"me"),bt=buyFor(m,"them");t+=BUYPOW[bm]-BUYPOW[bt];
   if(m.tobuff>0){t+=3;m.tobuff--}
   t+=Math.min(m.streakMe,3)*1.2-Math.min(m.streakThem,3)*1.2;
-  const p=1/(1+Math.exp(-(mine-theirs+t)/8));
+  const p=1/(1+Math.exp(-(mine-theirs+t)/10));
   let win=Math.random()<p;
   // Bomb rounds can end in either a C4 explosion (T win) or a successful CT defuse.
   m.roundEvent=null;

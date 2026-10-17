@@ -10,7 +10,7 @@ The game should reward smart long-term decisions rather than simply buying the h
 
 ## Current repository status
 
-**Current build documented by the repository:** Update 8.8 — CS2 Economy & Bomb Round Logic.
+**Current build documented by the repository:** Update 8.9 — Balance Pass.
 
 Implemented, according to the commit history and current build notes:
 - Map-specific waypoint routes for Mirage, Inferno, Nuke, Ancient, Anubis, Dust II and Vertigo.
@@ -19,6 +19,7 @@ Implemented, according to the commit history and current build notes:
 - Update 8.3: spawn spacing, line-of-sight-gated firefights and close-range contact for eliminations.
 - Updates 8.5–8.6: C4 plant, explosion and defuse outcomes with radar rendering and animation.
 - Update 8.7: autoplay for a whole match.
+- Update 8.9: slower stat growth near the top, a potential ceiling on development, a yearly rival ramp and a softer round-win curve.
 - Update 8.8: team economy (pistol, eco, force and full buys, loss bonus, half-time reset, a Force buy tactic) and bomb outcomes that now follow the round winner and side instead of overriding the skill roll.
 - Visible spawn/setup, execute/rotate, engagement and round-result phases.
 
@@ -123,7 +124,7 @@ Earlier conversation roadmap items (finances, market/transfers, contracts/drama,
 - [ ] Keep a fast statistical mode available so deeper simulation does not make autoplay painfully slow.
 
 ### B5. Balance and testing
-- [ ] Calibrate team power so new organisations can compete but not dominate instantly.
+- [ ] Calibrate team power so new organisations can compete but not dominate instantly. *(First pass in Update 8.9; keep re-testing as new systems land. Money balance for passive play is still harsh and needs its own pass.)*
 - [ ] Rival strength scales across seasons without becoming an unbeatable wall.
 - [ ] Reduce excessive per-series rival growth and make yearly progression understandable.
 - [ ] Test edge cases: overtime, forfeits, disconnect-like interruptions, missing players, tied scores and series completion.
