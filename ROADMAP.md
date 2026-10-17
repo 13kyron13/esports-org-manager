@@ -36,7 +36,7 @@ The game should reward smart long-term decisions rather than simply buying the h
 - **Complete:** persistent board confidence, three season objectives (league top four, positive cash, senior-team power growth), end-of-season reviews, confidence changes, and performance bonuses.
 - **Still to test:** balance confidence movement and board bonuses across several full careers.
 
-**Current build documented by the repository:** Update 11.0 — Scouting & Player Development.
+**Current build documented by the repository:** Update 11.1 — Match Clarity Pass.
 
 Implemented, according to the commit history and current build notes:
 - Map-specific waypoint routes for Mirage, Inferno, Nuke, Ancient, Anubis, Dust II and Vertigo.
