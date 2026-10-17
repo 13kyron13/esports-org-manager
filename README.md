@@ -1,14 +1,16 @@
 # Esports Org Manager
 
-A browser-based esports organisation management game. The current repository build is **Update 9.0 — Finance & Boardroom**.
+A browser-based esports organisation management game. The current repository build is **Update 9.1 — Boardroom & Objectives**.
 
 ## Play
 
 Open [index.html](./index.html) in a modern desktop browser. The game is a standalone HTML file and does not require a build step or package installation.
 
-## Current build: Update 9.0
+## Current build: Update 9.1
 
 - Finance dashboard: cash balance, sponsor and merchandise income, and a cashflow outlook alongside weekly income, wages, running costs and net balance. Negative cashflow now surfaces a debt-limit warning with an estimated runway.
+- Boardroom: persistent board confidence and three season objectives covering league top-four qualification, positive end-of-season cash, and senior-team development.
+- Season reviews: objectives are assessed at year-end, confidence rises or falls based on results, and strong seasons can earn a board bonus.
 - Focus for this phase: make organisation management, finances and long-term decisions the core experience, while keeping match simulation as one part of the wider career.
 
 - Balance pass: stat growth now slows from about 70 upward and stalls once a player reaches their potential, so rosters no longer all hit 99 by year 3. Rival teams ramp up slightly with each year, and round results use a softer win curve so upsets happen more often.
