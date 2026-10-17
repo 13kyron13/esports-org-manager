@@ -1,34 +1,389 @@
-# Roadmap
+# Esports Org Manager — Master Roadmap
 
-This roadmap records the status of work on Esports Org Manager.
+This is the master plan for the full game, including the original concept, previously agreed update roadmap, current repository work, and additional ideas. It is intentionally comprehensive: items marked **Planned** are design goals, not claims that they already exist in the playable build.
 
-## Update 8.2 — CS2 Movement & Navigation — implemented first pass
+## Project vision
 
-- [x] Map-specific waypoint routes for Mirage, Inferno, Nuke, Ancient, Anubis, Dust II, and Vertigo.
-- [x] Separate T/CT spawn positions and side switch after 12 rounds.
-- [x] Role-aware movement, site attacks, mid support, lurker pacing, and CT defensive holds.
-- [x] Visible round phases: spawn/setup, execute/rotate, engagements, and round result.
-- [ ] Visual validation and route tuning against each exact radar image.
-- [ ] More reactive rotations, utility use, bomb plant/retake logic, and individual combat simulation.
+Build a long-running esports organisation simulator. Start with one Counter-Strike roster and a limited budget, then grow into a respected esports brand that can compete across multiple games. The player manages both the sporting side (players, tactics, training, scouting, tournaments) and the business side (contracts, staff, finances, sponsors, facilities, reputation and risk).
 
-Note: navigation is currently driven by hand-authored radar-coordinate waypoint paths, not extracted CS2 navmeshes. Treat this as a substantial first pass, not a claim of pixel-perfect in-game pathfinding.
+The game should reward smart long-term decisions rather than simply buying the highest-rated players. It should be challenging but fair, support multi-season stories, and keep the existing standalone browser-game approach where practical.
 
-## Update 9 — Transfer Overhaul
+## Current repository status
 
-- Salary and contract negotiations.
-- Buyout clauses and transfer fees.
-- Competing offers from rival organisations.
-- Contract expiry and free-agent decisions.
-- Improved AI roster building and squad needs.
+**Current build documented by the repository:** Update 8.2 — CS2 Movement & Navigation.
 
-## Update 10 — Living Esports Ecosystem
+Implemented first pass, according to the current build notes:
+- Map-specific waypoint routes for Mirage, Inferno, Nuke, Ancient, Anubis, Dust II and Vertigo.
+- Separate Terrorist/Counter-Terrorist spawn routes and side switch after 12 rounds.
+- Role-aware movement such as lurker pacing, mid support, site attacks and defensive holds.
+- Visible spawn/setup, execute/rotate, engagement and round-result phases.
 
-- Rival organisations develop players and talent.
-- Transfers affect other teams and the wider market.
-- Multi-season progression.
-- Competition results influence organisations over time.
+Known limitations / follow-up:
+- Waypoints are hand-authored radar-coordinate paths, not extracted CS2 navmeshes.
+- Every route needs visual validation against its exact radar image.
+- Round outcomes are still statistically simulated; minimap movement does not yet calculate individual combat.
+- More reactive rotations, utility, bomb planting/defusing and individual combat simulation remain planned.
+
+Earlier conversation roadmap items (finances, market/transfers, contracts/drama, hybrid match control, map vetoes, staff/scouting and youth academy) are included below as the intended feature set. Verify each one against the current `index.html` before marking it complete; the version history of standalone HTML prototypes and the current repository build may not be identical.
+
+## Design principles
+
+1. **Readable decisions:** every major choice should explain its cost, benefit and risk.
+2. **Fair challenge:** the player can win with good management, but rivals improve and mistakes have consequences.
+3. **Depth without busywork:** automate routine rounds and allow meaningful tactical input at important moments.
+4. **Persistent world:** rival teams, player careers, records and the market continue evolving between seasons.
+5. **Data-driven games:** different titles share the organisation layer but use their own roles, match rules, economies and calendars.
+6. **Clear status:** keep the UI and this roadmap honest about what is implemented, experimental or planned.
+7. **Save safety:** future persistence should be versioned, exportable and resilient to malformed or older saves.
+
+---
+
+## Roadmap overview
+
+| Track | Focus | Status |
+|---|---|---|
+| Foundation | Standalone browser game, organisation and CS2 management | Existing project |
+| Match simulation & navigation | Hybrid tactical control, map vetoes, map-aware movement and round logic | In progress; Update 8.2 navigation is a first pass |
+| Transfers & contracts | Negotiations, buyouts, rival offers and smarter AI rosters | Planned / verify existing parts |
+| Staff, scouting & academy | Staff market, contracts, reports, youth development | Planned / verify existing parts |
+| Organisation & brand | Sponsors, merchandise, social media, reputation | Planned |
+| Competition & progression | Calendars, brackets, Majors, awards, records | Planned / expand existing league systems |
+| Multi-game expansion | Valorant first, then other titles | Planned |
+| Living world | Meta shifts, rivalries, drama, player careers and rival ecosystems | Planned |
+| Quality & longevity | Saves, balance, accessibility, testing and polish | Ongoing |
+
+## Track A — Core management foundation
+
+### A1. Organisation dashboard
+- [ ] A single overview for cash, weekly burn, roster status, staff, morale, upcoming matches and deadlines.
+- [ ] Clear alerts for expiring contracts, unpaid expenses, unhappy players, sponsor obligations and upcoming travel.
+- [ ] Explainable financial summaries: current balance, recurring income, recurring costs, one-off costs and forecast.
+- [ ] Organisation identity: name, tag, colours, logo and home region.
+- [ ] Difficulty and simulation settings, with tooltips explaining their effects.
+
+### A2. Finances and economic balance
+- [ ] Recurring income, wages, staff salaries, facility costs, travel, bootcamps, scouting and academy upkeep.
+- [ ] Tournament prize money with transparent splits, taxes/fees where appropriate and timing.
+- [ ] Avoid runaway easy money: expenses should scale with organisation size and ambition.
+- [ ] Bankruptcy / financial distress with warnings, recovery options and clear consequences instead of arbitrary surprise failure.
+- [ ] Optional financial difficulty presets and a detailed financial history.
+- [ ] Loan or emergency funding only if balanced with interest, repayment and reputation risks.
+- [ ] Separate cash flow from long-term brand value and sponsor commitments.
+
+### A3. Player development and morale
+- [ ] Training focus with meaningful trade-offs between skill development, team practice, rest and tactical preparation.
+- [ ] Diminishing stat growth near the 99 cap; elite players improve slowly and need more effort.
+- [ ] Age, potential, form, confidence, morale, fatigue, pressure handling and career stage.
+- [ ] Avoid excessive random stat jumps; show why a player improved or declined.
+- [ ] Burnout prevention through rest, workload management and staff support.
+- [ ] Injury/availability systems only if they add fair, understandable management choices.
+
+## Track B — CS2 match simulation, tactics and maps
+
+### B1. Hybrid match control
+- [ ] Automatically simulate routine rounds but pause for important tactical moments.
+- [ ] Important moments can include pistol rounds, economy pivots, streaks, match point, overtime, clutch situations and bomb-related decisions.
+- [ ] Allow the player to change approach, call a timeout or let the coach handle the decision.
+- [ ] Add autoplay for a whole map, series or match, with speed controls and a match summary.
+- [ ] Show round-by-round events, economy, kills/impact, bomb state and why a round was won.
+- [ ] Provide a concise post-match report with key turning points and player performance.
+
+### B2. Tactical choices
+- [ ] Keep distinct aggressive, default, slow, execute, anti-strat and save/eco approaches where appropriate.
+- [ ] Tactics must have trade-offs; no single tactic should be optimal in every situation.
+- [ ] Factor in roles, player stats, morale, fatigue, map, side, opponent tendencies, economy and preparation.
+- [ ] Timeouts should be limited and useful, with effects on composure or tactical coordination.
+- [ ] Let the opponent adapt to repeated patterns and let the player prepare counter-strategies.
+- [ ] Optional assistant/coach recommendations that explain a suggestion without forcing it.
+
+### B3. Map vetoes and map confidence
+- [ ] Map veto before each series, with rules matching the series format (BO1, BO3 and eventually BO5).
+- [ ] Correct pick/ban order and a clear display of remaining maps.
+- [ ] Map pool and map-specific team confidence; practice and results can improve confidence.
+- [ ] Opponent map strengths, recent results and scouting information inform veto decisions.
+- [ ] Map-specific tactical identities, rotations, site approaches and team strengths.
+- [ ] Seasonal map-pool changes when the game's meta system is introduced.
+
+### B4. Movement, combat and objective logic
+- [ ] Validate all current waypoint routes against the correct radar artwork.
+- [ ] Replace brittle hard-coded movement with reusable, map-specific navigation data where practical.
+- [ ] Better path choice around chokepoints, blocked routes, sites, mid and teammate positions.
+- [ ] Reactive rotations based on spotted enemies, bomb information, sound/intel and remaining time.
+- [ ] Bomb planting, plant-site choice, plant timing, defuse attempts, retakes and round-end conditions.
+- [ ] Round should not end just because some players are dead if the bomb is planted and can still explode; bomb explosion/defuse must be handled correctly.
+- [ ] Utility simulation: smokes, flashes, HE grenades, molotovs/incendiaries and counter-utility at a sensible abstraction level.
+- [ ] Individual engagements using aim, reaction, positioning, utility, weapon, range, role and pressure rather than only a single team-power roll.
+- [ ] Weapon/economy logic, save decisions, force buys, full buys and side-specific rules.
+- [ ] Spectator clarity: combat log, kill feed, bomb timer and phase indicators.
+- [ ] Keep a fast statistical mode available so deeper simulation does not make autoplay painfully slow.
+
+### B5. Balance and testing
+- [ ] Calibrate team power so new organisations can compete but not dominate instantly.
+- [ ] Rival strength scales across seasons without becoming an unbeatable wall.
+- [ ] Reduce excessive per-series rival growth and make yearly progression understandable.
+- [ ] Test edge cases: overtime, forfeits, disconnect-like interruptions, missing players, tied scores and series completion.
+- [ ] Add deterministic seeds or reproducible test scenarios for debugging balance.
+- [ ] Track match outcomes over many simulated seasons to catch runaway strategies.
+
+## Track C — Player market, transfers and contracts
+
+### C1. Transfer market
+- [ ] Search/filter players by role, age, rating, potential, region, language, salary and contract status.
+- [ ] Transfer fee, buyout clauses, contract length and wage demands.
+- [ ] Loans, loan-to-buy options and loan recalls where sensible.
+- [ ] Free agents, trial players, short-term stand-ins and emergency substitutes.
+- [ ] Rival organisations compete for the same player; offers can be accepted, rejected or negotiated.
+- [ ] AI teams recruit based on roster gaps, finances, playstyle, language, age and potential.
+- [ ] Player valuation should reflect ability, potential, age, contract length, reputation and market demand.
+- [ ] Prevent exploits such as repeatedly signing/releasing players without meaningful costs.
+
+### C2. Negotiations and contracts
+- [ ] Negotiate salary, length, signing bonus, buyout, role promises and performance bonuses.
+- [ ] Players value different things: money, playing time, trophies, team quality, location, language, coach, loyalty and career opportunities.
+- [ ] Contract expiry warnings and a clear renewal window.
+- [ ] Competing offers and counteroffers.
+- [ ] Unhappy players can request a transfer or refuse renewal if promises are broken.
+- [ ] Bench role, star status and role changes can affect morale.
+- [ ] Contract drama should be contextual and explainable, not random punishment.
+- [ ] Include cooldowns and sensible limits on negotiations to avoid repetitive clicking.
+
+### C3. Roster fit and team chemistry
+- [ ] Role compatibility, leadership, communication, language and playstyle fit.
+- [ ] Team chemistry improves through practice and results, and can decline after conflict or major roster changes.
+- [ ] IGL leadership and tactical understanding influence coordination.
+- [ ] A high-rated roster should not automatically beat a better-balanced team.
+- [ ] Show a simple fit summary and explain the strongest sources of synergy/conflict.
+
+## Track D — Staff, scouting and academy
+
+### D1. Staff market
+- [ ] Easy-to-use hiring market with individually generated staff, skills, salaries and contracts.
+- [ ] Head coaches, analysts, scouts and sports psychologists first; expand roles only if they add distinct decisions.
+- [ ] Staff have strengths, weaknesses, reputation, experience and wage expectations.
+- [ ] Contract length, renewals, poaching and staff departure.
+- [ ] Staff capacity and diminishing returns to prevent stacking unlimited bonuses.
+- [ ] Staff chemistry and fit with the roster/organisation.
+- [ ] Training, tactical preparation, scouting accuracy and morale bonuses should be visible and bounded.
+
+### D2. Scouting reports
+- [ ] Scout players for a cost and receive estimates rather than perfect information immediately.
+- [ ] Report quality depends on scout skill, scouting time, region familiarity and target visibility.
+- [ ] Reports reveal current ability, potential range, role fit, personality/work ethic and wage expectations over time.
+- [ ] Keep uncertainty meaningful but not frustrating; let repeated scouting narrow estimates.
+- [ ] Regional scouting networks and scouting assignments.
+- [ ] Avoid making scouting a pay-to-click tax: give clear value and sensible free information.
+
+### D3. Youth academy
+- [ ] Recruit generated prospects into an academy.
+- [ ] Prospects have age, potential range, preferred roles, growth rate, personality and development needs.
+- [ ] Academy coaches/facilities affect growth and costs.
+- [ ] Development plans, promotion to the senior bench/roster, loans and eventual releases.
+- [ ] Youth tournaments or academy leagues as a later enhancement.
+- [ ] Graduation stories and club-developed-player recognition.
+- [ ] Ensure academy development is slower and riskier than instantly buying a ready-made star, but can offer long-term value.
+
+## Track E — Organisation, facilities and brand
+
+### E1. Sponsors
+- [ ] Sponsor market with different deal sizes, terms, categories and reputations.
+- [ ] Fixed payments, performance bonuses, minimum placement/visibility obligations and contract length.
+- [ ] Sponsor fit with organisation identity and audience.
+- [ ] Conflicting sponsor categories and contract penalties for missed obligations.
+- [ ] Sponsor renewal, negotiation, termination and reputation effects.
+- [ ] Larger sponsors expect better results, brand reach or content output.
+
+### E2. Brand, audience and media
+- [ ] Brand popularity and fanbase that grow through results, star players, content and consistent identity.
+- [ ] Social-media/content actions with cost, reach, risk and cooldowns.
+- [ ] Merchandising with production costs, sales and demand fluctuations.
+- [ ] Press interviews, announcements, roster reveals and tournament storylines.
+- [ ] Fan sentiment reacts to wins, losses, transfers, scandals and player loyalty.
+- [ ] Rivalries and star players create extra attention.
+- [ ] Brand growth must not become a guaranteed infinite-money button.
+
+### E3. Facilities and operations
+- [ ] Training facility upgrades that improve practice quality with recurring upkeep.
+- [ ] Bootcamps and travel preparation that cost money but improve coordination or map confidence.
+- [ ] Optional performance/analytics equipment with diminishing returns.
+- [ ] Travel planning, fatigue and time-zone effects for international events.
+- [ ] Visas or eligibility constraints only when clearly communicated and not used as arbitrary blockers.
+- [ ] Organisation reputation and operational capacity unlock larger opportunities.
+
+### E4. Risk, PR and governance
+- [ ] PR crises and scandals as rare, contextual events with multiple response options.
+- [ ] Player disputes, poaching, sponsor conflicts, fines and reputation loss where appropriate.
+- [ ] Clear distinction between a manageable setback and a save-ending disaster.
+- [ ] Player wellbeing and ethical management: no reward for pushing workload indefinitely.
+- [ ] Optional challenge settings for how often business crises appear.
+
+## Track F — Tournaments, seasons and awards
+
+### F1. Competition structure
+- [ ] Full season calendar with league matches, qualifiers, cups, playoffs and Majors.
+- [ ] Tournament formats: round robin, Swiss-style stages, single/double elimination and group stages as appropriate.
+- [ ] Bracket visualisation, match schedules, qualification rules and tie-breakers.
+- [ ] Prize money and ranking points consistent with event importance.
+- [ ] Travel/rest windows between events.
+- [ ] Distinguish a league match, qualifier, playoff, Major and exhibition match in rewards and prestige.
+
+### F2. Rankings and records
+- [ ] World/region rankings with transparent points and decay.
+- [ ] Organisation history, season records, trophy cabinet and best finishes.
+- [ ] Player career stats, maps played, ratings/impact, MVPs and notable milestones.
+- [ ] Hall of Fame for players, coaches and organisations.
+- [ ] Records for longest win streak, most titles, biggest upsets and all-time achievements.
+- [ ] Historical results remain available across seasons and after players retire.
+
+### F3. Player highlights and awards
+- [ ] League MVP / best player.
+- [ ] Major MVP and tournament MVP.
+- [ ] Best player by role (AWPer, entry, support, lurker, IGL or game-specific equivalents).
+- [ ] Rookie of the season, best coach and breakthrough player.
+- [ ] All-star team or dream team selections.
+- [ ] Awards based on performance, consistency, event importance and team context, not only raw kills.
+- [ ] Award history and award announcements feed into reputation, market value and storylines.
+
+## Track G — Living world, player careers and storylines
+
+### G1. Rival organisations
+- [ ] Rival teams improve their rosters, hire staff, negotiate contracts and manage budgets.
+- [ ] Transfers change multiple rosters and the wider market rather than only the player's team.
+- [ ] AI organisations have identities, preferred regions, budgets, goals and risk tolerance.
+- [ ] Rival teams can rise, decline, rebuild or become financially troubled.
+- [ ] Results and roster changes affect long-term standings and rivalries.
+
+### G2. Dynamic storylines
+- [ ] Rivalries between organisations and individual players.
+- [ ] Redemption arcs, underdog runs, roster reunions and former-player revenge narratives.
+- [ ] Breakout rookies, declining veterans, transfer sagas and contract standoffs.
+- [ ] News feed summarises important events with clear gameplay consequences.
+- [ ] Storylines should emerge from simulation state rather than scripted repetition.
+- [ ] Keep events varied and avoid spamming inconsequential notifications.
+
+### G3. Careers and wellbeing
+- [ ] Retirement, decline, role changes and late-career resurgence.
+- [ ] Form, confidence, pressure and burnout evolve over time.
+- [ ] Players react to playing time, team success, leadership, broken promises and personal goals.
+- [ ] International rosters consider language and communication fit.
+- [ ] Optional injuries/absences should be rare, transparent and balanced.
+
+### G4. Meta and patch changes
+- [ ] Periodic balance/meta shifts change the relative value of roles, tactics, maps and team styles.
+- [ ] Patch notes explain changes in player-friendly language.
+- [ ] Teams adapt through practice, analysts and scouting.
+- [ ] Strong teams can fall behind if they fail to adapt; weaker teams can find an edge.
+- [ ] Changes should be gradual and testable, not randomly invalidate the player's roster.
+
+## Track H — Expand to more esports titles
+
+### H1. Data-driven game framework
+- [ ] Separate shared organisation systems from title-specific rules.
+- [ ] Each game defines its own roles, stats, match format, calendar, economy, roster size and competitive scene.
+- [ ] Avoid hard-coding CS2 assumptions into every future game.
+- [ ] Shared finances, brand, staff and organisation identity work across all teams.
+- [ ] Each title has its own roster, standings, tournaments, staff needs and results.
+
+### H2. Valorant — first expansion
+- [ ] Unlock a Valorant division after reaching an appropriate reputation/financial milestone.
+- [ ] Valorant-specific roles: Duelist, Initiator, Controller, Sentinel, IGL and Flex as applicable.
+- [ ] Agent/map pool, composition fit and role coverage.
+- [ ] Valorant-specific match simulation, economy, rounds, side switching and tournament calendar.
+- [ ] Separate player market and scene while sharing organisation finances and brand.
+- [ ] Hiring or sharing staff across divisions creates trade-offs in cost and attention.
+
+### H3. Future titles
+- [ ] Consider Fortnite or other esports only after the shared framework works well.
+- [ ] Give each title a genuinely distinct competitive format and management loop rather than reskinning CS2.
+- [ ] Make expansion costly and risky enough to feel like a strategic milestone.
+- [ ] Track each division's budget, results, audience and return on investment.
+
+## Track I — Save games, UX, accessibility and quality
+
+### I1. Persistence
+- [ ] Save/load game state across browser sessions.
+- [ ] Export/import saves as a portable JSON file.
+- [ ] Save schema versioning and migration for future updates.
+- [ ] Autosave with clear feedback and recovery from invalid/corrupt saves.
+- [ ] Multiple save slots and optional new-game-plus / challenge starts.
+- [ ] Do not silently erase an old save when a new version changes its data shape.
+
+### I2. Interface and usability
+- [ ] Responsive layout for common desktop resolutions; keep dense management screens readable.
+- [ ] Consistent navigation and clear empty states.
+- [ ] Search, filters, sorting and tooltips for long lists.
+- [ ] Confirmations for irreversible decisions such as selling a star, releasing a player or deleting a save.
+- [ ] Keyboard accessibility, visible focus, adequate contrast and reduced-motion options.
+- [ ] Match speed controls, pause/resume and skip animations.
+- [ ] Tutorial/onboarding and an in-game glossary for terms such as buyout, potential, chemistry and map veto.
+
+### I3. Engineering and QA
+- [ ] Split the single HTML file into logical modules if complexity makes safe iteration difficult, while keeping a simple way to run the game.
+- [ ] Centralise balance constants and game data.
+- [ ] Add automated smoke tests for season advance, match completion, contracts, transfers, finances, vetoes and saves.
+- [ ] Test long simulations across many seasons for balance and performance.
+- [ ] Validate all map routes and objective states.
+- [ ] Keep a changelog for each update and document known limitations.
+- [ ] Add a bug-report template and reproducible test scenarios.
+
+## Additional ideas backlog
+
+These are optional ideas beyond the previously agreed roadmap. Prioritise only when the core loop is stable.
+
+### High-value additions
+- [ ] **Club philosophy:** choose an identity (youth development, star-heavy, tactical, budget/value, regional pride) with benefits and trade-offs.
+- [ ] **Board / ownership expectations:** owners set targets for results, finances and brand; missing them affects trust.
+- [ ] **Season objectives:** short-term goals with meaningful rewards and consequences.
+- [ ] **Player personality and leadership groups:** mentoring and chemistry emerge from veteran/rookie relationships.
+- [ ] **Opponent scouting dossier:** collect tendencies from prior matches and choose an anti-strategy.
+- [ ] **Post-match review:** identify weak maps, economy mistakes, role fit and clutch performance.
+- [ ] **Custom difficulty sliders:** rival growth, finances, player development, event frequency and match variance.
+- [ ] **Achievements and challenge modes:** rebuild a struggling organisation, win with academy players, or become profitable without trophies.
+
+### Medium-priority additions
+- [ ] **Negotiation agent:** delegate renewals and transfers to a manager/assistant with defined limits.
+- [ ] **Academy affiliate / loan network:** send prospects to smaller teams for experience.
+- [ ] **Regional identity and fan culture:** home region affects recruitment reach and audience.
+- [ ] **Merch drops and player collaborations:** limited-time demand based on popularity and results.
+- [ ] **Broadcast narratives:** pre-match storylines, upset alerts and rivalry recaps.
+- [ ] **Scouting combine:** annual event where prospects can be compared before the transfer window.
+- [ ] **Staff career progression:** assistants can improve, earn reputation and be poached.
+- [ ] **Tactical playbook presets:** save preferred approaches and adjust them per opponent.
+- [ ] **Custom tournaments / sandbox mode:** configure teams, format, prize pool and rules.
+
+### Long-term / experimental
+- [ ] **Community-created scenarios** using validated data files.
+- [ ] **Mod-friendly game data** for teams, maps, roles and tournament formats.
+- [ ] **Spectator replay mode** with timeline controls and event markers.
+- [ ] **Historical start dates / alternate esports timelines.**
+- [ ] **Online league or asynchronous challenge mode** only if offline gameplay is already robust.
+- [ ] **Optional fictional sponsors/brands and generated team identities** to avoid depending on real-world licensing.
+- [ ] **Advanced ownership decisions:** sell a stake, merge organisations or acquire another division.
+- [ ] **Retired-player transition:** former pros can become coaches, analysts or academy mentors.
+
+## Suggested implementation order
+
+This order prioritises foundational systems and avoids building later features on unstable simulation logic.
+
+1. Finish and validate CS2 match/navigation/objective logic (including bomb plant/defuse and correct round-end rules).
+2. Stabilise finances, contracts, transfer negotiations and AI roster building; verify existing systems before reimplementing them.
+3. Complete staff market, scouting reports and youth academy with transparent costs and bounded bonuses.
+4. Finish competition calendars, brackets, rankings and individual awards.
+5. Add persistence, export/import saves and automated regression tests before large new systems.
+6. Build sponsor deals, brand, content, merch and facilities.
+7. Add living-world rival teams, dynamic storylines, player careers and meta changes.
+8. Implement the shared multi-title framework, then add Valorant as the first expansion.
+9. Polish UX, accessibility, balancing, achievements and optional sandbox/modding features.
+
+## Definition of done for each update
+
+- The feature works in the actual repository build, not just in a design note or separate prototype.
+- Existing features still work after the update.
+- Key edge cases have been tested and known limitations are documented.
+- New recurring costs, bonuses and progression are balance-tested.
+- README and this roadmap are updated to distinguish implemented, partial and planned work.
 
 ## Status notes
 
-- Current repository build: Update 8.2.
-- The earlier arbitrary straight-line movement has been replaced with map-specific waypoint routes; visual route tuning remains a known follow-up task.
+- Update 8.2 navigation is a substantial first pass, not pixel-perfect navmesh pathfinding.
+- Do not mark a feature complete solely because it appeared in an earlier conversation or prototype file; verify it in the current repository.
+- This roadmap is deliberately broad. It is a long-term direction, not a promise that every optional idea will be implemented in one update.
