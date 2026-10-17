@@ -10,6 +10,13 @@ The game should reward smart long-term decisions rather than simply buying the h
 
 ## Current repository status
 
+### Update 15.0 — Match Preparation & Player Form
+
+- **Update 14 implemented:** once-per-match-week opponent scouting shows an estimated opponent power and grants a small team preparation bonus; Analyst staff improve the bonus.
+- **Update 15 implemented:** player form and fatigue are saved per player and included in team power. Form shifts after series results; fatigue rises through preparation and matches, Rest training lowers it, and a new season provides recovery and brings form toward neutral.
+- **Coming soon consistency:** the Empire expansion action no longer opens new non-CS2 divisions. Existing divisions stored in legacy saves remain available rather than being deleted.
+- **Validation:** JavaScript syntax checks passed. Browser playtesting, save migration checks and multi-season balance testing remain outstanding.
+
 ### Update 13.3 — CS2-Only Playable Build
 
 - **Implemented:** CS2 is the only selectable starting esport; VALORANT, Overwatch and League of Legends show disabled “Coming soon” cards until dedicated title-specific systems are ready.
