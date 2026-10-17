@@ -10,10 +10,18 @@ The game should reward smart long-term decisions rather than simply buying the h
 
 ## Current repository status
 
+### Update 13.1 — Organisation Identity & Starting Esport
+
+- **Implemented first pass:** “Choose Your Starting Esport” picker for CS2, VALORANT, Overwatch and League of Legends.
+- **Implemented first pass:** organisation name, short tag, emblem selection, primary/secondary colours and a live setup preview.
+- **Implemented first pass:** edit organisation identity later from the Org tab; display organisation branding in the UI.
+- **Implemented first pass:** shared organisation finances and identity with separate game divisions; game-specific role labels for division rosters and prompts to rename a division team and its five players.
+- **Known limitation:** all starting esports currently share the core match/weekly simulation; extra divisions use a simplified result simulation. Separate game-specific match rules, map pools, player acquisition and deeper per-division management remain planned.
+
 ### Update 13.0 — Main Menu & Career Saves
 
 - **Implemented first pass:** dedicated title screen with Continue Career, New Career, Load Career and Import Backup.
-- **Implemented first pass:** game-selection screen with CS2 playable and Valorant marked as coming soon until its dedicated roles, maps and match simulation are ready.
+- **Implemented first pass:** title-screen career actions and the original game-selection flow (superseded by Update 13.1's expanded starting-esport picker).
 - **Implemented first pass:** up to 20 named browser-local save slots, overwrite confirmation, load/delete/export actions, automatic recovery save, JSON backup import/export and legacy Update 12 save loading.
 - **Known limitation:** saves are local to the browser/device, not cloud-synced. Autosave is triggered by UI renders and skipped during an active round animation.
 - **Needs playtesting:** start a new career, reload and continue, create multiple saves, overwrite/delete one, import/export a backup, and load a pre-13.0 save. Confirm autosave never captures an in-progress animation or corrupts an existing save.
