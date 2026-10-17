@@ -1,12 +1,12 @@
 # Esports Org Manager
 
-A browser-based esports organisation management game. The current repository build is **Update 9.2 — Dynamic Boardroom**.
+A browser-based esports organisation management game. The current repository build is **Update 9.3 — Balance Pass**.
 
 ## Play
 
 Open [index.html](./index.html) in a modern desktop browser. The game is a standalone HTML file and does not require a build step or package installation.
 
-## Current build: Update 9.2
+## Current build: Update 9.3
 
 - Finance dashboard: cash balance, sponsor and merchandise income, and a cashflow outlook alongside weekly income, wages, running costs and net balance. Negative cashflow now surfaces a debt-limit warning with an estimated runway.
 - Boardroom: persistent board confidence and three season objectives covering an adaptive league placement target, financial stability, and senior-team development.
