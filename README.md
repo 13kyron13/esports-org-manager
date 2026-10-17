@@ -1,12 +1,15 @@
 # Esports Org Manager
 
-A browser-based esports organisation management game. The current repository build is **Update 12.0 — Match Logic & Competitive Veto**.
+A browser-based esports organisation management game. The current repository build is **Update 12.1 — C4 Placement Fix**.
 
 ## Play
 
 https://13kyron13.github.io/esports-org-manager/
 
-## Current build: Update 12.0 — Match Logic & Competitive Veto
+## Current build: Update 12.1 — C4 Placement Fix
+
+- **Bug fix:** the C4 marker now uses the reached attacker's actual radar position at the planting checkpoint, instead of drawing at a separate guessed point. A valid plant position is saved so the marker stays put if its carrier is eliminated later.
+- **Needs playtesting:** verify site alignment and planting/cancellation on all seven maps and both sides. Site locations and routes remain hand-authored radar coordinates.
 
 - **Implemented:** map-veto initiative alternates between player-first and opponent-first, rather than always giving the player the first action.
 - **Implemented:** veto choices are explicitly labelled BAN or PICK, and the completed veto shows the resulting maps before asking the player to choose a CT or T starting side for Map 1.
