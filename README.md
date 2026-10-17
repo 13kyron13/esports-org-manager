@@ -1,12 +1,18 @@
 # Esports Org Manager
 
-A browser-based esports organisation management game. The current repository build is **Update 13.2 — First-Career Guide**.
+A browser-based esports organisation management game. The current repository build is **Update 13.3 — CS2-Only Playable Build**.
 
 ## Play
 
 https://13kyron13.github.io/esports-org-manager/
 
-## Current build: Update 13.2 — First-Career Guide
+## Current build: Update 13.3 — CS2-Only Playable Build
+
+- **Implemented:** CS2 is the only selectable starting esport. VALORANT, Overwatch and League of Legends now display disabled “Coming soon” cards in the new-career picker.
+- **Implemented:** the picker clearly explains that other titles will become playable when their dedicated game systems are ready.
+- **Validation:** JavaScript syntax check passed; interactive browser QA is still needed.
+
+## Previous build: Update 13.2 — First-Career Guide
 
 - **Implemented:** the title screen now has a How to Play guide for roster management, finances, training, match preparation, organisation expansion and long-term planning.
 - **Implemented:** the guide is optional and accessible from the main menu, so players can check the basics before starting a career.
@@ -14,7 +20,7 @@ https://13kyron13.github.io/esports-org-manager/
 
 ## Previous build: Update 13.1 — Organisation Identity & Starting Esport
 
-- **Implemented:** the game picker is headed “Choose Your Starting Esport” and offers CS2, VALORANT, Overwatch and League of Legends.
+- **Implemented:** the game picker is headed “Choose Your Starting Esport”; only CS2 can be selected, while VALORANT, Overwatch and League of Legends are marked Coming Soon.
 - **Implemented:** organisation setup supports a custom name, short tag, emblem, primary colour and secondary colour, with a live preview.
 - **Implemented:** organisation identity can be edited later from the Org tab; the logo, name, tag and primary colour appear in the game UI.
 - **Implemented:** the organisation shares one brand and finances while adding other game divisions from Empire. Division teams use game-specific role labels and have a Manage Team prompt for renaming the team and its five players.
