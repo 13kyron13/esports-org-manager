@@ -1,6 +1,6 @@
 # Esports Org Manager
 
-A browser-based esports organisation management game. The current repository build is **Update 9.0 — Finance & Boardroom.
+A browser-based esports organisation management game. The current repository build is **Update 9.0 — Finance & Boardroom**.
 
 ## Play
 
