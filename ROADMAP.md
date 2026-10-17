@@ -36,7 +36,7 @@ The game should reward smart long-term decisions rather than simply buying the h
 - **Complete:** persistent board confidence, three season objectives (league top four, positive cash, senior-team power growth), end-of-season reviews, confidence changes, and performance bonuses.
 - **Still to test:** balance confidence movement and board bonuses across several full careers.
 
-**Current build documented by the repository:** Update 11.1 — Match Clarity Pass.
+**Current build documented by the repository:** Update 12.0 — Match Logic & Competitive Veto.
 
 Implemented, according to the commit history and current build notes:
 - Map-specific waypoint routes for Mirage, Inferno, Nuke, Ancient, Anubis, Dust II and Vertigo.
@@ -73,7 +73,8 @@ Earlier conversation roadmap items (finances, market/transfers, contracts/drama,
 
 ### Immediate match bug fixes
 - [x] Delay the C4 plant visual and require a Terrorist-side player to reach the selected site area before the bomb marker appears.
-- [ ] Validate bomb carrier movement and planted/defused/exploded outcomes across every map, side and simulation mode. If the attack never reaches a site, the game must not narrate a successful plant.
+- [x] Add a first-pass animated-round checkpoint: cancel the bomb event and avoid successful-plant narration when no living T-side player reaches the selected site area at the plant checkpoint.
+- [ ] Validate bomb carrier movement and planted/defused/exploded outcomes across every map, side and simulation mode. If the attack never reaches a site, the game must not narrate a successful plant. Instant whole-map simulation currently skips bomb events rather than claiming an unverified plant.
 - [ ] Add automated or repeatable match checks for planting, defusing, side switches and animation skipping.
 
 ### Match speed and drama
@@ -83,10 +84,10 @@ Earlier conversation roadmap items (finances, market/transfers, contracts/drama,
 - [ ] Improve the match timeline and broadcast presentation for kills, plants, defuses, round swings and decisive moments.
 
 ### Competitive map veto and side choice
-- [ ] Correct and test map-veto turn order for each match format so the player does not always receive the same first action.
-- [ ] Label every action explicitly as **BAN**, **PICK** or **DECIDER**; never label a map selection as a ban.
-- [ ] Make the final-map procedure understandable and let the appropriate team choose the decider map where the selected rules allow it.
-- [ ] Add a clear CT/T starting-side selection step when competitive rules give the player that choice; display when the half-time side switch happens.
+- [x] Alternate player-first and opponent-first map-veto initiative so the player does not always receive the first action; verify the exact sequence across formats.
+- [x] Label each player action explicitly as **BAN** or **PICK**, and show the completed map order before the side-choice step.
+- [ ] Add an explicit **DECIDER** label and refine the final-map procedure to match the appropriate competitive rules.
+- [x] Add CT/T starting-side selection for Map 1 and display the active side plus half-time switch; validate that the rule is appropriate for each competition format.
 - [ ] Show the full veto history, who made each decision, and which maps remain.
 
 ### Teach the player how to win
