@@ -6,7 +6,7 @@ A browser-based esports organisation management game. The current repository bui
 
 https://13kyron13.github.io/esports-org-manager/
 
-## Current build: Update 12.2 — Mirage Site & Spawn Zones
+## Current build: Update 12.3 — Bomb Result Consistency
 
 - **Bug fix:** the C4 marker now uses the reached attacker's actual radar position at the planting checkpoint, instead of drawing at a separate guessed point. A valid plant position is saved so the marker stays put if its carrier is eliminated later.
 - **Needs playtesting:** verify site alignment and planting/cancellation on all seven maps and both sides. Site locations and routes remain hand-authored radar coordinates.
