@@ -10,12 +10,12 @@ The game should reward smart long-term decisions rather than simply buying the h
 
 ## Current repository status
 
-## Update 9.1 — Boardroom & Objectives
+## Update 9.2 — Dynamic Boardroom
 
 - **Complete:** persistent board confidence, three season objectives (league top four, positive cash, senior-team power growth), end-of-season reviews, confidence changes, and performance bonuses.
 - **Still to test:** balance confidence movement and board bonuses across several full careers.
 
-**Current build documented by the repository:** Update 9.1 — Boardroom & Objectives.
+**Current build documented by the repository:** Update 9.2 — Dynamic Boardroom.
 
 Implemented, according to the commit history and current build notes:
 - Map-specific waypoint routes for Mirage, Inferno, Nuke, Ancient, Anubis, Dust II and Vertigo.
@@ -129,7 +129,7 @@ Earlier conversation roadmap items (finances, market/transfers, contracts/drama,
 - [ ] Keep a fast statistical mode available so deeper simulation does not make autoplay painfully slow.
 
 ### B5. Balance and testing
-- [x] Update 9.1 first-pass finance outlook: display cash balance, sponsor/merch income, weekly net and an estimated runway to the debt limit.
+- [x] Update 9.2 first-pass finance outlook: display cash balance, sponsor/merch income, weekly net and an estimated runway to the debt limit.
 - [ ] Test finance balance across multiple automated careers; compare cash reserves, bankruptcies, sponsor reliance and trophy success before tuning recurring costs.
 - [ ] Calibrate team power so new organisations can compete but not dominate instantly. *(First pass in Update 8.9; keep re-testing as new systems land. Money balance for passive play is still harsh and needs its own pass.)*
 - [ ] Rival strength scales across seasons without becoming an unbeatable wall.
