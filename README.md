@@ -1,16 +1,17 @@
 # Esports Org Manager
 
-A browser-based esports organisation management game. The current repository build is **Update 13.3 — CS2-Only Playable Build**.
+A browser-based esports organisation management game. The current repository build is **Update 15.0 — Match Preparation & Player Form**.
 
 ## Play
 
 https://13kyron13.github.io/esports-org-manager/
 
-## Current build: Update 13.3 — CS2-Only Playable Build
+## Current build: Update 15.0 — Match Preparation & Player Form
 
-- **Implemented:** CS2 is the only selectable starting esport. VALORANT, Overwatch and League of Legends now display disabled “Coming soon” cards in the new-career picker.
-- **Implemented:** the picker clearly explains that other titles will become playable when their dedicated game systems are ready.
-- **Validation:** JavaScript syntax check passed; interactive browser QA is still needed.
+- **Update 14 — Match Preparation:** added a once-per-match-week opponent scouting action. The report estimates opponent strength and gives a small preparation bonus; an Analyst improves the bonus.
+- **Update 15 — Deeper Season Simulation:** players now have form (-3 to +3) and fatigue (0–100). Form changes after wins/losses, fatigue affects team power, Rest training reduces fatigue, and players recover at the start of a new season.
+- **Coming soon consistency:** other game divisions cannot be newly opened from Empire and show Coming soon until their dedicated systems are ready. Existing legacy divisions in old saves are preserved.
+- **Validation:** JavaScript syntax check passed. Full interactive browser QA and balance testing are still needed.
 
 ## Previous build: Update 13.2 — First-Career Guide
 
