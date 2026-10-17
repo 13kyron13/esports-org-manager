@@ -1,17 +1,22 @@
 # Esports Org Manager
 
-A browser-based esports organisation management game. The current repository build is **Update 15.0 — Match Preparation & Player Form**.
+A browser-based esports organisation management game. The current repository build is **Update 19.0 — Multi-Game Simulation & Living Esports World**.
 
 ## Play
 
 https://13kyron13.github.io/esports-org-manager/
 
-## Current build: Update 15.0 — Match Preparation & Player Form
+## Current build: Update 19.0 — Multi-Game Simulation & Living Esports World
 
-- **Update 14 — Match Preparation:** added a once-per-match-week opponent scouting action. The report estimates opponent strength and gives a small preparation bonus; an Analyst improves the bonus.
-- **Update 15 — Deeper Season Simulation:** players now have form (-3 to +3) and fatigue (0–100). Form changes after wins/losses, fatigue affects team power, Rest training reduces fatigue, and players recover at the start of a new season.
-- **Coming soon consistency:** other game divisions cannot be newly opened from Empire and show Coming soon until their dedicated systems are ready. Existing legacy divisions in old saves are preserved.
-- **Validation:** JavaScript syntax check passed. Full interactive browser QA and balance testing are still needed.
+- **Playable starting games:** Counter-Strike 2, VALORANT, Overwatch, League of Legends and Rocket League can be selected for a new career.
+- **Game-specific systems:** each title has its own roster roles and map pool. VALORANT simulates round scores and spike events; Overwatch reports objective progress, team fights, eliminations and healing; League reports kills, gold, towers, dragons and Baron; Rocket League reports goals, shots, saves and assists.
+- **Map veto:** non-CS2 careers have their own ban-and-pick flow and play a best-of-three series on selected maps. CS2 retains its existing round-by-round radar simulation, economy and C4 rules.
+- **Update 16 — Player performance:** non-CS2 series now produce player ratings, MVPs, map results and a post-match report; results influence form, fatigue, morale, finances and season progression.
+- **Update 17 — Competition:** the existing league and championship path now supports careers in all five games, using the selected game's match simulation.
+- **Update 18 — Organisation management:** transfer/contract, staff, scouting, development and finance systems remain integrated with the career. Rival roster actions are part of the evolving world.
+- **Update 19 — Living world:** rival organisations gain or lose power over time and occasionally announce roster rebuilds, making the competition less static.
+- **Multi-game expansion:** Rocket League is now included in the division list; other divisions can be opened and receive their own role-labelled roster.
+- **Validation:** JavaScript syntax check passed. Full interactive browser QA, save migration tests and balance testing are still required. Non-CS2 matches are detailed automated series simulations rather than live, round-by-round visual matches.
 
 ## Previous build: Update 13.2 — First-Career Guide
 
