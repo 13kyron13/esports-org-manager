@@ -6,10 +6,11 @@ on:
       - main
     paths:
       - "index.html"
+      - "multiplayer.js"
+      - "multiplayer-config.js"
       - ".github/workflows/deploy-pages.yml"
   workflow_dispatch:
 
-# These permissions are only used when the workflow runs in the upstream repository.
 permissions:
   contents: read
   pages: write
@@ -21,8 +22,6 @@ concurrency:
 
 jobs:
   deploy:
-    # This workflow lives in a fork while being proposed upstream.
-    # Never deploy the fork's Pages site.
     if: github.repository == '13kyron13/esports-org-manager'
     runs-on: ubuntu-latest
     environment:
@@ -39,7 +38,7 @@ jobs:
       - name: Prepare static site
         run: |
           mkdir -p _site
-          cp index.html _site/index.html
+          cp index.html multiplayer.js multiplayer-config.js _site/
           touch _site/.nojekyll
 
       - name: Upload Pages artifact
