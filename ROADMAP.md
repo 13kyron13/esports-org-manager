@@ -76,6 +76,7 @@ Earlier conversation roadmap items (finances, market/transfers, contracts/drama,
 - [x] Add a first-pass animated-round checkpoint: cancel the bomb event and avoid successful-plant narration when no living T-side player reaches the selected site area at the plant checkpoint.
 - [ ] Validate bomb carrier movement and planted/defused/exploded outcomes across every map, side and simulation mode. If the attack never reaches a site, the game must not narrate a successful plant. Instant whole-map simulation currently skips bomb events rather than claiming an unverified plant.
 - [ ] Add automated or repeatable match checks for planting, defusing, side switches and animation skipping.
+- [x] Add an expandable match explanation panel showing roster power, opponent power, map familiarity and the major factors behind statistical outcomes; it also explains the limits of the radar animation.
 
 ### Match speed and drama
 - [x] Replace the binary Normal/Fast toggle with 0.5× Slow, 1× Normal, 2× Fast and 4× Very fast presentation speeds. The speed setting must not change match outcome calculations.
