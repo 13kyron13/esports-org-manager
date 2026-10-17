@@ -1,20 +1,27 @@
-# Update 19.5 — Online multiplayer setup
+# Update 19.5 — shared room-code multiplayer setup
 
-The existing game is a static browser app and keeps career saves in local browser storage. Update 19.5 adds an online league layer using Firebase Realtime Database and Anonymous Authentication. A Firebase project is required for cross-computer persistence; the app does not ship with shared credentials or a hosted database.
+## The player experience
 
-## One-time setup (league creator and every friend)
+Players should only need to open the hosted game, click **Empire → Multiplayer League → Connect online**, then **Create league** or **Join league** with a six-character code. Friends do not create Firebase projects and do not paste configuration values.
 
-1. Open the [Firebase Console](https://console.firebase.google.com/) and create a project.
-2. In **Build → Authentication → Sign-in method**, enable **Anonymous**.
-3. In **Build → Realtime Database**, create a database and copy its database URL.
-4. In **Project settings → General → Your apps**, register a Web app and copy its config values.
-5. In Esports Manager, open **Empire → Multiplayer League → Connection settings**, enter the API key, Auth domain, Database URL, Project ID and App ID, then select **Connect online**.
-6. The league creator chooses a name and selects **Create league**. Share the six-character code with friends. Friends connect their own Firebase config and select **Join league**.
-7. Once everyone has joined and published their team, the creator starts the season. The app generates round-robin fixtures. The creator records regular-season scores, generates top-four playoffs, records playoff results, and the champion is saved in the shared database.
+## One-time game-host setup
+
+This prototype uses Firebase Realtime Database and Anonymous Authentication as its shared online backend. It is not yet a fully hosted turnkey service: the game owner/developer must configure the backend once and deploy the updated game for everyone.
+
+1. Open the [Firebase Console](https://console.firebase.google.com/) and create a Firebase project.
+2. In **Authentication → Sign-in method**, enable **Anonymous**.
+3. In **Realtime Database**, create a database. Choose a location and start in locked mode. Copy the database URL.
+4. In **Project settings → General → Your apps**, register a Web app and copy its web configuration values.
+5. Edit `multiplayer-config.js` once for the shared game deployment. Replace the five `PASTE_...` placeholders with the real `apiKey`, `authDomain`, `databaseURL`, `projectId`, and `appId` values.
+6. Set and publish the database rules below. Do not make the database publicly readable/writable.
+7. Deploy `index.html`, `multiplayer.js`, and `multiplayer-config.js` together to the same website. Ensure the updated version is the one players open.
+8. Open the deployed game and test **Connect online → Create league** in one browser and **Connect online → Join league** in another browser/device.
+
+The Firebase web configuration is meant to be used in a browser and is not a service-account secret. Never put service-account JSON or private credentials in this repository. The database rules are what restrict access.
 
 ## Suggested Realtime Database rules
 
-These rules let signed-in users read a league, let the league owner update league-wide season data, and let each authenticated user write only their own team node. Review and adapt them before using with people you do not trust.
+These rules allow authenticated users to read a league, let its owner update league-wide season data, and let each authenticated user write only their own team node. Review them carefully before inviting people you do not trust.
 
 ```json
 {
@@ -34,18 +41,23 @@ These rules let signed-in users read a league, let the league owner update leagu
 }
 ```
 
-Firebase Realtime Database rules are not a replacement for a trusted game server. In this prototype, the league creator is trusted to enter official results. For a public or competitive league, use server-side validation (for example, Cloud Functions), rate limits, stronger identity/authentication, and stricter season-state validation before relying on standings or prizes.
+Firebase rules are not a replacement for a trusted game server. In this prototype, the league creator is trusted to enter official results. For public or competitive leagues, add server-side validation (for example, Cloud Functions), rate limits, stronger identity/authentication, and stricter season-state validation.
 
-## What is included
+## How to play
 
-- Shared league creation and joining by code
-- Live updates across connected browsers
-- Round-robin regular-season fixtures and standings (3 points for a win, 1 for a draw)
-- Top-four playoff generation and a saved champion
-- Local organisation roster snapshot publishing
-- Improved tutorial checklist and game-specific strategy guidance
-- More durable organisation identity saves
+1. Everyone opens the same deployed game website.
+2. Everyone clicks **Empire → Multiplayer League → Connect online**.
+3. The host enters a league name and clicks **Create league**.
+4. Share the six-character room code with friends.
+5. Friends enter the code and click **Join league**.
+6. Everyone clicks **Publish / refresh my team** so their organisation appears in the league.
+7. The host starts the season, records official regular-season scores, generates playoffs, and records playoff scores. The champion is stored in the shared database.
 
-## Compatibility notes
+## What this version does and does not do
 
-Existing single-player career slots and JSON backups are left intact. Multiplayer league data lives in Firebase; local careers remain in the browser. Each player manages their own career locally and publishes a snapshot to the shared league. This first iteration does not synchronize each player's full career state, automate match simulation between users, or prevent a league owner from entering an unfair score.
+- Shared league creation and joining by code.
+- Live updates to league data across connected browsers.
+- Round-robin fixtures, standings, playoffs, and a saved champion.
+- Team snapshots are shared; full single-player career saves remain local.
+- The league owner enters official results; matches are not automatically simulated between users.
+- The game host still has to create/configure the Firebase backend once and deploy the updated site. This code change removes Firebase configuration from individual players; it does not itself create a Firebase project or deploy a public server.
