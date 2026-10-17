@@ -69,6 +69,40 @@ Earlier conversation roadmap items (finances, market/transfers, contracts/drama,
 
 ---
 
+## Player feedback backlog — Match clarity, fairness and presentation
+
+### Immediate match bug fixes
+- [x] Delay the C4 plant visual and require a Terrorist-side player to reach the selected site area before the bomb marker appears.
+- [ ] Validate bomb carrier movement and planted/defused/exploded outcomes across every map, side and simulation mode. If the attack never reaches a site, the game must not narrate a successful plant.
+- [ ] Add automated or repeatable match checks for planting, defusing, side switches and animation skipping.
+
+### Match speed and drama
+- [x] Replace the binary Normal/Fast toggle with 0.5× Slow, 1× Normal, 2× Fast and 4× Very fast presentation speeds. The speed setting must not change match outcome calculations.
+- [ ] Add more distinct high-pressure moments through simulation-grounded events: clutches, comeback rounds, economy pressure, retakes and close finishes.
+- [ ] Keep drama explainable and fair; avoid adding arbitrary random bonuses just to create excitement.
+- [ ] Improve the match timeline and broadcast presentation for kills, plants, defuses, round swings and decisive moments.
+
+### Competitive map veto and side choice
+- [ ] Correct and test map-veto turn order for each match format so the player does not always receive the same first action.
+- [ ] Label every action explicitly as **BAN**, **PICK** or **DECIDER**; never label a map selection as a ban.
+- [ ] Make the final-map procedure understandable and let the appropriate team choose the decider map where the selected rules allow it.
+- [ ] Add a clear CT/T starting-side selection step when competitive rules give the player that choice; display when the half-time side switch happens.
+- [ ] Show the full veto history, who made each decision, and which maps remain.
+
+### Teach the player how to win
+- [ ] Add a short optional first-career tutorial covering finances, roster strength, practice, map confidence, tactics, economy and match decisions.
+- [ ] Explain important tactical controls before the player needs them, with concise tooltips and plain-language effects.
+- [ ] Add post-round feedback identifying relevant factors behind the result (team strength, map familiarity, economy, tactic, opponent power and relevant staff effects).
+- [ ] Offer contextual suggestions without pretending a statistically simulated result has a single certain cause.
+- [ ] Make difficulty fair and legible: communicate opponent strength and why a challenge is increasing, rather than relying on unexplained difficulty spikes.
+
+### UI organisation and presentation
+- [ ] Audit the current interface for clutter, inconsistent grouping, excessive tables and unclear navigation.
+- [ ] Establish a consistent visual hierarchy: primary action, key decision, supporting information and advanced details.
+- [ ] Group match preparation, live match controls, results and post-match analysis into a clear workflow.
+- [ ] Introduce progressive disclosure so new players see the essentials first while deeper management tools remain available.
+- [ ] Treat the presentation redesign as required work for the expanding game scope, not as optional decoration after adding features.
+
 ## Roadmap overview
 
 | Track | Focus | Status |
