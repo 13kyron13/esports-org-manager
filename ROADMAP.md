@@ -36,7 +36,7 @@ The game should reward smart long-term decisions rather than simply buying the h
 - **Complete:** persistent board confidence, three season objectives (league top four, positive cash, senior-team power growth), end-of-season reviews, confidence changes, and performance bonuses.
 - **Still to test:** balance confidence movement and board bonuses across several full careers.
 
-**Current build documented by the repository:** Update 12.0 — Match Logic & Competitive Veto.
+**Current build documented by the repository:** Update 12.1 — C4 Placement Fix.
 
 Implemented, according to the commit history and current build notes:
 - Map-specific waypoint routes for Mirage, Inferno, Nuke, Ancient, Anubis, Dust II and Vertigo.
@@ -74,6 +74,7 @@ Earlier conversation roadmap items (finances, market/transfers, contracts/drama,
 ### Immediate match bug fixes
 - [x] Delay the C4 plant visual and require a Terrorist-side player to reach the selected site area before the bomb marker appears.
 - [x] Add a first-pass animated-round checkpoint: cancel the bomb event and avoid successful-plant narration when no living T-side player reaches the selected site area at the plant checkpoint.
+- [x] Anchor the visible C4 to the reaching attacker's actual radar position at the plant checkpoint, then preserve that position if the carrier is eliminated later.
 - [ ] Validate bomb carrier movement and planted/defused/exploded outcomes across every map, side and simulation mode. If the attack never reaches a site, the game must not narrate a successful plant. Instant whole-map simulation currently skips bomb events rather than claiming an unverified plant.
 - [ ] Add automated or repeatable match checks for planting, defusing, side switches and animation skipping.
 - [x] Add an expandable match explanation panel showing roster power, opponent power, map familiarity and the major factors behind statistical outcomes; it also explains the limits of the radar animation.
