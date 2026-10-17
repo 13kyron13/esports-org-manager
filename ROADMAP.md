@@ -445,6 +445,20 @@ These items were identified after comparing the original concept with this roadm
 
 ### J4. Presentation and platform
 
+- [ ] **Premium management-game visual redesign:** evolve the interface from a functional browser dashboard into a polished PC management-game presentation inspired by the information hierarchy and production style of F1 Manager and FC career modes, while retaining a distinctive esports identity.
+- [ ] **Organisation headquarters home screen:** a branded HQ dashboard with division shortcuts, upcoming fixtures, board objectives, news, finance alerts and season milestones.
+- [ ] **Visual squad hub:** player portraits/cards, clear overall and potential ratings, role labels, form/morale indicators, a visual starting lineup and bench, and drag-and-drop or similarly intuitive squad assignment.
+- [ ] **Rich player and staff profiles:** dedicated pages with attributes, career history, development, contracts, reports, relationships and contextual actions.
+- [ ] **Premium management UI system:** consistent typography, spacing, iconography, colour themes, graphs, responsive panels, polished transitions, hover/focus states and accessible contrast; avoid making every screen a plain table.
+- [ ] **Broadcast-style match presentation:** clear team identities, scoreboard, timeline, kill feed, economy/bomb state, tactical map, match intro and detailed post-match report, layered over the existing simulation rather than replacing its rules.
+- [ ] **Game-specific presentation:** CS2 and Valorant should each have appropriate visual language, match displays and management terminology while remaining inside the same organisation career.
+- [ ] **Art and asset pipeline:** create or source suitable player portraits, team logos, facility illustrations and game-specific visual assets with appropriate usage rights; support fallbacks when assets are missing.
+- [ ] **Stage the visual upgrade:** first polish the existing browser UI, then consider packaging it as a desktop app with Electron or Tauri. Desktop packaging improves delivery, not visual quality by itself.
+- [ ] **Long-term engine decision:** only consider migrating parts of the game to Unity or Unreal if a genuinely 3D headquarters, animated 3D scenes or a much more cinematic match presentation justifies the added rebuild and maintenance cost.
+- [ ] **Preserve the management simulation:** presentation upgrades must not discard existing management systems or corrupt saves; keep the game playable and test each screen as it is redesigned.
+- [ ] **Distribution:** optional desktop packaging (Electron or Tauri) and release on itch.io or Steam.
+
+
 - [ ] **Caster commentary and highlights:** generated lines during matches, replayable highlight moments and map heatmaps built from simulated movement.
 - [ ] **Playstyle identity:** roster makeup gives the team a readable style that rivals can scout and counter.
 - [ ] **Explained coach suggestions** so newer players can learn CS concepts while playing.
@@ -465,7 +479,7 @@ This order prioritises foundational systems and avoids building later features o
 6. Build sponsor deals, brand, content, merch and facilities.
 7. Add living-world rival teams, dynamic storylines, player careers and meta changes.
 8. Build the multi-division state model and persistent game switcher, then implement Valorant as a genuinely separate, fully featured division.
-9. Polish UX, accessibility, balancing, achievements and optional sandbox/modding features.
+9. Polish the browser UI into a premium management-game experience, then consider desktop packaging; defer any full 3D engine migration until the core game and multi-division architecture are stable.\n10. Continue accessibility, balancing, achievements and optional sandbox/modding features.
 
 ## Definition of done for each update
 
