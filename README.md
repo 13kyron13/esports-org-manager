@@ -9,7 +9,7 @@ Open [index.html](./index.html) in a modern desktop browser. The game is a stand
 ## Current build: Update 9.2
 
 - Finance dashboard: cash balance, sponsor and merchandise income, and a cashflow outlook alongside weekly income, wages, running costs and net balance. Negative cashflow now surfaces a debt-limit warning with an estimated runway.
-- Boardroom: persistent board confidence and three season objectives covering league top-four qualification, positive end-of-season cash, and senior-team development.
+- Boardroom: persistent board confidence and three season objectives covering an adaptive league placement target, financial stability, and senior-team development.
 - Season reviews: objectives are assessed at year-end, confidence rises or falls based on results, and strong seasons can earn a board bonus.
 - Dynamic expectations: league targets adapt to your roster strength and board confidence, while financial objectives account for whether the organisation is already low on cash.
 - Board warnings: low confidence now produces clearer warnings, escalating to a formal warning below 25% rather than abruptly ending the career.
