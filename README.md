@@ -1,12 +1,18 @@
 # Esports Org Manager
 
-A browser-based esports organisation management game. The current repository build is **Update 13.1 — Organisation Identity & Starting Esport**.
+A browser-based esports organisation management game. The current repository build is **Update 13.2 — First-Career Guide**.
 
 ## Play
 
 https://13kyron13.github.io/esports-org-manager/
 
-## Current build: Update 13.1 — Organisation Identity & Starting Esport
+## Current build: Update 13.2 — First-Career Guide
+
+- **Implemented:** the title screen now has a How to Play guide for roster management, finances, training, match preparation, organisation expansion and long-term planning.
+- **Implemented:** the guide is optional and accessible from the main menu, so players can check the basics before starting a career.
+- **Validation:** JavaScript syntax check passed. Full interactive browser QA is still needed.
+
+## Previous build: Update 13.1 — Organisation Identity & Starting Esport
 
 - **Implemented:** the game picker is headed “Choose Your Starting Esport” and offers CS2, VALORANT, Overwatch and League of Legends.
 - **Implemented:** organisation setup supports a custom name, short tag, emblem, primary colour and secondary colour, with a live preview.
