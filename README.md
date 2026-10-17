@@ -1,12 +1,15 @@
 # Esports Org Manager
 
-A browser-based esports organisation management game. The current repository build is **Update 8.9 — Balance Pass**.
+A browser-based esports organisation management game. The current repository build is **Update 9.0 — Finance & Boardroom.
 
 ## Play
 
 Open [index.html](./index.html) in a modern desktop browser. The game is a standalone HTML file and does not require a build step or package installation.
 
-## Current build: Update 8.9
+## Current build: Update 9.0
+
+- Finance dashboard: cash balance, sponsor and merchandise income, and a cashflow outlook alongside weekly income, wages, running costs and net balance. Negative cashflow now surfaces a debt-limit warning with an estimated runway.
+- Focus for this phase: make organisation management, finances and long-term decisions the core experience, while keeping match simulation as one part of the wider career.
 
 - Balance pass: stat growth now slows from about 70 upward and stalls once a player reaches their potential, so rosters no longer all hit 99 by year 3. Rival teams ramp up slightly with each year, and round results use a softer win curve so upsets happen more often.
 - Measured with an automated passive manager over 6 seasons: roughly a 47% win rate, average stats near 90 by year 5 and trophies that are hard to win. A manager who uses sponsors, staff, map practice and tactics should do noticeably better.
