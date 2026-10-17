@@ -10,6 +10,14 @@ The game should reward smart long-term decisions rather than simply buying the h
 
 ## Current repository status
 
+### Update 11.0 — Scouting & Player Development
+
+- **Implemented first pass:** senior starters and bench players can receive an individual development focus: Aim, Game sense, Mental or Balanced. The selected plan adds targeted growth alongside weekly team training; coach skill and training facilities can improve growth.
+- **Implemented first pass:** academy and Tier 2 players follow their saved development focus during annual progression. Existing saves receive defaults for new fields.
+- **Implemented first pass:** scouting assignments can prioritise a player role and region. Youth prospects now have regions, and matching assignment settings improve scouting-report precision. Reports include an estimated confidence value.
+- **Still planned:** deeper multi-week scouting expeditions, scout regional knowledge and specialisations, shortlist/watchlist, trial invitations, richer player profiles, form/fatigue/burnout, individual training schedules and development history charts.
+- **Needs playtesting:** verify development across several seasons, potential ceilings, assignment matching, save migration, and scouting-report costs.
+
 ### Update 10.0 — Squad Inventory Hub
 
 - **Implemented first pass:** the Squad tab now has one overview table for Main Team, Bench, Academy prospects and Tier 2 players, with quick actions for bench swaps, sales and promotions.
@@ -28,7 +36,7 @@ The game should reward smart long-term decisions rather than simply buying the h
 - **Complete:** persistent board confidence, three season objectives (league top four, positive cash, senior-team power growth), end-of-season reviews, confidence changes, and performance bonuses.
 - **Still to test:** balance confidence movement and board bonuses across several full careers.
 
-**Current build documented by the repository:** Update 10.0 — Squad Inventory Hub.
+**Current build documented by the repository:** Update 11.0 — Scouting & Player Development.
 
 Implemented, according to the commit history and current build notes:
 - Map-specific waypoint routes for Mirage, Inferno, Nuke, Ancient, Anubis, Dust II and Vertigo.
@@ -68,7 +76,7 @@ Earlier conversation roadmap items (finances, market/transfers, contracts/drama,
 | Foundation | Standalone browser game, organisation and CS2 management | Existing project |
 | Match simulation & navigation | Hybrid tactical control, map vetoes, map-aware movement and round logic | In progress; Update 8.2 navigation is a first pass |
 | Transfers & contracts | Negotiations, buyouts, rival offers and smarter AI rosters | Planned / verify existing parts |
-| Staff, scouting & academy | Staff market, contracts, reports, youth development | Planned / verify existing parts |
+| Staff, scouting & academy | Staff market, contracts, reports, youth development | Partial; Update 11.0 first pass |
 | Organisation & brand | Sponsors, merchandise, social media, reputation | Planned |
 | Competition & progression | Calendars, brackets, Majors, awards, records | Planned / expand existing league systems |
 | Multi-game expansion | Valorant first, then other titles | Planned |
@@ -95,6 +103,8 @@ Earlier conversation roadmap items (finances, market/transfers, contracts/drama,
 - [ ] Separate cash flow from long-term brand value and sponsor commitments.
 
 ### A3. Player development and morale
+
+Update 11.0 establishes the first individual development-plan loop. The full FC-style system remains incomplete: richer training schedules, detailed progress history, scout/player reports and wellbeing trade-offs are still planned.
 - [ ] Training focus with meaningful trade-offs between skill development, team practice, rest and tactical preparation.
 - [ ] Diminishing stat growth near the 99 cap; elite players improve slowly and need more effort.
 - [ ] Age, potential, form, confidence, morale, fatigue, pressure handling and career stage.
@@ -207,7 +217,8 @@ Earlier conversation roadmap items (finances, market/transfers, contracts/drama,
 - [ ] Report quality depends on scout skill, scouting time, region familiarity and target visibility.
 - [ ] Reports reveal current ability, potential range, role fit, personality/work ethic and wage expectations over time.
 - [ ] Keep uncertainty meaningful but not frustrating; let repeated scouting narrow estimates.
-- [ ] Regional scouting networks and scouting assignments.
+- [x] First-pass scouting assignment by priority role and region; matching assignments improve report precision.
+- [ ] Multi-week scouting expeditions, regional scout knowledge, shortlist/watchlist, role/age filters and trial invitations.
 - [ ] Avoid making scouting a pay-to-click tax: give clear value and sensible free information.
 
 ### D3. Youth academy
