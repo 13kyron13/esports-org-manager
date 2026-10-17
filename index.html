@@ -380,7 +380,7 @@ function isDecisionRound(m){return m.round===0||m.round===12||(m.eco&&buyFor(m,"
 function draw(){
   const m=S.match;if(!m)return;if(!m.eco)m.eco=newEco();
   const decision=isDecisionRound(m),mp=mapProfile(m.mapName);
-  $("score").innerHTML=`${m.me} – ${m.them}<small>${mp.name} · ${mp.style} · ${m.bo>1?`Map ${m.map}/${m.maps.length} · Series ${m.sw}-${m.sl} · `:""}Round ${Math.min(m.round+1,24)} · Timeouts left: ${m.timeouts} · Money: you $${Math.round(m.eco.me)} / them $${Math.round(m.eco.them)} · next buy: ${BUYN[buyFor(m,"me")]}</small>`;
+  $("score").innerHTML=`${m.me} – ${m.them}<small>${mp.name} · ${mp.style} · ${m.bo>1?`Map ${m.map}/${m.maps.length} · Series ${m.sw}-${m.sl} · `:""}Round ${Math.min(m.round+1,24)} · ${m.round<12?m.startingSide:(m.startingSide==="T"?"CT":"T")} side · Timeouts left: ${m.timeouts} · Money: you $${Math.round(m.eco.me)} / them $${Math.round(m.eco.them)} · next buy: ${BUYN[buyFor(m,"me")]}</small>`;
   const c=$("ctrls");
   if(m.done){c.innerHTML=`<button class="pri" onclick="finish()">${(m.me>m.them?m.sw+1:m.sw)>=(m.bo+1)/2||(m.me>m.them?m.sl:m.sl+1)>=(m.bo+1)/2?"Finish match":"Next map"}</button><button onclick="autoplayMatch()">⏩ Autoplay remaining match</button>`;return}
   const T=[["aggro","Aggressive"],["default","Default"],["force","Force buy"],["save","Save / eco"]];
@@ -465,7 +465,7 @@ function radarPath(map,from,to){
 function routeFor(map,key){const n=NAV[map]||NAV.Mirage;return n[key]||n.tm}
 function routePoint(path,p){if(path.length===1)return path[0];const lengths=[];let total=0;for(let i=1;i<path.length;i++){const dx=path[i][0]-path[i-1][0],dy=path[i][1]-path[i-1][1],len=Math.hypot(dx,dy);lengths.push(len);total+=len}let dist=Math.max(0,Math.min(1,p))*total;for(let i=0;i<lengths.length;i++){if(dist<=lengths[i]){const a=path[i],b=path[i+1],k=lengths[i]?dist/lengths[i]:0;return[a[0]+(b[0]-a[0])*k,a[1]+(b[1]-a[1])*k]}dist-=lengths[i]}return path[path.length-1]}
 function makeDots(){
- const m=S.match,map=m?.mapName||"Mirage",round=m?.round||0,ownT=round<12,plan=m?.tactic||"default",anchors=NAV_ANCHORS[map]||NAV_ANCHORS.Mirage;
+ const m=S.match,map=m?.mapName||"Mirage",round=m?.round||0,ownT=round<12?(m?.startingSide==="T"):(m?.startingSide!=="T"),plan=m?.tactic||"default",anchors=NAV_ANCHORS[map]||NAV_ANCHORS.Mirage;
  const site=plan==="aggro"?(round%2?"b":"a"):(round%4<2?"a":"b");
  const mk=(side,i,p,lab)=>{const isT=side===0?ownT:!ownT,from=isT?anchors.t:anchors.ct;let target=isT?(p.role==="AWPer"?anchors.mid:p.role==="Lurker"?(site==="a"?anchors.b:anchors.a):anchors[site]):i===4?anchors.mid:i<2?anchors.a:anchors.b;
  let path=radarPath(map,from,target);if(!path){const key=isT?(p.role==="AWPer"?"tm":site==="a"?"ta":"tb"):(i===4?"cm":i<2?"ca":"cb");path=routeFor(map,key).map(q=>[...q])}
