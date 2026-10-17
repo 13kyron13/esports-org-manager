@@ -12,6 +12,7 @@ Open [index.html](./index.html) in a modern desktop browser. The game is a stand
 - **Implemented:** veto choices are explicitly labelled BAN or PICK, and the completed veto shows the resulting maps before asking the player to choose a CT or T starting side for Map 1.
 - **Implemented first pass:** the selected starting side now controls which team attacks/defends on the radar, the match header shows the active side, and the sides switch after 12 rounds.
 - **Implemented first pass:** animated bomb rounds are cancelled if no living Terrorist-side player reaches the selected site area at the plant checkpoint; the round log then avoids claiming a successful plant. Whole-map instant simulation skips the unverified bomb animation event.
+- **Implemented:** an expandable “Why are rounds going this way?” panel explains roster power, opponent power, map familiarity and the main match factors, while clarifying that the radar animation illustrates a statistical result.
 - **Needs playtesting:** objective checks use hand-authored radar-coordinate movement, not a true CS2 navigation mesh. Validate every map, side, veto format, round-by-round mode, autoplay and skip behaviour. Round outcomes remain statistically simulated.
 
 ## Earlier build notes: Update 11.1
