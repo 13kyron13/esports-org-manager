@@ -44,6 +44,15 @@ See [ROADMAP.md](./ROADMAP.md) for the full long-term plan, including:
 The roadmap distinguishes existing or partially implemented work from future plans; items listed as planned are not claims about the current playable build.
 
 
+### Match feedback & Update 11.1 — Match Clarity Pass
+
+- Fixed the premature C4 marker: the bomb now has a later plant phase and is only drawn after a Terrorist-side player reaches the selected site area.
+- Added four animation speeds to the match controls: 0.5× slow, 1× normal, 2× fast and 4× very fast. This changes presentation speed, not the round result calculation.
+- Still planned: full map-veto turn-order correction, explicit final-map PICK vs BAN language, and a clear starting-side choice for CT/T where competitive rules allow it.
+- Still planned: round-by-round explanations, a first-time manager tutorial, tactical hints, economy/utility guidance, and a post-round explanation of the key factors behind each result.
+- Still planned: a match presentation and layout pass to reduce clutter, improve visual hierarchy and make controls/status easier to understand.
+- Needs browser playtesting: validate bomb timing on different maps and sides, confirm all speed settings behave correctly, and ensure map vetoes/side selection follow the intended competitive rules.
+
 ### Update 11.0 — Scouting & Player Development
 
 - Added individual development plans for senior starters and bench players: Aim, Game sense, Mental or Balanced.
