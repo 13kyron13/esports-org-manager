@@ -4,9 +4,9 @@
    These web-app values identify the Firebase project; protect your database with the rules
    documented in MULTIPLAYER_SETUP.md. Never put service-account secrets here. */
 window.ESM195_FIREBASE_CONFIG = {
-  apiKey: "PASTE_FIREBASE_WEB_API_KEY_HERE",
-  authDomain: "PASTE_PROJECT_ID_HERE.firebaseapp.com",
-  databaseURL: "PASTE_REALTIME_DATABASE_URL_HERE",
-  projectId: "PASTE_PROJECT_ID_HERE",
-  appId: "PASTE_FIREBASE_WEB_APP_ID_HERE"
+  apiKey: "AIzaSyBFQoGThInGaGXjZmja2DVyhyxZ3QPapfU",
+  authDomain: "esport-manage.firebaseapp.com",
+  databaseURL: "https://esport-manage-default-rtdb.firebaseio.com/",
+  projectId: "esport-manage",
+  appId: "1:301701928269:web:fb9d0a5d2fe6db5e48d304"
 };
