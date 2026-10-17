@@ -10,6 +10,11 @@ The game should reward smart long-term decisions rather than simply buying the h
 
 ## Current repository status
 
+### Update 13.2 — First-Career Guide
+
+- **Implemented:** an optional How to Play page from the title screen introduces roster management, finances, training, match preparation, multi-game expansion and long-term planning.
+- **Validation:** JavaScript syntax check passed; the guide and menu flow still need interactive browser testing.
+
 ### Update 13.1 — Organisation Identity & Starting Esport
 
 - **Implemented first pass:** “Choose Your Starting Esport” picker for CS2, VALORANT, Overwatch and League of Legends.
@@ -54,7 +59,7 @@ The game should reward smart long-term decisions rather than simply buying the h
 - **Complete:** persistent board confidence, three season objectives (league top four, positive cash, senior-team power growth), end-of-season reviews, confidence changes, and performance bonuses.
 - **Still to test:** balance confidence movement and board bonuses across several full careers.
 
-**Current build documented by the repository:** Update 13.0 — Main Menu & Career Saves.
+**Current build documented by the repository:** Update 13.2 — First-Career Guide.
 
 ### Update 12.3 — Bomb Result Consistency
 - **Implemented first pass:** round scoring is resolved from the bomb outcome and the current side: explosion awards the Terrorists; a completed defuse awards the Counter-Terrorists.
