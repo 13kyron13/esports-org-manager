@@ -1,12 +1,21 @@
 # Esports Org Manager
 
-A browser-based esports organisation management game. The current repository build is **Update 12.1 — C4 Placement Fix**.
+A browser-based esports organisation management game. The current repository build is **Update 13.0 — Main Menu & Career Saves**.
 
 ## Play
 
 https://13kyron13.github.io/esports-org-manager/
 
-## Current build: Update 12.3 — Bomb Result Consistency
+## Current build: Update 13.0 — Main Menu & Career Saves
+
+- **Implemented:** title screen with Continue Career, New Career, Load Career and Import Backup actions.
+- **Implemented:** new-career game picker. CS2 is playable; Valorant is shown as coming soon until its dedicated roles, maps and match simulation are implemented.
+- **Implemented:** multiple named local save slots (up to 20), overwrite confirmation, load/delete/export per slot, and automatic recovery save.
+- **Implemented:** JSON backup export and file-based import, plus compatibility loading for existing Update 12-era saves.
+- **Implemented:** save/load tools are available from the title screen and the in-game Empire area. Browser saves remain local to that browser/device; use export/import to move careers.
+- **Validation:** JavaScript syntax check passed. Full interactive browser QA is still needed for menu flows, autosave timing, storage limits and legacy-save migration.
+
+## Earlier build notes: Update 12.3 — Bomb Result Consistency
 
 - **Bug fix:** the C4 marker now uses the reached attacker's actual radar position at the planting checkpoint, instead of drawing at a separate guessed point. A valid plant position is saved so the marker stays put if its carrier is eliminated later.
 - **Needs playtesting:** verify site alignment and planting/cancellation on all seven maps and both sides. Site locations and routes remain hand-authored radar coordinates.
