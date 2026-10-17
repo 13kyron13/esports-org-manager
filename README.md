@@ -42,3 +42,12 @@ See [ROADMAP.md](./ROADMAP.md) for the full long-term plan, including:
 - Save/load, export/import, accessibility, testing and extra design ideas.
 
 The roadmap distinguishes existing or partially implemented work from future plans; items listed as planned are not claims about the current playable build.
+
+
+### Update 10.0 — Squad Inventory Hub
+
+- Added a central squad inventory table in the Squad tab, bringing the main team, bench, academy prospects and Tier 2 players into one overview.
+- Shows squad group, role, age, overall rating, potential, morale, salary and contract length where available.
+- Includes quick actions to start/sell bench players and promote academy/Tier 2 prospects to the senior bench, with existing squad-capacity and cash checks.
+- This is the first inventory UI pass; the underlying squad groups still use their existing separate rules. A full shared-inventory assignment system remains planned.
+- JavaScript syntax check passed; playtesting is still needed.
