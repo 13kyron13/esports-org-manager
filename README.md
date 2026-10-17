@@ -4,7 +4,7 @@ A browser-based esports organisation management game. The current repository bui
 
 ## Play
 
-Open [index.html](./index.html) in a modern desktop browser. The game is a standalone HTML file and does not require a build step or package installation.
+https://13kyron13.github.io/esports-org-manager/
 
 ## Current build: Update 12.0 — Match Logic & Competitive Veto
 
