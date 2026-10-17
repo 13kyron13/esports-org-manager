@@ -545,9 +545,15 @@ function drawMap(dots,t){
   const bomb=S.match?.roundEvent;
   const attackers=LAST_DOTS.filter(d=>d.isT&&d.die===null);
   const sitePoint=bomb?.type==="bomb"?bomb.bombPos:null;
-  const carrierReached=!!sitePoint&&attackers.some(d=>{const q=pos(d,t);return Math.hypot(q[0]-sitePoint[0],q[1]-sitePoint[1])<34});
+  // The C4 must be attached to a living attacker who reaches the selected site.
+  // Render it at that player's actual position at the plant checkpoint, not at a
+  // guessed static marker that can look detached from the movement on some maps.
+  const plantCarrier=!!sitePoint?attackers.map(d=>({d,q:pos(d,Math.max(0,Math.min(t,bomb.plantAt)))}))
+    .map(v=>({...v,dist:Math.hypot(v.q[0]-sitePoint[0],v.q[1]-sitePoint[1])}))
+    .filter(v=>v.dist<34).sort((a,b)=>a.dist-b.dist)[0]:null;
+  const carrierReached=!!plantCarrier;
   if(bomb?.type==="bomb"&&t>=bomb.plantAt&&carrierReached){
-    const bx=mx+(bomb.bombPos[0]/320)*mw,by=bomb.bombPos[1];
+    const [bx,by]=[mx+(plantCarrier.q[0]/320)*mw,my+(plantCarrier.q[1]/220)*mh];
     if(bomb.outcome==="defuse"&&t>=bomb.defuseStart&&t<bomb.defuseEnd){
       const progress=Math.max(0,Math.min(1,(t-bomb.defuseStart)/(bomb.defuseEnd-bomb.defuseStart)));
       g.save();g.fillStyle="#d9273f";g.fillRect(bx-7,by-6,14,12);g.strokeStyle="#fff";g.lineWidth=1;g.strokeRect(bx-7,by-6,14,12);
@@ -642,7 +648,7 @@ function animateRound(win,done){
     drawMap(dots,t);
     if(t<1)requestAnimationFrame(f);
     else{
-      if(m.roundEvent?.type==="bomb"){const b=m.roundEvent,aliveAttackers=dots.filter(d=>d.isT&&(d.die===null||d.die>b.plantAt));const reached=aliveAttackers.some(d=>{const q=pos(d,b.plantAt);return Math.hypot(q[0]-b.bombPos[0],q[1]-b.bombPos[1])<34});if(!reached){m.roundEvent=null;log("C4 plant cancelled: the attack never reached the selected site.","m")}}
+      if(m.roundEvent?.type==="bomb"){const b=m.roundEvent,aliveAttackers=dots.filter(d=>d.isT&&(d.die===null||d.die>b.plantAt));const carrier=aliveAttackers.map(d=>({d,q:pos(d,b.plantAt)})).map(v=>({...v,dist:Math.hypot(v.q[0]-b.bombPos[0],v.q[1]-b.bombPos[1])})).filter(v=>v.dist<34).sort((a,b)=>a.dist-b.dist)[0];if(!carrier){m.roundEvent=null;log("C4 plant cancelled: the attack never reached the selected site.","m")}else{b.bombPos=[carrier.q[0],carrier.q[1]]}}
       if(m.roundEvent?.type==="bomb"&&m.roundEvent.outcome==="defuse")log(`DEFUSE COMPLETE at ${m.roundEvent.site}! The C4 is disabled.`,"m");
       else if(m.roundEvent?.type==="bomb")log(`C4 detonated at ${m.roundEvent.site} — round over.`,"m");
       else log("Round phase: engagements resolved.","m");
