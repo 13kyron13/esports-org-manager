@@ -1,12 +1,12 @@
 # Esports Org Manager
 
-A browser-based esports organisation management game. The current repository build is **Update 11.0 — Scouting & Player Development**.
+A browser-based esports organisation management game. The current repository build is **Update 11.1 — Match Clarity Pass**.
 
 ## Play
 
 Open [index.html](./index.html) in a modern desktop browser. The game is a standalone HTML file and does not require a build step or package installation.
 
-## Current build: Update 11.0
+## Current build: Update 11.1
 
 - Finance dashboard: cash balance, sponsor and merchandise income, and a cashflow outlook alongside weekly income, wages, running costs and net balance. Negative cashflow now surfaces a debt-limit warning with an estimated runway.
 - Boardroom: persistent board confidence and three season objectives covering an adaptive league placement target, financial stability, and senior-team development.
@@ -47,6 +47,7 @@ The roadmap distinguishes existing or partially implemented work from future pla
 ### Match feedback & Update 11.1 — Match Clarity Pass
 
 - Fixed the premature C4 marker: the bomb now has a later plant phase and is only drawn after a Terrorist-side player reaches the selected site area.
+- Added 0.5×, 1×, 2× and 4× match animation speeds. These only change presentation speed, not the round result calculation.
 - Added four animation speeds to the match controls: 0.5× slow, 1× normal, 2× fast and 4× very fast. This changes presentation speed, not the round result calculation.
 - Still planned: full map-veto turn-order correction, explicit final-map PICK vs BAN language, and a clear starting-side choice for CT/T where competitive rules allow it.
 - Still planned: round-by-round explanations, a first-time manager tutorial, tactical hints, economy/utility guidance, and a post-round explanation of the key factors behind each result.
