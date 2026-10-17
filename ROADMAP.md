@@ -36,7 +36,12 @@ The game should reward smart long-term decisions rather than simply buying the h
 - **Complete:** persistent board confidence, three season objectives (league top four, positive cash, senior-team power growth), end-of-season reviews, confidence changes, and performance bonuses.
 - **Still to test:** balance confidence movement and board bonuses across several full careers.
 
-**Current build documented by the repository:** Update 12.1 — C4 Placement Fix.
+**Current build documented by the repository:** Update 12.2 — Mirage Site & Spawn Zones.
+
+### Update 12.2 — Mirage Site & Spawn Zones
+- **Implemented first pass:** Mirage's T and CT spawn coordinates and route starts now sit inside the green-outlined spawn areas.
+- **Implemented first pass:** C4 planting is validated against the orange A/B site areas; an attacker outside the selected site's area cannot trigger a plant.
+- **Needs playtesting:** verify both sites, both starting sides, and route variants in the live browser. Other maps still need their own verified spawn/site zone coordinates.
 
 Implemented, according to the commit history and current build notes:
 - Map-specific waypoint routes for Mirage, Inferno, Nuke, Ancient, Anubis, Dust II and Vertigo.
