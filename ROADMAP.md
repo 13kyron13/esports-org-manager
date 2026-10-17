@@ -1,8 +1,3 @@
-## Update 9.1 — Boardroom & Objectives
-
-- **Complete:** persistent board confidence, three season objectives (league top four, positive cash, senior-team power growth), end-of-season reviews, confidence changes, and performance bonuses.
-- **Still to test:** balance confidence movement and board bonuses across several full careers.
-
 # Esports Org Manager — Master Roadmap
 
 This is the master plan for the full game, including the original concept, previously agreed update roadmap, current repository work, and additional ideas. It is intentionally comprehensive: items marked **Planned** are design goals, not claims that they already exist in the playable build.
@@ -15,7 +10,12 @@ The game should reward smart long-term decisions rather than simply buying the h
 
 ## Current repository status
 
-**Current build documented by the repository:** Update 8.9 — Balance Pass.
+## Update 9.1 — Boardroom & Objectives
+
+- **Complete:** persistent board confidence, three season objectives (league top four, positive cash, senior-team power growth), end-of-season reviews, confidence changes, and performance bonuses.
+- **Still to test:** balance confidence movement and board bonuses across several full careers.
+
+**Current build documented by the repository:** Update 9.1 — Boardroom & Objectives.
 
 Implemented, according to the commit history and current build notes:
 - Map-specific waypoint routes for Mirage, Inferno, Nuke, Ancient, Anubis, Dust II and Vertigo.
