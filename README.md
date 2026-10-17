@@ -1,12 +1,12 @@
 # Esports Org Manager
 
-A browser-based esports organisation management game. The current repository build is **Update 10.0 — Squad Inventory Hub**.
+A browser-based esports organisation management game. The current repository build is **Update 11.0 — Scouting & Player Development**.
 
 ## Play
 
 Open [index.html](./index.html) in a modern desktop browser. The game is a standalone HTML file and does not require a build step or package installation.
 
-## Current build: Update 10.0
+## Current build: Update 11.0
 
 - Finance dashboard: cash balance, sponsor and merchandise income, and a cashflow outlook alongside weekly income, wages, running costs and net balance. Negative cashflow now surfaces a debt-limit warning with an estimated runway.
 - Boardroom: persistent board confidence and three season objectives covering an adaptive league placement target, financial stability, and senior-team development.
@@ -44,6 +44,15 @@ See [ROADMAP.md](./ROADMAP.md) for the full long-term plan, including:
 The roadmap distinguishes existing or partially implemented work from future plans; items listed as planned are not claims about the current playable build.
 
 
+### Update 11.0 — Scouting & Player Development
+
+- Added individual development plans for senior starters and bench players: Aim, Game sense, Mental or Balanced.
+- Individual plans contribute targeted growth alongside weekly team training; coach skill and training facilities can improve growth, while player potential continues to limit development.
+- Academy and Tier 2 players use their development focus during annual progression, and older saves receive safe defaults when loaded.
+- Added scouting assignments by priority role and region. Prospects now have a region, and matching assignments improve report precision; reports show a confidence estimate.
+- Scouting assignment and development focus are stored in the career save.
+- JavaScript syntax check passed. Browser playtesting is still needed; scouting is a first pass and does not yet simulate a full multi-week regional scouting expedition.
+
 ### Update 10.0 — Squad Inventory Hub
 
 - Added a central squad inventory table in the Squad tab, bringing the main team, bench, academy prospects and Tier 2 players into one overview.
@@ -58,4 +67,4 @@ The intended career is one esports organisation operating several distinct divis
 
 ### Presentation direction (planned)
 
-After the core management and multi-division systems are stable, the UI will be redesigned toward a premium PC management-game feel: an organisation headquarters dashboard, visual squad hub and player profiles, richer graphs and panels, and esports broadcast-style match presentation. The first step is to polish the existing browser build; Electron/Tauri packaging may follow. A full Unity/Unreal migration is a long-term option only if the benefits of 3D presentation justify a substantial rebuild. These are roadmap goals, not current Update 10.0 features.
+After the core management and multi-division systems are stable, the UI will be redesigned toward a premium PC management-game feel: an organisation headquarters dashboard, visual squad hub and player profiles, richer graphs and panels, and esports broadcast-style match presentation. The first step is to polish the existing browser build; Electron/Tauri packaging may follow. A full Unity/Unreal migration is a long-term option only if the benefits of 3D presentation justify a substantial rebuild. These are roadmap goals, not current Update 11.0 features.
