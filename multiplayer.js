@@ -1,10 +1,8 @@
-/* Esports Manager Update 19.5 — online league layer.
-   Requires a Firebase project with Anonymous Authentication and Realtime Database enabled.
-   The user's Firebase config is stored locally; league data is shared through Firebase. */
+/* Esports Manager Update 19.5 — shared online league layer.
+   The game host configures Firebase once in multiplayer-config.js; players only create or join rooms. */
 (() => {
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
-  const cfgKey = "esm195FirebaseConfig";
   let db = null, auth = null, uid = null, activeLeague = null, leagueRef = null, unsubscribe = null;
   const gameNames = ["CS2","Valorant","Overwatch","League of Legends","Rocket League"];
   function orgSnapshot() {
@@ -25,15 +23,13 @@
     if (!host) return;
     const card = document.createElement("div");
     card.className = "card"; card.id = "multiplayer195";
-    card.innerHTML = '<h2>🌍 Multiplayer League · Update 19.5</h2><p class="note">Create a league and invite friends using its league code. Everyone needs to connect their own Firebase config once. Your existing single-player careers remain local and unchanged.</p><div id="mpStatus" class="note">Not connected to an online league.</div><div id="mpConfigArea"></div><div id="mpLeagueArea"></div>';
+    card.innerHTML = '<h2>🌍 Multiplayer League · Update 19.5</h2><p class="note">Create a room and invite friends using its code. The online service is configured once for the game; players do not need their own Firebase settings. Your existing single-player careers remain local and unchanged.</p><div id="mpStatus" class="note">Not connected to an online league.</div><div id="mpConfigArea"></div><div id="mpLeagueArea"></div>';
     host.prepend(card);
     renderConfig();
   }
   function renderConfig() {
     const area = $("mpConfigArea"); if (!area) return;
-    let old = {}; try { old = JSON.parse(localStorage.getItem(cfgKey) || "{}"); } catch (_) {}
-    area.innerHTML = '<details id="mpSettings"><summary style="cursor:pointer;font-weight:700;margin:8px 0">Connection settings (one-time setup)</summary><p class="note">Paste the web app config from your Firebase project. It is saved only in this browser.</p><div class="menu-form-grid"><label>API key<input id="mpApiKey" autocomplete="off"></label><label>Auth domain<input id="mpAuthDomain" placeholder="your-project.firebaseapp.com"></label><label>Database URL<input id="mpDatabaseURL" placeholder="https://your-project-default-rtdb.region.firebasedatabase.app"></label><label>Project ID<input id="mpProjectId"></label><label>App ID<input id="mpAppId"></label></div><button class="pri" id="mpConnect">Connect online</button><button id="mpDisconnect">Disconnect</button></details>';
-    ["ApiKey","AuthDomain","DatabaseURL","ProjectId","AppId"].forEach(k => { const el = $("mp"+k); if (el) el.value = old[({ApiKey:"apiKey",AuthDomain:"authDomain",DatabaseURL:"databaseURL",ProjectId:"projectId",AppId:"appId"})[k]] || ""; });
+    area.innerHTML = '<p class="note">Online rooms are ready to use once the game host has configured the shared online service. You do not need your own Firebase project.</p><button class="pri" id="mpConnect">Connect online</button> <button id="mpDisconnect">Disconnect</button>';
     $("mpConnect").onclick = connect;
     $("mpDisconnect").onclick = () => { if (unsubscribe) unsubscribe(); unsubscribe = null; db = null; auth = null; uid = null; activeLeague = null; leagueRef = null; setStatus("Disconnected. Your local career saves are unchanged."); renderLeagueActions(); };
   }
@@ -45,14 +41,15 @@
     });
   }
   async function connect() {
-    const config = {
-      apiKey: $("mpApiKey")?.value.trim(), authDomain: $("mpAuthDomain")?.value.trim(),
-      databaseURL: $("mpDatabaseURL")?.value.trim(), projectId: $("mpProjectId")?.value.trim(), appId: $("mpAppId")?.value.trim()
-    };
-    if (Object.values(config).some(v => !v)) { setStatus("Fill in all five Firebase config fields first."); return; }
+    const config = window.ESM195_FIREBASE_CONFIG || {};
+    const required = ["apiKey","authDomain","databaseURL","projectId","appId"];
+    if (required.some(k => !String(config[k] || "").trim() || String(config[k]).startsWith("PASTE_"))) {
+      setStatus("The shared online service has not been configured by the game host yet. Players do not need their own Firebase settings.");
+      renderLeagueActions();
+      return;
+    }
     try {
-      localStorage.setItem(cfgKey, JSON.stringify(config));
-      setStatus("Connecting to Firebase…");
+      setStatus("Connecting online…");
       await loadScript("https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js");
       await loadScript("https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js");
       await loadScript("https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js");
@@ -61,21 +58,20 @@
       if (!app) app = firebase.initializeApp(config, appName);
       auth = app.auth(); db = app.database();
       await auth.signInAnonymously(); uid = auth.currentUser.uid;
-      setStatus("Connected online. Your multiplayer identity is ready on this browser.");
+      setStatus("Connected online. Create a room or join a friend's room with a code.");
       renderLeagueActions();
     } catch (e) {
-      setStatus("Connection failed: " + (e?.message || "check Firebase config, Anonymous Authentication, database URL and security rules."));
+      setStatus("Could not connect: " + (e?.message || "the shared online service may not be configured yet."));
     }
   }
   function renderLeagueActions() {
     const area = $("mpLeagueArea"); if (!area) return;
     if (!db || !uid) {
-      area.innerHTML = '<p class="note">Online leagues need a Firebase project. Open Connection settings and connect first. See MULTIPLAYER_SETUP.md in the project repository for setup instructions.</p>'; return;
+      area.innerHTML = '<p class="note">Connect online to create or join a room. If the shared online service is not configured yet, the game host needs to finish the one-time setup.</p>'; return;
     }
     area.innerHTML = '<div class="menu-form-grid"><label>League name<input id="mpLeagueName" maxlength="48" placeholder="Friday Night League"></label><label>League code<input id="mpLeagueCode" maxlength="12" placeholder="Enter friend\'s code"></label></div><button class="pri" id="mpCreate">Create league</button><button id="mpJoin">Join league</button><button id="mpRefresh">Publish / refresh my team</button><div id="mpLeagueView"></div>';
     $("mpCreate").onclick = createLeague;
     $("mpJoin").onclick = joinLeague;
-    $("mpRefresh").onclick = publishTeam;
     $("mpRefresh").onclick = publishTeam;
     $("mpLeagueCode").addEventListener("input", e => e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,12));
     if (activeLeague) listenLeague(activeLeague.code);
