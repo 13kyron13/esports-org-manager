@@ -1,3 +1,8 @@
+## Update 9.1 — Boardroom & Objectives
+
+- **Complete:** persistent board confidence, three season objectives (league top four, positive cash, senior-team power growth), end-of-season reviews, confidence changes, and performance bonuses.
+- **Still to test:** balance confidence movement and board bonuses across several full careers.
+
 # Esports Org Manager — Master Roadmap
 
 This is the master plan for the full game, including the original concept, previously agreed update roadmap, current repository work, and additional ideas. It is intentionally comprehensive: items marked **Planned** are design goals, not claims that they already exist in the playable build.
@@ -124,7 +129,7 @@ Earlier conversation roadmap items (finances, market/transfers, contracts/drama,
 - [ ] Keep a fast statistical mode available so deeper simulation does not make autoplay painfully slow.
 
 ### B5. Balance and testing
-- [x] Update 9.0 first-pass finance outlook: display cash balance, sponsor/merch income, weekly net and an estimated runway to the debt limit.
+- [x] Update 9.1 first-pass finance outlook: display cash balance, sponsor/merch income, weekly net and an estimated runway to the debt limit.
 - [ ] Test finance balance across multiple automated careers; compare cash reserves, bankruptcies, sponsor reliance and trophy success before tuning recurring costs.
 - [ ] Calibrate team power so new organisations can compete but not dominate instantly. *(First pass in Update 8.9; keep re-testing as new systems land. Money balance for passive play is still harsh and needs its own pass.)*
 - [ ] Rival strength scales across seasons without becoming an unbeatable wall.
