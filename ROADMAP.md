@@ -10,6 +10,16 @@ The game should reward smart long-term decisions rather than simply buying the h
 
 ## Current repository status
 
+### Update 13.0 — Main Menu & Career Saves
+
+- **Implemented first pass:** dedicated title screen with Continue Career, New Career, Load Career and Import Backup.
+- **Implemented first pass:** game-selection screen with CS2 playable and Valorant marked as coming soon until its dedicated roles, maps and match simulation are ready.
+- **Implemented first pass:** up to 20 named browser-local save slots, overwrite confirmation, load/delete/export actions, automatic recovery save, JSON backup import/export and legacy Update 12 save loading.
+- **Known limitation:** saves are local to the browser/device, not cloud-synced. Autosave is triggered by UI renders and skipped during an active round animation.
+- **Needs playtesting:** start a new career, reload and continue, create multiple saves, overwrite/delete one, import/export a backup, and load a pre-13.0 save. Confirm autosave never captures an in-progress animation or corrupts an existing save.
+- **Still planned:** deeper tutorial/onboarding, redesigned squad/player cards, richer transitions and a complete game-specific Valorant career.
+
+
 ### Update 11.0 — Scouting & Player Development
 
 - **Implemented first pass:** senior starters and bench players can receive an individual development focus: Aim, Game sense, Mental or Balanced. The selected plan adds targeted growth alongside weekly team training; coach skill and training facilities can improve growth.
@@ -36,11 +46,11 @@ The game should reward smart long-term decisions rather than simply buying the h
 - **Complete:** persistent board confidence, three season objectives (league top four, positive cash, senior-team power growth), end-of-season reviews, confidence changes, and performance bonuses.
 - **Still to test:** balance confidence movement and board bonuses across several full careers.
 
-**Current build documented by the repository:** Update 12.3 — Bomb Result Consistency.
+**Current build documented by the repository:** Update 13.0 — Main Menu & Career Saves.
 
 ### Update 12.3 — Bomb Result Consistency
 - **Implemented first pass:** round scoring is resolved from the bomb outcome and the current side: explosion awards the Terrorists; a completed defuse awards the Counter-Terrorists.
-- **UI clarity:** promotion actions now say “Promote to senior bench.”
+- **UI clarity:** promotion actions now say “Promote to bench.”
 - **Needs playtesting:** test bomb rounds as both sides before and after the round-12 side swap, including cancelled plants.
 
 ### Update 12.2 — Mirage Site & Spawn Zones
@@ -413,11 +423,11 @@ Update 11.0 establishes the first individual development-plan loop. The full FC-
 ## Track I — Save games, UX, accessibility and quality
 
 ### I1. Persistence
-- [ ] Save/load game state across browser sessions.
-- [ ] Export/import saves as a portable JSON file.
-- [ ] Save schema versioning and migration for future updates.
-- [ ] Autosave with clear feedback and recovery from invalid/corrupt saves.
-- [ ] Multiple save slots and optional new-game-plus / challenge starts.
+- [x] Save/load game state across browser sessions (first pass; browser-local).
+- [x] Export/import saves as a portable JSON file.
+- [x] Save payload versioning and legacy Update 12 migration (continue testing future migrations).
+- [x] Autosave recovery and invalid-save checks (first pass; storage-limit and corruption cases need testing).
+- [x] Multiple named save slots (up to 20); new-game-plus and challenge starts remain planned.
 - [ ] Do not silently erase an old save when a new version changes its data shape.
 
 ### I2. Interface and usability
