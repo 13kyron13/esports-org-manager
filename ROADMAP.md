@@ -36,7 +36,12 @@ The game should reward smart long-term decisions rather than simply buying the h
 - **Complete:** persistent board confidence, three season objectives (league top four, positive cash, senior-team power growth), end-of-season reviews, confidence changes, and performance bonuses.
 - **Still to test:** balance confidence movement and board bonuses across several full careers.
 
-**Current build documented by the repository:** Update 12.2 — Mirage Site & Spawn Zones.
+**Current build documented by the repository:** Update 12.3 — Bomb Result Consistency.
+
+### Update 12.3 — Bomb Result Consistency
+- **Implemented first pass:** round scoring is resolved from the bomb outcome and the current side: explosion awards the Terrorists; a completed defuse awards the Counter-Terrorists.
+- **UI clarity:** promotion actions now say “Promote to senior bench.”
+- **Needs playtesting:** test bomb rounds as both sides before and after the round-12 side swap, including cancelled plants.
 
 ### Update 12.2 — Mirage Site & Spawn Zones
 - **Implemented first pass:** Mirage's T and CT spawn coordinates and route starts now sit inside the green-outlined spawn areas.
