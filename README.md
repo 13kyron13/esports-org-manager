@@ -39,7 +39,7 @@ See [ROADMAP.md](./ROADMAP.md) for the full long-term plan, including:
 - Seasons, tournaments, brackets, rankings, player awards and Hall of Fame.
 - Rival organisations, dynamic storylines, meta/patch changes and player careers.
 - A multi-division management framework with a game switcher, independent persistent CS2/Valorant division state, shared organisation finances/brand, and game-specific management and match simulation.
-- Save/load, export/import, accessibility, testing and extra design ideas.
+- Premium management-game UI inspired by F1 Manager/FC career modes, esports broadcast presentation, desktop packaging options, save/load, export/import, accessibility and testing.
 
 The roadmap distinguishes existing or partially implemented work from future plans; items listed as planned are not claims about the current playable build.
 
@@ -55,3 +55,7 @@ The roadmap distinguishes existing or partially implemented work from future pla
 ### Multi-game direction (planned)
 
 The intended career is one esports organisation operating several distinct divisions. A persistent game selector will let you switch between (for example) CS2 and Valorant and return to each division exactly where you left it. Each division will retain its own roster, academy, tactics, competition, calendar, results and game-specific systems, while the organisation shares high-level finances, brand, sponsors and facilities. Valorant is planned as a genuinely separate management and match simulation, not a reskinned CS2 tab. These are roadmap goals, not implemented features in Update 10.0.
+
+### Presentation direction (planned)
+
+After the core management and multi-division systems are stable, the UI will be redesigned toward a premium PC management-game feel: an organisation headquarters dashboard, visual squad hub and player profiles, richer graphs and panels, and esports broadcast-style match presentation. The first step is to polish the existing browser build; Electron/Tauri packaging may follow. A full Unity/Unreal migration is a long-term option only if the benefits of 3D presentation justify a substantial rebuild. These are roadmap goals, not current Update 10.0 features.
