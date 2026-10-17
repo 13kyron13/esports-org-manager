@@ -1,12 +1,12 @@
 # Esports Org Manager
 
-A browser-based esports organisation management game. The current repository build is **Update 9.3 — Balance Pass**.
+A browser-based esports organisation management game. The current repository build is **Update 10.0 — Squad Inventory Hub**.
 
 ## Play
 
 Open [index.html](./index.html) in a modern desktop browser. The game is a standalone HTML file and does not require a build step or package installation.
 
-## Current build: Update 9.3
+## Current build: Update 10.0
 
 - Finance dashboard: cash balance, sponsor and merchandise income, and a cashflow outlook alongside weekly income, wages, running costs and net balance. Negative cashflow now surfaces a debt-limit warning with an estimated runway.
 - Boardroom: persistent board confidence and three season objectives covering an adaptive league placement target, financial stability, and senior-team development.
@@ -38,7 +38,7 @@ See [ROADMAP.md](./ROADMAP.md) for the full long-term plan, including:
 - Sponsors, brand, merchandise, social media, facilities and finances.
 - Seasons, tournaments, brackets, rankings, player awards and Hall of Fame.
 - Rival organisations, dynamic storylines, meta/patch changes and player careers.
-- A data-driven multi-game framework, starting with Valorant.
+- A multi-division management framework with a game switcher, independent persistent CS2/Valorant division state, shared organisation finances/brand, and game-specific management and match simulation.
 - Save/load, export/import, accessibility, testing and extra design ideas.
 
 The roadmap distinguishes existing or partially implemented work from future plans; items listed as planned are not claims about the current playable build.
@@ -51,3 +51,7 @@ The roadmap distinguishes existing or partially implemented work from future pla
 - Includes quick actions to start/sell bench players and promote academy/Tier 2 prospects to the senior bench, with existing squad-capacity and cash checks.
 - This is the first inventory UI pass; the underlying squad groups still use their existing separate rules. A full shared-inventory assignment system remains planned.
 - JavaScript syntax check passed; playtesting is still needed.
+
+### Multi-game direction (planned)
+
+The intended career is one esports organisation operating several distinct divisions. A persistent game selector will let you switch between (for example) CS2 and Valorant and return to each division exactly where you left it. Each division will retain its own roster, academy, tactics, competition, calendar, results and game-specific systems, while the organisation shares high-level finances, brand, sponsors and facilities. Valorant is planned as a genuinely separate management and match simulation, not a reskinned CS2 tab. These are roadmap goals, not implemented features in Update 10.0.
