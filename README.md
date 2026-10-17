@@ -1,12 +1,20 @@
 # Esports Org Manager
 
-A browser-based esports organisation management game. The current repository build is **Update 11.1 — Match Clarity Pass**.
+A browser-based esports organisation management game. The current repository build is **Update 12.0 — Match Logic & Competitive Veto**.
 
 ## Play
 
 Open [index.html](./index.html) in a modern desktop browser. The game is a standalone HTML file and does not require a build step or package installation.
 
-## Current build: Update 11.1
+## Current build: Update 12.0 — Match Logic & Competitive Veto
+
+- **Implemented:** map-veto initiative alternates between player-first and opponent-first, rather than always giving the player the first action.
+- **Implemented:** veto choices are explicitly labelled BAN or PICK, and the completed veto shows the resulting maps before asking the player to choose a CT or T starting side for Map 1.
+- **Implemented first pass:** the selected starting side now controls which team attacks/defends on the radar, the match header shows the active side, and the sides switch after 12 rounds.
+- **Implemented first pass:** animated bomb rounds are cancelled if no living Terrorist-side player reaches the selected site area at the plant checkpoint; the round log then avoids claiming a successful plant. Whole-map instant simulation skips the unverified bomb animation event.
+- **Needs playtesting:** objective checks use hand-authored radar-coordinate movement, not a true CS2 navigation mesh. Validate every map, side, veto format, round-by-round mode, autoplay and skip behaviour. Round outcomes remain statistically simulated.
+
+## Earlier build notes: Update 11.1
 
 - Finance dashboard: cash balance, sponsor and merchandise income, and a cashflow outlook alongside weekly income, wages, running costs and net balance. Negative cashflow now surfaces a debt-limit warning with an estimated runway.
 - Boardroom: persistent board confidence and three season objectives covering an adaptive league placement target, financial stability, and senior-team development.
