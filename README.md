@@ -11,7 +11,7 @@ https://13kyron13.github.io/esports-org-manager/
 - **Playable starting games:** Counter-Strike 2, VALORANT, Overwatch, League of Legends and Rocket League can be selected for a new career.
 - **Game-specific systems:** each title has its own roster roles and map pool. VALORANT simulates round scores and spike events; Overwatch reports objective progress, team fights, eliminations and healing; League reports kills, gold, towers, dragons and Baron; Rocket League reports goals, shots, saves and assists.
 - **Map veto:** non-CS2 careers have their own ban-and-pick flow and play a best-of-three series on selected maps. CS2 retains its existing round-by-round radar simulation, economy and C4 rules.
-- **Update 16 — Player performance:** non-CS2 series now produce player ratings, MVPs, map results and a post-match report; results influence form, fatigue, morale, finances and season progression.
+- **Update 16 — Player performance:** CS2 and non-CS2 careers now show a persistent latest-match report with player ratings, MVPs and post-match analysis. Non-CS2 series also include game-specific map results and objective/stat summaries; results influence form, fatigue, morale, finances and season progression.
 - **Update 17 — Competition:** the existing league and championship path now supports careers in all five games, using the selected game's match simulation.
 - **Update 18 — Organisation management:** transfer/contract, staff, scouting, development and finance systems remain integrated with the career. Rival roster actions are part of the evolving world.
 - **Update 19 — Living world:** rival organisations gain or lose power over time and occasionally announce roster rebuilds, making the competition less static.
