@@ -124,6 +124,8 @@ Earlier conversation roadmap items (finances, market/transfers, contracts/drama,
 - [ ] Keep a fast statistical mode available so deeper simulation does not make autoplay painfully slow.
 
 ### B5. Balance and testing
+- [x] Update 9.0 first-pass finance outlook: display cash balance, sponsor/merch income, weekly net and an estimated runway to the debt limit.
+- [ ] Test finance balance across multiple automated careers; compare cash reserves, bankruptcies, sponsor reliance and trophy success before tuning recurring costs.
 - [ ] Calibrate team power so new organisations can compete but not dominate instantly. *(First pass in Update 8.9; keep re-testing as new systems land. Money balance for passive play is still harsh and needs its own pass.)*
 - [ ] Rival strength scales across seasons without becoming an unbeatable wall.
 - [ ] Reduce excessive per-series rival growth and make yearly progression understandable.
