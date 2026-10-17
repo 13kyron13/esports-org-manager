@@ -53,8 +53,10 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 <div id="menuContent"><div class="menu-actions">
 <button class="menu-action pri" onclick="continueCareer()"><strong>▶ Continue Career</strong><span>Resume your most recent saved organisation</span></button>
 <button class="menu-action" onclick="showMenuPage('games')"><strong>＋ New Career</strong><span>Choose the esport for your next save</span></button>
+<button class="menu-action" onclick="showMenuPage('portfolio')"><strong>🏢 Career Portfolio</strong><span>Switch between independently managed organisations</span></button>
 <button class="menu-action" onclick="showMenuPage('saves')"><strong>▤ Load Career</strong><span>Choose from your save slots</span></button>
 <button class="menu-action" onclick="document.getElementById('backupFile').click()"><strong>⇧ Import Backup</strong><span>Restore a JSON career backup</span></button>
+<button class="menu-action" onclick="showMenuPage('guide')"><strong>ⓘ How to Play</strong><span>Learn the basics of running an esports organisation</span></button>
 </div><div class="menu-foot">Update 19.0 · Saves stay in this browser unless exported</div></div>
 </div></div><input id="backupFile" type="file" accept=".json,application/json" style="display:none" onchange="importSaveFile(this.files&&this.files[0]);this.value=''">
 <div class="wrap">
