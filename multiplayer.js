@@ -4,6 +4,7 @@
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
   let db = null, auth = null, uid = null, activeLeague = null, leagueRef = null, unsubscribe = null;
+  let lastLeagueSnapshot = null, replayTimer = null;
   const gameNames = ["CS2","Valorant","Overwatch","League of Legends","Rocket League"];
   function orgSnapshot() {
     let state = null;
@@ -111,6 +112,7 @@
       if(!snap.exists()) { setStatus("League not found. Check the code and try again."); return; }
       const league=snap.val();
       if(league.status==="complete") { setStatus("This league has finished. Ask your friend to create a new season."); return; }
+      if(league.fixtures?.length) { setStatus("This season has already been prepared. Ask the host to reset it before new teams join."); return; }
       await ref.child("teams/"+uid).set({...orgSnapshot(),uid,owner:false,joinedAt:new Date().toISOString()});
       activeLeague={code,name:league.name}; listenLeague(code);
       setStatus("Joined "+league.name+". Your team is now in the shared league.");
@@ -123,6 +125,8 @@
       const league=snap.val();
       if(!league) { setStatus("This league no longer exists."); return; }
       activeLeague={code,name:league.name};
+      lastLeagueSnapshot=league;
+      if(uid===league.owner&&league.roundReplay?.status==="live"&&Date.now()>=Number(league.roundReplay.startedAt)+Number(league.roundReplay.durationMs||12000)) finalizeExpiredRound(league).catch(e=>setStatus(e.message));
       renderLeague(league);
     };
     leagueRef.on("value",handler,e=>setStatus("Live league sync failed: "+e.message));
@@ -136,12 +140,132 @@
     } catch(e) { setStatus("Could not publish team: "+e.message); }
   }
   async function startSeason(league) {
-    if(uid!==league.owner) { setStatus("Only the league creator can start the season."); return; }
+    if(uid!==league.owner) { setStatus("Only the league creator can start or reset the season."); return; }
     const teams=Object.values(league.teams||{});
     if(teams.length<2) { setStatus("Invite at least one friend before starting the season."); return; }
+    if(league.fixtures?.some(f=>f.status==="live")) { setStatus("Finish the live round before resetting the season."); return; }
     const fixtures=makeSchedule(teams);
-    await leagueRef.update({fixtures,status:"regular",playoffs:null,champion:null,updatedAt:new Date().toISOString()});
-    setStatus("Season started with "+fixtures.length+" round-robin fixtures.");
+    await leagueRef.update({fixtures,status:"regular",playoffs:null,champion:null,roundReplay:null,seasonNumber:(Number(league.seasonNumber)||0)+1,updatedAt:new Date().toISOString()});
+    setStatus("Season ready: "+fixtures.length+" fixtures across "+Math.max(0,...fixtures.map(f=>f.round))+" shared rounds. Start Round 1 when everyone is ready.");
+  }
+  function stableHash(value) {
+    let h=2166136261;
+    for(let i=0;i<value.length;i++){h^=value.charCodeAt(i);h=Math.imul(h,16777619);}
+    return h>>>0;
+  }
+  function simulatedResult(f, league) {
+    const home=league.teams?.[f.home]||{}, away=league.teams?.[f.away]||{};
+    const hr=Number(home.rating)||50, ar=Number(away.rating)||50;
+    const seed=stableHash(String(league.code)+":"+(league.seasonNumber||1)+":"+f.id);
+    const roll=(seed%10000)/10000;
+    const pHome=1/(1+Math.exp(-(hr-ar)/12));
+    const homeWins=roll<pHome;
+    const winnerRating=homeWins?hr:ar, loserRating=homeWins?ar:hr;
+    const noise=((stableHash("score:"+seed)%10000)/10000-.5)*7;
+    const loserScore=Math.max(0,Math.min(12,Math.round(6+(loserRating-winnerRating)*.12+noise)));
+    const homeScore=homeWins?13:loserScore, awayScore=homeWins?loserScore:13;
+    return {fixtureId:f.id,homeScore,awayScore,highlights:[
+      "Pistol round: both teams establish their pace",
+      "Mid-game swing: economy and utility decide the next fights",
+      "Match point: the trailing side tries to force a comeback",
+      (homeWins?home.name:away.name)+" closes it out"
+    ]};
+  }
+  async function advanceRound(league) {
+    if(!db||!leagueRef||!activeLeague) return;
+    if(uid!==league.owner) { setStatus("The league host starts each shared round so every player gets the same results."); return; }
+    const now=Date.now();
+    const tx=await leagueRef.transaction(current=>{
+      if(!current || current.status==="complete") return;
+      const live=current.roundReplay;
+      if(live?.status==="live") {
+        if(now < Number(live.startedAt)+Number(live.durationMs||12000)) return;
+        const results=live.results||[];
+        current.fixtures=(current.fixtures||[]).map(f=>{
+          const r=results.find(x=>x.fixtureId===f.id);
+          if(!r||f.status!=="live")return f;
+          const next={...f,homeScore:r.homeScore,awayScore:r.awayScore,status:"played",playedAt:new Date().toISOString()};
+          delete next.liveHomeScore; delete next.liveAwayScore;
+          return next;
+        });
+        current.roundReplay={...live,status:"complete",completedAt:new Date().toISOString()};
+        current.updatedAt=new Date().toISOString();
+        return current;
+      }
+      const pending=(current.fixtures||[]).filter(f=>f.status==="scheduled");
+      if(!pending.length) return;
+      const round=Math.min(...pending.map(f=>Number(f.round)||1));
+      const roundFixtures=pending.filter(f=>Number(f.round)===round);
+      const startedAt=Date.now(), durationMs=12000;
+      const results=roundFixtures.map(f=>simulatedResult(f,current));
+      const byId=Object.fromEntries(results.map(r=>[r.fixtureId,r]));
+      current.fixtures=(current.fixtures||[]).map(f=>{
+        const r=byId[f.id]; return r?{...f,status:"live",liveHomeScore:r.homeScore,liveAwayScore:r.awayScore,liveStartedAt:startedAt}:f;
+      });
+      current.roundReplay={round,startedAt,durationMs,status:"live",results};
+      current.status="regular"; current.updatedAt=new Date().toISOString();
+      return current;
+    },undefined,false);
+    if(!tx.committed) { setStatus("That round could not start yet. A live round may already be running, or the season may be finished."); return; }
+    const updated=tx.snapshot.val();
+    if(updated?.roundReplay?.status==="complete") {
+      if(!(updated.fixtures||[]).some(f=>f.status==="scheduled")) {
+        const table=scoreRows(updated);
+        await leagueRef.update({status:"complete",champion:table[0]?.uid||null,updatedAt:new Date().toISOString()});
+        setStatus("Season complete! "+(table[0]?.name||"The winner")+" wins the league.");
+      } else setStatus("Round "+updated.roundReplay.round+" finalised. Start the next round when ready.");
+    } else setStatus("Round "+updated?.roundReplay?.round+" is live for everyone!");
+  }
+  async function finalizeExpiredRound(league) {
+    if(uid!==league.owner||!leagueRef||league.roundReplay?.status!=="live")return;
+    if(Date.now()<Number(league.roundReplay.startedAt)+Number(league.roundReplay.durationMs||12000))return;
+    await advanceRound(league);
+  }
+  function scoreDuringReplay(finalScore, progress, winner) {
+    if(progress>=1)return finalScore;
+    const max=winner?12:finalScore;
+    return Math.min(max,Math.floor(finalScore*Math.max(0,progress)));
+  }
+  function updateReplayUI(league) {
+    const area=$("mpLiveReplay"); if(!area)return;
+    const replay=league?.roundReplay;
+    if(!replay||replay.status!=="live") {
+      area.innerHTML="";
+      const button=$("mpAdvanceRound");
+      if(button) {
+        const next=(league?.fixtures||[]).filter(f=>f.status==="scheduled");
+        button.disabled=uid!==league?.owner||!next.length||league?.status==="complete";
+        button.textContent=next.length?"▶ Play next round automatically":"Season complete";
+      }
+      return;
+    }
+    const duration=Math.max(1000,Number(replay.durationMs)||12000);
+    const progress=Math.max(0,Math.min(1,(Date.now()-Number(replay.startedAt))/duration));
+    const percent=Math.round(progress*100);
+    const moments=["Pistol round","First full-buy round","Mid-series swing","Match point"];
+    const momentIndex=Math.min(moments.length-1,Math.floor(progress*moments.length));
+    let html='<div class="decision"><b>🔴 Round '+replay.round+' is live for everyone</b><p class="note">Every fixture in this round started from the same shared timestamp. Auto-play is showing the important moments only.</p><div class="bar" style="height:8px"><i style="width:'+percent+'%"></i></div><p class="note">'+percent+'% · '+esc(moments[momentIndex])+'</p><div class="tw"><table><thead><tr><th>Match</th><th>Live score</th><th>Moment</th></tr></thead><tbody>';
+    (replay.results||[]).forEach(r=>{
+      const f=(league.fixtures||[]).find(x=>x.id===r.fixtureId);
+      if(!f)return;
+      const home=league.teams?.[f.home]||{}, away=league.teams?.[f.away]||{};
+      const homeWon=r.homeScore>r.awayScore;
+      const hs=scoreDuringReplay(r.homeScore,progress,homeWon), as=scoreDuringReplay(r.awayScore,progress,!homeWon);
+      const moment=(r.highlights||[])[Math.min((r.highlights||[]).length-1,Math.floor(progress*4))]||"Round in progress";
+      html+='<tr><td>'+esc(home.name||"Home")+' vs '+esc(away.name||"Away")+'</td><td><b>'+hs+' – '+as+'</b></td><td>'+esc(moment)+'</td></tr>';
+    });
+    html+='</tbody></table></div></div>';
+    area.innerHTML=html;
+    (replay.results||[]).forEach(r=>{
+      const f=(league.fixtures||[]).find(x=>x.id===r.fixtureId);
+      const cell=document.querySelector('[data-live-fixture="'+r.fixtureId+'"]');
+      if(!f||!cell)return;
+      const homeWon=r.homeScore>r.awayScore;
+      cell.textContent=scoreDuringReplay(r.homeScore,progress,homeWon)+' – '+scoreDuringReplay(r.awayScore,progress,!homeWon)+' · LIVE';
+    });
+    const button=$("mpAdvanceRound");
+    if(button){button.disabled=true;button.textContent=progress>=1?"Finalising round…":"Round "+replay.round+" live…";}
+    if(progress>=1) finalizeExpiredRound(league).catch(e=>setStatus("Could not finalise round: "+e.message));
   }
   function scoreRows(league) {
     const teams=Object.values(league.teams||{}), rows={};
@@ -155,12 +279,6 @@
       else {h.draws++;a.draws++;h.points++;a.points++}
     });
     return Object.values(rows).sort((a,b)=>b.points-a.points||(b.for-b.against)-(a.for-a.against)||b.rating-a.rating);
-  }
-  async function recordResult(id, homeScore, awayScore, league) {
-    const fixture=(league.fixtures||[]).find(f=>f.id===id); if(!fixture)return;
-    if(uid!==league.owner) { setStatus("Only the league creator can record official results in this version."); return; }
-    const fixtures=league.fixtures.map(f=>f.id===id?{...f,homeScore,awayScore,status:"played",reportedBy:uid,playedAt:new Date().toISOString()}:f);
-    await leagueRef.update({fixtures,updatedAt:new Date().toISOString()});
   }
   async function makePlayoffs(league) {
     if(uid!==league.owner){setStatus("Only the league creator can generate playoffs.");return;}
@@ -183,48 +301,39 @@
   function renderLeague(league) {
     const view=$("mpLeagueView"); if(!view)return;
     const teams=Object.values(league.teams||{}), table=scoreRows(league);
-    let html='<div class="decision"><b>'+esc(league.name)+'</b><p class="note">Invite code: <strong>'+esc(league.code)+'</strong> · '+teams.length+' teams · '+esc(league.status)+'</p><button class="sm" id="mpCopyCode">Copy invite code</button> <button class="sm" id="mpStartSeason">Start / reset season</button> <button class="sm" id="mpPublish">Update my team</button></div>';
+    const owner=uid===league.owner;
+    const pending=(league.fixtures||[]).filter(f=>f.status==="scheduled");
+    const nextRound=pending.length?Math.min(...pending.map(f=>Number(f.round)||1)):null;
+    let html='<div class="decision"><b>'+esc(league.name)+'</b><p class="note">Invite code: <strong>'+esc(league.code)+'</strong> · '+teams.length+' teams · Season '+(Number(league.seasonNumber)||0)+' · '+esc(league.status)+'</p><button class="sm" id="mpCopyCode">Copy invite code</button> <button class="sm" id="mpStartSeason">'+(league.fixtures?.length?'Reset season':'Prepare season')+'</button> <button class="sm" id="mpPublish">Update my team</button></div>';
     html+='<h2>League standings</h2><div class="tw"><table><thead><tr><th>#</th><th>Organisation</th><th>P</th><th>W</th><th>L</th><th>Pts</th><th>+/-</th></tr></thead><tbody>';
     table.forEach((t,i)=>html+='<tr'+(t.uid===uid?' class="me"':'')+'><td>'+(i+1)+'</td><td>'+esc(t.name)+' <span class="note">['+esc(t.tag)+']</span></td><td>'+t.played+'</td><td>'+t.wins+'</td><td>'+t.losses+'</td><td><b>'+t.points+'</b></td><td>'+(t.for-t.against)+'</td></tr>');
-    html+='</tbody></table></div>';
-    if(!league.fixtures?.length) html+='<p class="note">Start the season when everyone has joined. The game generates a round-robin schedule.</p>';
+    html+='</tbody></table></div><div id="mpLiveReplay"></div>';
+    if(!league.fixtures?.length) html+='<p class="note">Everyone should join before the host prepares the season. Each round will auto-play simultaneously across the league.</p>';
     else {
-      html+='<h2 style="margin-top:12px">Season fixtures</h2><div class="tw"><table><thead><tr><th>Round</th><th>Match</th><th>Score / action</th></tr></thead><tbody>';
+      html+='<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:12px"><h2 style="margin:0">Shared season schedule</h2><span class="note">'+(pending.length?pending.length+' fixtures remaining':'All fixtures played')+'</span></div>';
+      if(owner) html+='<button class="pri" id="mpAdvanceRound" '+(!pending.length||league.roundReplay?.status==="live"?'disabled':'')+'>'+ (league.roundReplay?.status==="live"?'Round '+league.roundReplay.round+' live…':pending.length?'▶ Play next round automatically':'Season complete')+'</button>';
+      else html+='<p class="note">The host starts each round. All matches in a round auto-play together and every player receives the same official scores.</p>';
+      html+='<div class="tw"><table><thead><tr><th>Round</th><th>Match</th><th>Score / status</th></tr></thead><tbody>';
       league.fixtures.forEach(f=>{
         const match=esc(teamName(league,f.home))+' vs '+esc(teamName(league,f.away));
-        let score=f.status==="played"?f.homeScore+" - "+f.awayScore:"Scheduled";
-        if(uid===league.owner&&f.status!=="played") score='<input id="hs_'+f.id+'" type="number" min="0" max="99" value="13" style="width:48px"> - <input id="as_'+f.id+'" type="number" min="0" max="99" value="9" style="width:48px"> <button class="sm" data-result="'+f.id+'">Record</button>';
+        let score='Scheduled';
+        if(f.status==="played") score=f.homeScore+' – '+f.awayScore;
+        else if(f.status==="live") score='<span data-live-fixture="'+esc(f.id)+'">🔴 LIVE</span>';
         html+='<tr><td>'+f.round+'</td><td>'+match+'</td><td>'+score+'</td></tr>';
       });
       html+='</tbody></table></div>';
-      if(league.status==="regular"&&uid===league.owner)html+='<button class="pri" id="mpPlayoffs">Generate top-four playoffs</button>';
     }
-    if(league.playoffs) {
-      html+='<h2 style="margin-top:12px">🏆 Playoffs</h2><div class="tw"><table><thead><tr><th>Match</th><th>Score / action</th></tr></thead><tbody>';
-      league.playoffs.matches.forEach(m=>{
-        let sc=m.status==="played"?m.homeScore+" - "+m.awayScore:"Scheduled";
-        if(uid===league.owner&&m.status!=="played")sc='<input id="phs_'+m.id+'" type="number" min="0" max="99" value="13" style="width:48px"> - <input id="pas_'+m.id+'" type="number" min="0" max="99" value="9" style="width:48px"> <button class="sm" data-playoff="'+m.id+'">Record</button>';
-        html+='<tr><td>'+esc(teamName(league,m.home))+' vs '+esc(teamName(league,m.away))+'</td><td>'+sc+'</td></tr>';
-      });
-      html+='</tbody></table></div>';
-    }
-    if(league.champion) html+='<div class="decision"><h2>🏆 Season champion</h2><div style="font-size:24px;font-weight:800">'+esc(teamName(league,league.champion))+'</div><p class="note">Congratulations to the champion of '+esc(league.name)+'!</p></div>';
-    html+='<p class="note">Shared data syncs live across connected browsers. In this initial online league layer, the league creator records official scores; players still manage their local careers independently.</p>';
+    if(league.champion) html+='<div class="decision"><h2>🏆 Season champion</h2><div style="font-size:24px;font-weight:800">'+esc(teamName(league,league.champion))+'</div><p class="note">The shared season has finished. Every connected player sees the same final standings.</p></div>';
+    html+='<p class="note">Match outcomes are generated once by the host and stored in the shared league. Results are not independently rolled by each browser, so scores cannot contradict each other.</p>';
     view.innerHTML=html;
     $("mpCopyCode").onclick=()=>navigator.clipboard?.writeText(league.code).then(()=>setStatus("Invite code copied.")).catch(()=>setStatus("Your invite code is "+league.code));
-    $("mpStartSeason").onclick=()=>startSeason(league).catch(e=>setStatus(e.message));
+    $("mpStartSeason").onclick=()=>{
+      if(league.fixtures?.length&&!confirm("Reset the shared season and clear its results for everyone?"))return;
+      startSeason(league).catch(e=>setStatus(e.message));
+    };
     $("mpPublish").onclick=publishTeam;
-    view.querySelectorAll("[data-result]").forEach(b=>b.onclick=()=>{
-      const id=b.dataset.result,hs=Number($("hs_"+id)?.value),as=Number($("as_"+id)?.value);
-      if(!Number.isInteger(hs)||!Number.isInteger(as)||hs<0||as<0||hs===as){setStatus("Enter non-negative integer scores. Draws are allowed only in the regular season.");return}
-      recordResult(id,hs,as,league).catch(e=>setStatus(e.message));
-    });
-    view.querySelectorAll("[data-playoff]").forEach(b=>b.onclick=()=>{
-      const id=b.dataset.playoff,hs=Number($("phs_"+id)?.value),as=Number($("pas_"+id)?.value);
-      if(!Number.isInteger(hs)||!Number.isInteger(as)||hs<0||as<0||hs===as){setStatus("Playoff matches need a non-tied score.");return}
-      playoffResult(id,hs,as,league).catch(e=>setStatus(e.message));
-    });
-    if($("mpPlayoffs")) $("mpPlayoffs").onclick=()=>makePlayoffs(league).catch(e=>setStatus(e.message));
+    if($("mpAdvanceRound")) $("mpAdvanceRound").onclick=()=>advanceRound(league).catch(e=>setStatus("Could not start round: "+e.message));
+    updateReplayUI(league);
   }
   function fixNamePersistence() {
     // Save organisation identity immediately on input, not only after leaving the editor.
@@ -248,8 +357,28 @@
       try { const d=JSON.parse(localStorage.getItem("esm195OrgDraft")||"{}"); d.name=e.target.value.trim().slice(0,32); localStorage.setItem("esm195OrgDraft",JSON.stringify(d)); } catch (_) {}
     });
   }
+  function ensureMenuEntry() {
+    const actions=document.querySelector("#menuContent .menu-actions");
+    if(!actions||$("mpMenuAction"))return;
+    const button=document.createElement("button");
+    button.className="menu-action"; button.id="mpMenuAction";
+    button.innerHTML="<strong>🌐 Load Multiplayer</strong><span>Join a friends league and play a shared auto-simulated season</span>";
+    button.onclick=openMultiplayerMenu;
+    actions.appendChild(button);
+  }
+  function openMultiplayerMenu() {
+    const overlay=$("menuOverlay");
+    if(overlay)overlay.style.display="none";
+    if(typeof window.showTab==="function")window.showTab("empire");
+    ensurePanel();
+    const panel=$("multiplayer195");
+    if(panel)panel.scrollIntoView({behavior:"smooth",block:"start"});
+  }
+  window.openMultiplayerMenu=openMultiplayerMenu;
   function init() {
     ensurePanel();
+    ensureMenuEntry();
+    if(!replayTimer) replayTimer=setInterval(()=>{if(lastLeagueSnapshot)updateReplayUI(lastLeagueSnapshot);},500);
     fixNamePersistence();
     const originalShowTab = window.showTab;
     if (typeof originalShowTab === "function") {
@@ -260,12 +389,13 @@
     if (typeof originalShowMenuPage === "function") {
       window.showMenuPage = function(page) {
         const result = originalShowMenuPage.apply(this, arguments);
+        ensureMenuEntry();
         if (page === "guide") {
           const host = document.getElementById("menuContent");
           if (host && !document.getElementById("guide195")) {
             const section = document.createElement("div");
             section.id = "guide195";
-            section.innerHTML = '<div class="decision"><b>Update 19.5 · Your first match-week checklist</b><ol><li>Check starter roles, contracts and weekly wages.</li><li>Choose training that targets your weakest team stat.</li><li>Scout the opponent, practise the selected map or game mode, and review your strategy.</li><li>Play the match, read the report, then adjust your roster or tactics before the next fixture.</li><li>Check finances before signing players, staff or expanding into another division.</li></ol><p class="note">Tip: do not spend all your cash on one star. A balanced roster, affordable wages and reliable preparation are usually safer over a full season.</p></div><h2>GAME-SPECIFIC STRATEGY</h2><div class="steps"><div class="step"><i>CS</i><b>Counter-Strike 2</b><span>Track round economy, save decisions, map vetoes, starting sides, utility and bomb-site control. A lost round can still be a good buy decision if it protects the next round.</span></div><div class="step"><i>V</i><b>VALORANT</b><span>Balance Duelist, Initiator, Controller and Sentinel roles. Coordinate entry utility, site executes, retakes and ultimate economy instead of judging the roster by aim alone.</span></div><div class="step"><i>OW</i><b>Overwatch</b><span>Build a Tank, Damage and Support composition around the objective. Track ultimate charge, counter-picks, team engagement timing and when to regroup rather than stagger.</span></div><div class="step"><i>LoL</i><b>League of Legends</b><span>Balance lane matchups and jungle pathing with vision, waves and objective setup. Dragons, Baron, towers and gold leads create different win conditions as the game progresses.</span></div><div class="step"><i>RL</i><b>Rocket League</b><span>Balance striker, playmaker, defender and goalkeeper strengths. Rotations, boost management, recoveries, shots and saves matter alongside raw player rating.</span></div></div><p class="note">Online friend leagues are available in the Empire tab. The league creator starts the season and records official results; standings and playoffs sync live for connected players.</p>';
+            section.innerHTML = '<div class="decision"><b>Update 19.5 · Your first match-week checklist</b><ol><li>Check starter roles, contracts and weekly wages.</li><li>Choose training that targets your weakest team stat.</li><li>Scout the opponent, practise the selected map or game mode, and review your strategy.</li><li>Play the match, read the report, then adjust your roster or tactics before the next fixture.</li><li>Check finances before signing players, staff or expanding into another division.</li></ol><p class="note">Tip: do not spend all your cash on one star. A balanced roster, affordable wages and reliable preparation are usually safer over a full season.</p></div><h2>GAME-SPECIFIC STRATEGY</h2><div class="steps"><div class="step"><i>CS</i><b>Counter-Strike 2</b><span>Track round economy, save decisions, map vetoes, starting sides, utility and bomb-site control. A lost round can still be a good buy decision if it protects the next round.</span></div><div class="step"><i>V</i><b>VALORANT</b><span>Balance Duelist, Initiator, Controller and Sentinel roles. Coordinate entry utility, site executes, retakes and ultimate economy instead of judging the roster by aim alone.</span></div><div class="step"><i>OW</i><b>Overwatch</b><span>Build a Tank, Damage and Support composition around the objective. Track ultimate charge, counter-picks, team engagement timing and when to regroup rather than stagger.</span></div><div class="step"><i>LoL</i><b>League of Legends</b><span>Balance lane matchups and jungle pathing with vision, waves and objective setup. Dragons, Baron, towers and gold leads create different win conditions as the game progresses.</span></div><div class="step"><i>RL</i><b>Rocket League</b><span>Balance striker, playmaker, defender and goalkeeper strengths. Rotations, boost management, recoveries, shots and saves matter alongside raw player rating.</span></div></div><p class="note">Load Multiplayer from the main menu. Friends join the same league, then the host starts each shared round. Matches auto-play together and the same final scores and standings sync to everyone.</p>';
             host.appendChild(section);
           }
         }
