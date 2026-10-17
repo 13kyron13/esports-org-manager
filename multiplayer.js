@@ -452,7 +452,7 @@
 /* Multiplayer career mode: friends replace AI teams inside the ordinary career hub. */
 (() => {
  const $=id=>document.getElementById(id), esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
- let app=null,auth=null,db=null,uid=null,roomCode=null,roomRef=null,room=null,off=null,mpCareer=false,aiBackup=null,lastReplay="",syncTimer=null,tickTimer=null,writing=false;
+ let app=null,auth=null,db=null,uid=null,roomCode=null,roomRef=null,room=null,off=null,mpCareer=false,aiBackup=null,lastReplay="",syncTimer=null,tickTimer=null,writing=false,restarting=false;
  const ROOM_KEY="esm195_multiplayer_room", AI_NAMES=["Aurora Esports","Titan Forge","Nova Core","Vortex Gaming","Redline","Nightfall","Quantum Five","Iron Wolves"];
  const game=()=>S?.gameTitle||selectedGame||"CS2", stat=t=>{let e=$("mpMenuStatus")||$("mpCareerStatus");if(e)e.textContent=t};
  function addButton(){const old=$("mpMenuAction");if(old)old.remove();const a=document.querySelector("#menuContent .menu-actions");if(!a||$("mpHomeButton"))return;const b=document.createElement("button");b.id="mpHomeButton";b.className="menu-action";b.innerHTML="<strong>🌐 Multiplayer Career</strong><span>Create or join a room before creating your organisation</span>";b.onclick=()=>showMenuPage("multiplayer");a.appendChild(b)}
@@ -475,16 +475,19 @@
  async function startReplay(){if(uid!==room.owner||room.phase!=="management")return;const now=Date.now();const tx=await roomRef.transaction(r=>{if(!r||r.phase!=="management"||now<r.weekReadyAt)return;const fs=r.fixtures?.[r.week]||[];if(!fs.length)return;const teams=(r.seasonTeams||[]).map(t=>{if(!t.human)return t;const u=r.teams?.[t.uid]||{};return{...t,name:u.name||t.name,rating:+(u.rating||u.power)||t.rating,power:+(u.rating||u.power)||t.power,roster:u.roster||t.roster}});const matches=fs.map(f=>makeMatch(f,teams,r)),max=Math.max(...matches.map(m=>m.rounds.length));r.seasonTeams=teams;r.phase="live";r.replay={week:r.week,startedAt:now,roundMs:750,durationMs:max*750,maxRounds:max,matches,status:"live"};return r},undefined,false);if(tx.committed)stat("Week "+(tx.snapshot.val().week+1)+" is live for everyone.")}
  async function finishReplay(){if(uid!==room.owner||room.phase!=="live")return;const now=Date.now();const tx=await roomRef.transaction(r=>{if(!r||r.phase!=="live"||!r.replay||now<r.replay.startedAt+r.replay.durationMs)return;const st=r.standings;r.replay.matches.forEach(m=>{const a=st[m.a],b=st[m.b];a.rf+=m.scoreA;a.ra+=m.scoreB;b.rf+=m.scoreB;b.ra+=m.scoreA;if(m.winner===m.a){a.w++;a.pts+=3;b.l++}else{b.w++;b.pts+=3;a.l++}});r.lastReplay={...r.replay,status:"complete",completedAt:now};r.week++;r.replay=null;if(r.week>=r.fixtures.length){r.phase="complete";r.champion=Object.values(st).sort((a,b)=>b.pts-a.pts||((b.rf-b.ra)-(a.rf-a.ra))||a.id.localeCompare(b.id))[0]?.id||null;r.weekReadyAt=null}else{r.phase="management";r.weekReadyAt=now+30000}return r},undefined,false);if(tx.committed)stat(tx.snapshot.val().phase==="complete"?"Season complete!":"Next management window started.")}
  async function restartSeasonIfReady(){
-  if(!roomRef||!room||uid!==room.owner||room.phase!=="complete")return;
+  if(restarting||!roomRef||!room||uid!==room.owner||room.phase!=="complete")return;
   const members=Object.values(room.teams||{});
   if(members.length<2||!members.every(t=>t.nextYearReady))return;
-  const teams=members.map(t=>({id:t.uid,uid:t.uid,name:t.name,tag:t.tag||"",rating:+(t.rating||t.power)||50,power:+(t.rating||t.power)||50,human:true,game:t.game,logo:t.logo||"⚡"}));
-  const oldAI=(room.seasonTeams||[]).filter(t=>!t.human);
-  for(let i=0;i<8-teams.length;i++){const t=oldAI[i]||{};teams.push({id:"ai:"+i,name:t.name||AI_NAMES[i],rating:Math.min(99,(+t.rating||50)+1),power:Math.min(99,(+t.rating||50)+1),human:false,game:room.game,logo:"🤖"})}
-  const standings={};teams.forEach(t=>standings[t.id]={id:t.id,w:0,l:0,pts:0,rf:0,ra:0});
-  const nextTeams={};members.forEach(t=>nextTeams[t.uid]={...t,nextYearReady:false});
-  await roomRef.update({teams:nextTeams,phase:"management",seasonNumber:(+room.seasonNumber||1)+1,week:0,seasonTeams:teams,fixtures:fixtures(teams),standings,weekReadyAt:Date.now()+30000,replay:null,lastReplay:null,champion:null});
-  if(S)S._mpNextYearReady=false;
+  restarting=true;
+  try{
+   const teams=members.map(t=>({id:t.uid,uid:t.uid,name:t.name,tag:t.tag||"",rating:+(t.rating||t.power)||50,power:+(t.rating||t.power)||50,human:true,game:t.game,logo:t.logo||"⚡"}));
+   const oldAI=(room.seasonTeams||[]).filter(t=>!t.human);
+   for(let i=0;i<8-teams.length;i++){const t=oldAI[i]||{};teams.push({id:"ai:"+i,name:t.name||AI_NAMES[i],rating:Math.min(99,(+t.rating||50)+1),power:Math.min(99,(+t.rating||50)+1),human:false,game:room.game,logo:"🤖"})}
+   const standings={};teams.forEach(t=>standings[t.id]={id:t.id,w:0,l:0,pts:0,rf:0,ra:0});
+   const nextTeams={};members.forEach(t=>nextTeams[t.uid]={...t,nextYearReady:false});
+   await roomRef.update({teams:nextTeams,phase:"management",seasonNumber:(+room.seasonNumber||1)+1,week:0,seasonTeams:teams,fixtures:fixtures(teams),standings,weekReadyAt:Date.now()+30000,replay:null,lastReplay:null,champion:null});
+   if(S)S._mpNextYearReady=false;
+  }finally{restarting=false}
  }
  async function tick(){if(!mpCareer||!room)return;if(uid===room.owner){if(room.phase==="management"&&Date.now()>=room.weekReadyAt)startReplay().catch(e=>stat(e.message));if(room.phase==="live"&&room.replay&&Date.now()>=room.replay.startedAt+room.replay.durationMs)finishReplay().catch(e=>stat(e.message))}if(room.phase==="management"||room.phase==="live")banner()}
  function ownFixture(){return(room?.fixtures?.[room.week]||[]).find(f=>f.a===uid||f.b===uid)}
@@ -500,7 +503,7 @@
  }
  function processReplay(){const r=room?.lastReplay;if(!r||r.status!=="complete")return;const key=room.code+":"+room.seasonNumber+":"+r.week;let saved=null;try{saved=localStorage.getItem("esm_mp_processed_"+room.code+"_"+room.seasonNumber)}catch(_){}if(lastReplay===key||saved===key)return;lastReplay=key;const f=r.matches.find(m=>m.a===uid||m.b===uid);if(!f)return;const won=f.winner===uid,oppId=f.a===uid?f.b:f.a,opp=room.seasonTeams.find(t=>t.id===oppId);try{if(S&&!S.match){if(typeof gameKey==="function"&&gameKey(S.gameTitle)!=="cs2"&&typeof closeOtherReport==="function"){const report={game:S.gameTitle,opponent:opp?.name||"Opponent",label:"Multiplayer League · Week "+(r.week+1),won,score:won?"1–0":"0–1",mvp:S.roster?.[0]?.name||"Team MVP",players:(S.roster||[]).map(p=>({name:p.name,role:p.role,rating:Math.round(((+p.aim||50)+(+p.gs||50)+(+p.men||50))/3),mvps:0}))};S.otherMatchReport=report;S.lastMatchReport=report;closeOtherReport()}else if(typeof endSeries==="function"){S.match={opp:{name:opp?.name||"Opponent",power:+opp?.rating||50},sw:won?1:0,sl:won?0:1,label:"Multiplayer League · Week "+(r.week+1),mapName:activeMapPool()[0]?.name||"Mirage",bo:1};endSeries(won)}}news("Official result: "+(room.seasonTeams.find(t=>t.id===f.a)?.name||f.a)+" "+f.scoreA+"–"+f.scoreB+" "+(room.seasonTeams.find(t=>t.id===f.b)?.name||f.b)+".");try{localStorage.setItem("esm_mp_processed_"+room.code+"_"+room.seasonNumber,key)}catch(_){}}catch(e){console.error(e)}}
  function banner(){
-  if(!mpCareer||!room||!document.querySelector(".wrap"))return;let b=$("mpCareerBanner");if(!b){b=document.createElement("section");b.id="mpCareerBanner";b.className="card";b.style.cssText="margin:10px auto;max-width:1400px;border:1px solid var(--acc)";const w=document.querySelector(".wrap");w.insertBefore(b,$("tabs")||w.firstChild)}
+  if(!mpCareer||!room||!document.querySelector(".wrap"))return;const legacy=$("multiplayer195");if(legacy)legacy.style.display="none";let b=$("mpCareerBanner");if(!b){b=document.createElement("section");b.id="mpCareerBanner";b.className="card";b.style.cssText="margin:10px auto;max-width:1400px;border:1px solid var(--acc)";const w=document.querySelector(".wrap");w.insertBefore(b,$("tabs")||w.firstChild)}
   const humans=Object.values(room.teams||{}),ready=humans.filter(t=>t.ready).length,host=uid===room.owner;let h='<h2 style="margin:0">🌐 Multiplayer Career · '+esc(room.name)+'</h2><p class="note">Room '+esc(room.code)+' · '+esc(room.game||game())+' · Season '+(room.seasonNumber||1)+' · 8-team league</p>';
   if(room.phase==="lobby"){h+='<p class="note">'+ready+"/"+humans.length+" organisations ready. Use the normal career creation flow; your hub is unchanged.</p>";if(host)h+='<button class="pri" id="mpLaunch" '+(ready<2||ready!==humans.length?"disabled":"")+'>Start 8-team season</button>'}
   else if(room.phase==="management"){const left=Math.max(0,Math.ceil((room.weekReadyAt-Date.now())/1000));h+='<p class="note"><b>Week '+(room.week+1)+'/7 · Management window</b> — autoplay starts in '+left+' seconds. Manage your roster, contracts, training and finances normally.</p><div class="bar" style="height:8px"><i style="width:'+Math.max(0,Math.min(100,100-left/30*100))+'%"></i></div>';if(room.lastReplay)h+=finalScores(room,room.lastReplay)}
