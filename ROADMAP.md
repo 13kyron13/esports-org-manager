@@ -10,12 +10,18 @@ The game should reward smart long-term decisions rather than simply buying the h
 
 ## Current repository status
 
+### Update 9.3 — Balance Pass
+
+- **Implemented:** starting cash increased to $30,000; annual rival power growth reduced from +1–2 to +0–1; board confidence penalties softened and objective bonuses increased slightly.
+- **Needs playtesting:** run multiple full careers and check that the player can stay financially stable, remain competitive as rivals progress, and recover board confidence after a difficult season.
+
+
 ## Update 9.2 — Dynamic Boardroom
 
 - **Complete:** persistent board confidence, three season objectives (league top four, positive cash, senior-team power growth), end-of-season reviews, confidence changes, and performance bonuses.
 - **Still to test:** balance confidence movement and board bonuses across several full careers.
 
-**Current build documented by the repository:** Update 9.2 — Dynamic Boardroom.
+**Current build documented by the repository:** Update 9.3 — Balance Pass.
 
 Implemented, according to the commit history and current build notes:
 - Map-specific waypoint routes for Mirage, Inferno, Nuke, Ancient, Anubis, Dust II and Vertigo.
