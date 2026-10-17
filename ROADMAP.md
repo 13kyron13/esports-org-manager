@@ -10,6 +10,13 @@ The game should reward smart long-term decisions rather than simply buying the h
 
 ## Current repository status
 
+### Update 10.0 — Squad Inventory Hub
+
+- **Implemented first pass:** the Squad tab now has one overview table for Main Team, Bench, Academy prospects and Tier 2 players, with quick actions for bench swaps, sales and promotions.
+- **Still planned:** a true shared inventory model where players can be reassigned between Main Team, Bench and Academy while preserving eligibility, contracts and development data. The current version deliberately retains existing squad rules to avoid breaking match simulation.
+- **Needs playtesting:** verify inventory actions, role swaps, promotion limits, and rendering across new and existing careers.
+
+
 ### Update 9.3 — Balance Pass
 
 - **Implemented:** starting cash increased to $30,000; annual rival power growth reduced from +1–2 to +0–1; board confidence penalties softened and objective bonuses increased slightly.
@@ -21,7 +28,7 @@ The game should reward smart long-term decisions rather than simply buying the h
 - **Complete:** persistent board confidence, three season objectives (league top four, positive cash, senior-team power growth), end-of-season reviews, confidence changes, and performance bonuses.
 - **Still to test:** balance confidence movement and board bonuses across several full careers.
 
-**Current build documented by the repository:** Update 9.3 — Balance Pass.
+**Current build documented by the repository:** Update 10.0 — Squad Inventory Hub.
 
 Implemented, according to the commit history and current build notes:
 - Map-specific waypoint routes for Mirage, Inferno, Nuke, Ancient, Anubis, Dust II and Vertigo.
