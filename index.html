@@ -109,7 +109,9 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 <div class="card"><h2>🔁 Transfer market</h2><div class="tw"><table id="market"></table></div><div class="note" style="margin-top:8px">Sign players onto your bench (max 3), then press Start to swap them with a starter of the same role. Lowball: 80% salary, 40% chance they accept, otherwise they leave. Stars show growth potential. Young players improve each year, players 30+ decline.</div></div>
 </div>
 <div class="tab" data-tab="season">
-<div class="card"><h2>🏆 Season schedule</h2><div class="tw"><table id="sched"></table></div><div class="note" id="news" style="margin-top:8px"></div></div>
+<div class="card"><h2>⏩ Season simulation</h2><p class="note">Advance the calendar like a franchise-mode season. Simulated weeks resolve matches, standings, development and finances automatically. You can still play important matches yourself.</p><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0"><label for="simWeeks">Weeks to simulate</label><select id="simWeeks" style="font:inherit;padding:8px;border-radius:8px;background:var(--btn);color:var(--text);border:1px solid var(--line)"><option value="1">1 week</option><option value="2">2 weeks</option><option value="4" selected>4 weeks</option><option value="8">8 weeks</option><option value="16">16 weeks</option></select><button class="pri" onclick="simulateSeason('weeks')">Simulate weeks →</button><button onclick="simulateSeason('next')">Until next event</button><button onclick="simulateSeason('playoffs')">Until playoffs</button><button onclick="simulateSeason('final')">Until grand final / season end</button></div><div class="stats" id="simStats"></div><div class="note" id="simNote" style="margin-top:8px">Simulation pauses before an unfinished manual match or if the season ends.</div></div>
+<div class="card"><h2>🏆 Season format guide</h2><div id="seasonFormatGuide"></div></div>
+<div class="card"><h2>Season schedule & standings</h2><div class="tw"><table id="sched"></table></div><div class="note" id="news" style="margin-top:8px"></div></div>
 </div>
 <div class="tab" data-tab="staff">
 <div class="card"><h2>🧠 Staff market</h2><div class="note">Hire specialists on two-year contracts. Staff improve training, match preparation, scouting or morale, but their salaries are paid every week. You can employ up to four staff members.</div><div class="tw"><table id="staffMarket"></table></div></div>
@@ -345,7 +347,512 @@ function advance(won){updateRivalWorld();
     if(M.myPlace&&S.phase=="major")autoMajor()}
 }
 function reviewBoard(){const b=S.board||(S.board={confidence:65,startPower:Math.round(power(S.roster)),goals:[]});const standings=S.lg&&S.lg.t?[...S.lg.t].sort((a,z)=>z.pts-a.pts||z.w-a.w):[];const rank=standings.findIndex(x=>x.t&&x.t.me)+1;const currentPower=Math.round(power(S.roster));const avgMorale=S.roster.reduce((n,p)=>n+(p.morale||0),0)/Math.max(1,S.roster.length);const checks=[{id:"league",done:rank>0&&rank<=(b.leagueTarget||4)},{id:"finance",done:b.financeTarget==="debt"?S.money>-10000:S.money>0},{id:"growth",done:currentPower<75?currentPower>=((b.startPower||currentPower)+2):avgMorale>=70}];b.goals=(b.goals||[]).map(g=>({...g,done:!!checks.find(x=>x.id===g.id)?.done}));const passed=checks.filter(x=>x.done).length;const delta=passed===3?12:passed===2?6:passed===1?-2:-6;b.confidence=clamp((b.confidence||65)+delta,0,100);const bonus=passed===3?6000:passed===2?2000:0;if(bonus)S.money+=bonus;const status=passed===3?"excellent":passed===2?"acceptable":passed===1?"disappointing":"poor";b.lastReview=`${passed}/3 objectives met · ${status} review · ${b.confidence}% confidence`;news(`Board season review: ${passed}/3 objectives met. ${status[0].toUpperCase()+status.slice(1)} performance; confidence ${b.confidence}%.${bonus?` Board bonus: $${bonus.toLocaleString()}.`:""}`);S.history.unshift({year:S.year,event:"Board season review",detail:b.lastReview});if(S.history.length>30)S.history.length=30;return passed}
-function newYear(){reviewBoard();S.seasonsCompleted=(S.seasonsCompleted||0)+1;S.history.unshift({year:S.year,event:"Season completed",detail:`Season ${S.year} finished ${S.w}W-${S.l}L with ${S.trophies} trophies overall.`});if(S.history.length>30)S.history.length=30;S.year++;[...S.roster,...S.bench].forEach(p=>{p.yrs--;agePlayer(p)});S.staff.forEach(p=>p.yrs--);const expired=S.staff.filter(p=>p.yrs<=0);expired.forEach(p=>news(`${p.name} (${p.role})'s contract expired and they left the org.`));S.staff=S.staff.filter(p=>p.yrs>0);S.academy.forEach(p=>{p.age++;const stat=devStat(ensureDev(p));if(stat){if(p[stat]<p.pot)growStat(p,stat,R(1,3))}else ["aim","gs","men"].forEach(k=>{if(p[k]<p.pot)growStat(p,k,R(1,3))});p.morale=clamp(p.morale+5,0,100)});S.ai.forEach(t=>t.power+=R(0,1));S.roster.forEach(p=>{growStat(p,"aim",1);growStat(p,"gs",1);growStat(p,"men",1);p.morale=clamp(p.morale+10,0,100);p.fatigue=clamp((p.fatigue||0)-30,0,100);p.form=Math.abs(p.form||0)<=1?0:Math.sign(p.form)*((Math.abs(p.form||0))-1)});refreshStaffMarket();refreshYouthMarket();S.tier2.forEach(p=>{p.age++;const stat=devStat(ensureDev(p));if(stat){if(p[stat]<p.pot)growStat(p,stat,R(1,3))}else ["aim","gs","men"].forEach(k=>growStat(p,k,R(1,3)));p.yrs=2});S.tierMarket=Array.from({length:5},()=>makeTierPlayer());S.t2League=makeTierLeague();S.sponsorMarket.push(...Array.from({length:2},()=>makeSponsor()));startLeague();news(`Year ${S.year} begins. New league season! Academy and Tier 2 players have developed.`);if(allP().some(p=>p.yrs<=0)){news("Some player contracts expired. Check the Squad tab.");showTab("squad")}render()}
+function newYear(){reviewBoard();S.seasonsCompleted=(S.seasonsCompleted||0)+1;S.history.unshift({year:S.year,event:"Season completed",detail:`Season ${S.year} finished ${S.w}W-${S.l}L with ${S.trophies} trophies overall.`});if(S.history.length>30)S.history.length=30;S.year++;[...S.roster,...S.bench].forEach(p=>{p.yrs--;agePlayer(p)});S.staff.forEach(p=>p.yrs--);const expired=S.staff.filter(p=>p.yrs<=0);expired.forEach(p=>news(`${p.name} (${p.role})'s contract expired and they left the org.`));S.staff=S.staff.filter(p=>p.yrs>0);S.academy.forEach(p=>{p.age++;const stat=devStat(ensureDev(p));if(stat){if(p[stat]<p.pot)growStat(p,stat,R(1,3))}else ["aim","gs","men"].forEach(k=>{if(p[k]<p.pot)growStat(p,k,R(1,3))});p.morale=clamp(p.morale+5,0,100)});S.ai.forEach(t=>t.power+=R(0,1));S.roster.forEach(p=>{growStat(p,"aim",1);growStat(p,"gs",1);growStat(p,"men",1);p.morale=clamp(p.morale+10,0,100);p.fatigue=clamp((p.fatigue||0)-30,0,100);p.form=Math.abs(p.form||0)<=1?0:Math.sign(p.form)*((Math.abs(p.form||0))-1)});refreshStaffMarket();refreshYouthMarket();S.tier2.forEach(p=>{p.age++;const stat=devStat(ensureDev(p));if(stat){if(p[stat]<p.pot)growStat(p,stat,R(1,3))}else ["aim","gs","men"].forEach(k=>growStat(p,k,R(1,3)));p.yrs=2});S.tierMarket=Array.from({length:5},()=>makeTierPlayer());S.t2League=makeTierLeague();S.circuit={stage:0,points:0,event:activeSeasonFormat().events[0],history:[]};S.simWeek=0;S.sponsorMarket.push(...Array.from({length:2},()=>makeSponsor()));startLeague();news(`Year ${S.year} begins. New league season! Academy and Tier 2 players have developed.`);if(allP().some(p=>p.yrs<=0)){news("Some player contracts expired. Check the Squad tab.");showTab("squad")}render()}
+const SEASON_FORMATS={
+ cs2:{name:"Counter-Strike 2 · open tournament circuit",summary:"No single official league table decides the season. Teams build Valve Regional Standings (VRS) through results at independent tournaments; regional VRS rankings drive Major invitations, and open qualifiers provide another route in.",events:["Third-party LAN/online tournaments","Regional VRS ranking updates","Major qualifiers / invitation stages","Major: multi-stage Swiss-style competition and playoffs"],qualification:"Major invitations are based on regional VRS and roster eligibility, not a fixed top-four league finish."},
+ valorant:{name:"VALORANT · VCT circuit",summary:"The 2026 structure is built around Kickoff, Masters Santiago, Stage 1, Masters London, Stage 2 and Champions. Championship Points reward results across the season; Stage 2 playoff qualification and points provide routes to Champions.",events:["Regional Kickoff tournament","Masters 1","Stage 1 group stage + playoffs","Masters 2","Stage 2 playoffs + Championship Points","Champions"],qualification:"Champions qualification combines Stage 2 playoff spots with Championship Points. This game uses an in-game points race as a simplified simulation of that pathway."},
+ overwatch:{name:"Overwatch · OWCS staged circuit",summary:"OWCS runs multiple regional stages. Open qualifiers or promotion/relegation feed regional regular seasons, followed by playoffs; top teams advance to international live events. Format varies by region.",events:["Open qualifier / promotion-relegation","Stage 1 regional regular season + playoffs","Champions Clash","Stage 2 regional regular season + playoffs","Midseason Championship","Stage 3 regional regular season + playoffs","OWCS World Finals"],qualification:"Regional stage placement determines playoff advancement and qualification for global live events."},
+ league:{name:"League of Legends · regional splits + internationals",summary:"The 2026 season connects three regional splits with First Stand, MSI and Worlds. Regional formats differ, but split performance feeds international qualification; the final split and regional championship help determine the Worlds field.",events:["Split 1 regional season + playoffs","First Stand","Split 2 regional season + playoffs","Mid-Season Invitational (MSI)","Split 3 / regional championship","Worlds"],qualification:"Split champions and regional seeding feed First Stand and MSI; Worlds places are determined by the season's regional qualification rules."},
+ rocket:{name:"Rocket League · RLCS opens, majors and points",summary:"RLCS 2026 uses two splits with three online Opens each, each split leading to a Major. Open placements award qualification points; Major results also add points. The season ends with Worlds and regional Last Chance Qualifiers.",events:["Split 1 · Open 1, Open 2, Open 3","Major 1","Split 2 · Open 4, Open 5, Open 6","Major 2","Regional Last Chance Qualifier","RLCS World Championship"],qualification:"Cumulative RLCS points determine direct Worlds invites; LCQs decide remaining slots. The in-game points are simplified for career play."}
+};
+function activeSeasonFormat(){return SEASON_FORMATS[gameKey(S?.gameTitle)]||SEASON_FORMATS.cs2}
+function renderSeasonFormat(){const el=$("seasonFormatGuide");if(!el)return;const f=activeSeasonFormat();el.innerHTML='<b>'+escapeText(f.name)+'</b><p class="note">'+escapeText(f.summary)+'</p><ol style="padding-left:22px;margin:8px 0">'+f.events.map((e,i)=>'<li>'+escapeText(e)+'</li>').join("")+'</ol><p class="note"><b>Qualification:</b> '+escapeText(f.qualification)+'</p><p class="note">Research basis: official 2026 competition formats. These are management-game abstractions, not a claim that every real-world regional rule or slot count is reproduced exactly.</p>'}
+function renderSimStats(){const el=$("simStats");if(!el)return;const points=S.circuit?.points||0;const week=S.simWeek||0;const event=S.circuit?.event||activeSeasonFormat().events[0];el.innerHTML='<div class="stat"><b>'+week+'</b><span>Simulated weeks</span></div><div class="stat"><b>'+points+'</b><span>Championship points</span></div><div class="stat"><b>'+escapeText(event)+'</b><span>Current event</span></div><div class="stat"><b>
+  if(S.phase=="league")h="<tr><th>#</th><th>League table</th><th>W</th><th>L</th><th>Pts</th></tr>"+[...S.lg.t].sort((a,b)=>b.pts-a.pts||b.w-a.w).map((x,i)=>`<tr class="${x.t.me?"me":""}"><td>${i+1}</td><td>${x.t.name}${i<4?" ✓":""}</td><td>${x.w}</td><td>${x.l}</td><td>${x.pts}</td></tr>`).join("");
+  else if(S.phase=="major"){const M=S.mj;
+    if(M.stage=="swiss")h=`<tr><th>Major · Swiss R${M.rnd}</th><th>W-L</th><th></th></tr>`+[...M.t].sort((a,b)=>b.w-a.w||a.l-b.l).map(x=>`<tr class="${x.t.me?"me":""}"><td>${x.t.name}</td><td>${x.w}-${x.l}</td><td>${x.w>=3?"Advanced":x.l>=3?"Out":""}</td></tr>`).join("");
+    else{h=`<tr><th colspan="2">Major · ${["Quarterfinals","Semifinals","Grand Final"][M.po.rd]} (Bo3)</th></tr>`;for(let i=0;i<M.po.t.length;i+=2){const a=M.po.t[i],b=M.po.t[i+1];h+=`<tr class="${a.me||b.me?"me":""}"><td>${a.name}</td><td>vs ${b.name}</td></tr>`}}}
+  else h="<tr><th>Season complete</th></tr>";
+  $("sched").innerHTML=h;$("news").innerHTML=S.news.map(n=>"• "+n).join("<br>")}
+function render(){
+  persistActiveCareer();
+  const m=S.match,L=S.lg;const rc=$("lastMatchReport"),lr=S.lastMatchReport;if(rc){if(lr){rc.style.display="block";rc.innerHTML='<h2>📊 Latest Match Report · '+escapeText(lr.game||S.gameTitle||"Esports")+'</h2><div class="stats"><div class="stat"><b>'+(lr.won?"VICTORY":"DEFEAT")+'</b><span>'+escapeText(lr.score||"—")+" vs "+escapeText(lr.opponent||"Opponent")+'</span></div><div class="stat"><b>'+escapeText(lr.mvp||"—")+'</b><span>Series MVP</span></div></div><p class="note">'+escapeText(lr.analysis||"Review player ratings and game-specific match statistics.")+'</p><div class="tw"><table><tr><th>Player</th><th>Role</th><th>Rating</th><th>MVPs</th></tr>'+(lr.players||[]).map(p=>'<tr><td>'+escapeText(p.name)+'</td><td>'+escapeText(p.role)+'</td><td>'+p.rating+'</td><td>'+(p.mvps??(p.name===lr.mvp?1:0))+'</td></tr>').join("")+'</table></div>'}else rc.style.display="none"}
+  const scoutBtn=$("scoutOpponentBtn");if(scoutBtn)scoutBtn.disabled=!!m||!!S.over||!!S.scoutedThisWeek;const scoutNote=$("scoutOpponentNote");if(scoutNote)scoutNote.textContent=S.scoutedThisWeek&&S.prepReport?`Scouting report · ${S.prepReport.opponent}: estimated power ${S.prepReport.estimate}. Saved preparation bonus: +${S.prepReport.bonus} team power.`:"Scout before the veto to learn the opponent’s strength and gain a small preparation edge.";const psel=$("practiceMapSelect");if(psel){psel.innerHTML=activeMapPool().map(x=>`<option value="${x.name}" ${((S.practiceMap||activeMapPool()[0]?.name)===x.name)?"selected":""}>${x.name}</option>`).join("");psel.disabled=!!m||!!S.over||!!S.practicedThisWeek;}const pbtn=$("practiceMapBtn");if(pbtn)pbtn.disabled=!!m||!!S.over||!!S.practicedThisWeek;const pnote=$("practiceMapNote");if(pnote)pnote.textContent=S.practicedThisWeek?`Already practiced ${S.practiceMap||"Mirage"} this match week. Playing maps still builds familiarity.`:`Practice ${S.practiceMap||"Mirage"}: each player gains map familiarity, improving performance when you play it.`;
+  const stage=S.phase=="league"?`League ${Math.min(L.r+1,7)}/7`:S.phase=="major"?"Major":"Off-season";
+  $("stats").innerHTML=[["Year "+S.year,stage],["Money","$"+S.money.toLocaleString()],["Record",S.w+"W – "+S.l+"L"],["Trophies","🏆 "+S.trophies],["Team power",Math.round(power(S.roster))]].map(([a,b])=>`<div class="stat"><b>${b}</b><span>${a}</span></div>`).join("");
+  renderSquadHub();renderRoster();renderDevelopment();renderFin();renderMarket();renderInbox();renderContracts();renderStaff();renderOrg();renderEmpire();renderDashboard();
+  const tb=$("trainBtns");
+  if(S.over){tb.innerHTML=`<button class="pri" onclick="newGame()">Start over</button>`;$("trainNote").textContent="Bankrupt! Your org fell more than $10,000 into debt."}else if(S.phase=="off"){tb.innerHTML=`<button class="pri" onclick="newYear()">Start Year ${S.year+1}</button>`;$("trainNote").textContent="Season complete. Rivals improve each year. Training and stat growth slow near 99, so plan development over multiple seasons."}
+  else{const fx=nextFix();
+    const opts=[["aim","Aim drills"],["gs","Game sense (VOD review)"],["men","Mental coaching"],["rest","Rest & team bonding"]];
+    tb.innerHTML=opts.map(([k,l])=>`<button class="${S.focus==k?"sel":""}" ${m?"disabled":""} onclick="setFocus('${k}')">${l}</button>`).join("")+`<div style="margin-top:8px"><button class="pri" ${m?"disabled":""} onclick="beginVeto()">Veto maps: ${fx.label} vs ${fx.opp.name} (Bo${fx.bo})</button></div>`}
+  ensureCircuit();renderSeasonFormat();renderSimStats();
+  sched();
+  scheduleAutosave();
+}
+function practiceSelectedMap(){if(S.match||S.over||S.practicedThisWeek)return;const name=S.practiceMap||"Mirage";S.roster.forEach(p=>{if(!p.maps)p.maps={};p.maps[name]=clamp((p.maps[name]??60)+3,0,100)});S.practicedThisWeek=true;news(`The team practiced ${name}. Everyone gained map familiarity.`);render();$("practiceMapNote").textContent=`Practice complete: ${name} familiarity improved for the whole roster.`}
+function scoutOpponent(){if(S.match||S.over||S.scoutedThisWeek)return;const fx=nextFix();if(!fx)return;const actual=Math.round(gp(fx.opp));const analyst=Math.floor((staffOf("Analyst")?.skill||0)/35);const estimate=clamp(actual+R(-4,4),1,100);S.scoutedThisWeek=true;S.prepReport={opponent:fx.opp.name,estimate,bonus:2+analyst,label:fx.label};$("scoutOpponentNote").textContent=`Scouting report · ${fx.opp.name}: estimated power ${estimate}${analyst?" · Analyst improved report precision":""}. Preparation bonus: +${S.prepReport.bonus} team power.`;news(`Scouting report completed for ${fx.opp.name}. Estimated power ${estimate}; preparation bonus +${S.prepReport.bonus}.`);render()}
+function improveMapFamiliarity(name,won){S.roster.forEach(p=>{if(!p.maps)p.maps={};p.maps[name]=clamp((p.maps[name]??60)+(won?2:1),0,100)});news(`Map experience: ${name} familiarity increased for your roster.`)}
+function setControlMode(mode){if(!S.match)return;S.match.controlMode=mode;draw()}
+function setFocus(k){S.focus=k;$("trainNote").textContent={aim:"Aim drills: players gain aim, small morale cost.",gs:"VOD review: players gain game sense.",men:"Mental coaching: players gain mental and a little morale.",rest:"Rest: big morale boost and a small gain to every stat."}[k];render()}
+function log(t,c){const f=$("feed"),d=document.createElement("div");d.className=c||"";d.textContent=t;f.appendChild(d);f.scrollTop=f.scrollHeight}
+
+function beginOtherVeto(fx){S.otherVeto={fx,pool:activeMapPool().map(x=>x.name),bans:[],picks:[],stage:"ban"};$("veto").style.display="block";$("match").style.display="none";showTab("play");renderOtherVeto()}
+function renderOtherVeto(){const v=S.otherVeto;if(!v)return;const prof=GAME_PROFILES[gameKey(S.gameTitle)];if(v.stage==="ban"){$("vetoInfo").textContent=prof.name+" · "+v.fx.label+" vs "+v.fx.opp.name+". Ban one map; the opponent bans one too.";const pool=activeMapPool().filter(x=>!v.bans.includes(x.name));$("vetoChoices").innerHTML=pool.map(m=>'<button class="map-choice" onclick="banOtherMap('+JSON.stringify(m.name).replace(/\"/g,"&quot;")+')"><b>Ban · '+m.name+'</b><span>'+m.style+' · '+m.desc+'</span></button>').join("")}else{const pool=activeMapPool().filter(x=>!v.bans.includes(x.name)&&!v.picks.includes(x.name));$("vetoInfo").textContent="Pick three maps ("+v.picks.length+"/3). Bans: "+v.bans.join(", ");$("vetoChoices").innerHTML='<p class="note">Picks: '+(v.picks.join(" → ")||"None")+'</p>'+pool.map(m=>'<button class="map-choice" onclick="pickOtherMap('+JSON.stringify(m.name).replace(/\"/g,"&quot;")+')"><b>Pick · '+m.name+'</b><span>'+m.style+' · '+m.desc+'</span></button>').join("")}}
+function banOtherMap(name){const v=S.otherVeto;if(!v||v.stage!=="ban"||!v.pool.includes(name))return;v.bans.push(name);const pool=v.pool.filter(x=>!v.bans.includes(x));if(pool.length)v.bans.push(pick(pool));v.stage="pick";renderOtherVeto()}
+function pickOtherMap(name){const v=S.otherVeto;if(!v||v.stage!=="pick"||v.picks.includes(name)||v.bans.includes(name)||!v.pool.includes(name))return;v.picks.push(name);if(v.picks.length===3)launchOtherSeries();else renderOtherVeto()}
+function roleImpact(p,k){const r=p.role,b={valorant:{Duelist:p.aim*.035,Initiator:p.gs*.035,Controller:p.gs*.025,Sentinel:p.men*.03,Flex:(p.aim+p.gs+p.men)/3*.015},overwatch:{Tank:p.men*.04,Damage:p.aim*.04,Support:p.men*.025+p.gs*.015},league:{Top:p.men*.02,Jungle:p.gs*.04,Mid:p.gs*.035,ADC:p.aim*.04,Support:p.men*.025+p.gs*.015},rocket:{Striker:p.aim*.04,Playmaker:p.gs*.035,Defender:p.men*.035,Goalkeeper:p.men*.04,Flex:(p.aim+p.gs+p.men)/3*.02}};return b[k]?.[r]||0}
+function simulateOtherMap(k,name,team,opp){const mp=mapProfile(name),fam=S.roster.reduce((n,p)=>n+((p.maps&&p.maps[name])||60),0)/5,tac=S.strategy==="aggressive"?1.2:S.strategy==="disciplined"?.9:S.strategy==="development"?.3:.5,rb=S.roster.reduce((n,p)=>n+roleImpact(p,k),0)/5*.07,pw=clamp(1/(1+Math.exp(-((team-opp)+(fam-60)*.055+tac+rb)/8)),.08,.92),won=Math.random()<pw;let line="",stats={};if(k==="valorant"){let a=0,b=0,n=0;while(n++<30&&!(a>=13&&a-b>=2)&&!(b>=13&&b-a>=2)){if(Math.random()<pw)a++;else b++}if(a===b){if(won)a++;else b++}if(won&&a<b)[a,b]=[13,11];if(!won&&b<a)[a,b]=[11,13];stats={kills:R(48,78),plants:R(4,10),defuses:R(0,3)};line="Rounds "+a+"–"+b+" · "+stats.plants+" spike plants · "+stats.defuses+" defuses"}else if(k==="overwatch"){stats={teamFights:won?R(8,13):R(3,8),eliminations:R(65,130),healing:R(18000,42000)};line=(mp.style==="Control"?"Control points ":"Objective checkpoints ")+(won?"2–0":"0–2")+" · Team fights "+stats.teamFights+" · "+stats.eliminations+" eliminations"}else if(k==="league"){stats={kills:won?R(15,32):R(6,20),gold:won?R(2500,12500):-R(2500,9000),towers:won?R(7,11):R(1,6),dragons:won?R(2,4):R(0,2),baron:won?R(1,2):R(0,1)};line="Kills "+stats.kills+" · Gold "+(stats.gold>0?"+":"−")+Math.abs(stats.gold).toLocaleString()+" · Towers "+stats.towers+" · Dragons "+stats.dragons+" · Baron "+stats.baron}else{let a=won?R(2,5):R(0,3),b=won?R(0,3):R(2,5);if(a===b){if(won)a++;else b++}stats={goals:a,shots:won?R(7,15):R(3,10),saves:R(3,10),assists:R(0,5)};line="Goals "+a+"–"+b+" · Shots "+stats.shots+" · Saves "+stats.saves+" · Assists "+stats.assists}const perf=S.roster.map(p=>({name:p.name,role:p.role,rating:clamp(Math.round(55+(rating(p)-team)*1.1+R(-12,15)+(won?4:-1)+roleImpact(p,k)*.2),35,100)})).sort((a,b)=>b.rating-a.rating);return{map:name,won,probability:Math.round(pw*100),line,stats,performance:perf,mvp:perf[0]?.name||"—"}}
+function launchOtherSeries(){const v=S.otherVeto;if(!v||v.picks.length<3)return;const k=gameKey(S.gameTitle),prof=GAME_PROFILES[k],fx=v.fx;applyTrainingWeek();const team=power(S.roster)+(S.prepReport&&S.prepReport.opponent===fx.opp.name?S.prepReport.bonus:0),opp=Math.max(gp(fx.opp),team+R(-5,5)+Math.min(3,(S.year-1)*.5));let w=0,l=0,maps=[];for(let i=0;i<3&&w<2&&l<2;i++){const m=simulateOtherMap(k,v.picks[i],team,opp+R(-2,2));maps.push(m);if(m.won)w++;else l++}const won=w>l,players=S.roster.map(p=>{const rows=maps.flatMap(m=>m.performance).filter(x=>x.name===p.name),avg=Math.round(rows.reduce((n,x)=>n+x.rating,0)/Math.max(1,rows.length)),mvps=maps.filter(m=>m.mvp===p.name).length;return{name:p.name,role:p.role,rating:avg,mvps}}).sort((a,b)=>b.rating-a.rating),mvp=players[0];if(mvp){const p=S.roster.find(x=>x.name===mvp.name);if(p)p.mvp+=Math.max(1,mvp.mvps)}S.lastMatchReport={game:prof.name,year:S.year,opponent:fx.opp.name,label:fx.label,won,score:w+"–"+l,maps,players,mvp:mvp?.name||"—",teamPower:Math.round(team),oppPower:Math.round(opp)};S.otherMatchReport=S.lastMatchReport;S.otherVeto=null;S.prepared=null;S.veto=null;$("veto").style.display="none";$("match").style.display="block";const host=$("otherMatchUI");host.style.display="block";["score","map","mapDiagramNote","ctrls","feed"].forEach(id=>$(id).style.display="none");host.innerHTML='<h2>'+prof.name+' · Match report</h2><div class="stats"><div class="stat"><b>'+w+'–'+l+'</b><span>Series score</span></div><div class="stat"><b>'+(won?"VICTORY":"DEFEAT")+'</b><span>'+fx.label+'</span></div><div class="stat"><b>'+mvp.name+'</b><span>Series MVP</span></div></div><p class="note">Team power '+Math.round(team)+' · Opponent power '+Math.round(opp)+' · Maps '+v.picks.join(" → ")+'</p>'+maps.map((m,i)=>'<div class="step"><b>Map '+(i+1)+' · '+m.map+' · '+(m.won?"WIN":"LOSS")+'</b><span>'+m.line+'</span><span>Estimated win chance: '+m.probability+'%</span></div>').join("")+'<h3>Player performance</h3><div class="tw"><table><tr><th>Player</th><th>Role</th><th>Rating</th><th>MVPs</th></tr>'+players.map(p=>'<tr><td>'+escapeText(p.name)+'</td><td>'+escapeText(p.role)+'</td><td>'+p.rating+'</td><td>'+p.mvps+'</td></tr>').join("")+'</table></div><p class="note">'+prof.name+' report includes role bonuses, map familiarity and game-specific objective statistics.</p><button class="pri" onclick="closeOtherReport()">Continue career →</button>';saveStatus("Match report ready. Continue to advance the season.");scheduleAutosave()}
+function closeOtherReport(){const r=S.otherMatchReport;if(!r)return;const won=r.won;S.history.unshift({year:S.year,event:won?"Senior victory":"Senior defeat",detail:r.game+" · "+r.score+" vs "+r.opponent+" · MVP "+r.mvp});if(S.history.length>30)S.history.length=30;S.roster.forEach(p=>{p.form=clamp((p.form||0)+(won?1:-1),-3,3);p.fatigue=clamp((p.fatigue||0)+6,0,100);p.morale=clamp((p.morale||70)+(won?7:-6),0,100)});const fin=weekly(),travel=300;S.money+=fin.net-travel+(won?3500:1000);won?S.w++:S.l++;tickCircuit(won);S.sponsors.forEach(x=>x.weeks--);const ended=S.sponsors.filter(x=>x.weeks<=0);ended.forEach(x=>news("Sponsorship with "+x.name+" expired."));S.sponsors=S.sponsors.filter(x=>x.weeks>0);if(ended.length)S.sponsorMarket.push(...Array.from({length:ended.length},()=>makeSponsor()));S.socialThisWeek=false;S.practicedThisWeek=false;S.scoutedThisWeek=false;S.prepReport=null;S.followers+=won?R(150,500):R(40,180);recordTier2Week();news(r.game+" "+(won?"victory":"defeat")+" "+r.score+" vs "+r.opponent+" · MVP "+r.mvp+".");S.otherMatchReport=null;$("otherMatchUI").style.display="none";["score","map","mapDiagramNote","ctrls","feed"].forEach(id=>$(id).style.display="");$("match").style.display="none";advance(won);refreshMarket();autoEv();genEvent();if(S.money<-50000){S.over=true;news("Bankrupt! The organisation has fallen below the $50,000 debt limit.")}S.focus=null;render();if(S.phase!=="off"&&!S.over)$("trainNote").textContent=r.game+" "+(won?"victory":"defeat")+" recorded. Review the report, then choose next week's focus.";scheduleAutosave()}
+function updateRivalWorld(){if(!S.ai?.length)return;S.ai.forEach(t=>t.power=clamp((t.power||55)+R(-1,2),42,96));S.rivalWeeks=(S.rivalWeeks||0)+1;if(S.rivalWeeks%4===0){const t=pick(S.ai),up=Math.random()<.62,change=R(2,5)*(up?1:-1);t.power=clamp(t.power+change,42,96);const ev=up?"signed a promising player and improved team power":"released an underperforming player and rebuilt";news(t.name+" "+ev+" ("+(change>0?"+":"")+change+" power).");S.history.unshift({year:S.year,event:"Rival roster move",detail:t.name+" · "+ev});if(S.history.length>30)S.history.length=30}}
+
+function beginVeto(){
+  if(S.otherMatchReport){$("trainNote").textContent="Review the finished match and continue your career first.";return}if(allP().some(p=>p.yrs<=0)){showTab("squad");$("trainNote").textContent="Resolve expiring contracts first (Squad tab).";return}
+  if(!S.focus){$("trainNote").textContent="Pick a training focus first.";return}
+  const fx=nextFix();if(!fx)return;
+  S.prepared={opp:fx.opp,bo:fx.bo,label:fx.label};
+  if(gameKey(S.gameTitle)!=="cs2"){beginOtherVeto(fx);return;}S.veto={pool:MAPS.map(x=>x.name),step:0,bo:fx.bo,opp:fx.opp,label:fx.label,maps:[],bans:[],pickMe:null,pickAI:null,playerStarts:Math.random()<0.5};
+  $("veto").style.display="block";$("match").style.display="none";showTab("play");renderVeto();
+}
+function renderVeto(){
+  const v=S.veto;if(!v)return;
+  if(v.step>=6){
+    $("vetoInfo").textContent=v.label+" vs "+v.opp.name+" · Map veto complete: "+v.maps.join(" → ")+". Choose your starting side for Map 1.";
+    $("vetoChoices").innerHTML='<button class="map-choice" onclick="chooseStartingSide(1)"><b>Start CT side</b><span>Defend first, then switch to attack at half-time.</span></button><button class="map-choice" onclick="chooseStartingSide(2)"><b>Start T side</b><span>Attack first, then switch to defence at half-time.</span></button>';
+    return;
+  }
+  const isBo1=v.bo===1,playerActs=v.playerStarts?(v.step%2===0):(v.step%2===1);
+  const kind=isBo1?"BAN":([0,1,4,5].includes(v.step)?"BAN":"PICK");
+  if(!playerActs){
+    let choice;
+    if(kind==="BAN"){choice=pick(v.pool);v.bans.push(choice);v.pool=v.pool.filter(x=>x!==choice)}
+    else{choice=pick(v.pool);v.pickAI=choice;v.pool=v.pool.filter(x=>x!==choice)}
+    v.step++;
+    if(v.step>=6){v.maps=isBo1?[v.pool[0]]:[v.pickMe,v.pickAI,v.pool[0]];v.step=6}
+    renderVeto();return;
+  }
+  const turn=Math.floor(v.step/2)+1;
+  const actor=v.playerStarts?"You":"Opponent";
+  $("vetoInfo").textContent=v.label+" vs "+v.opp.name+" · Best of "+(isBo1?1:3)+". "+actor+" start first. Your action: "+kind+" ("+turn+"/3 of your turns).";
+  const choices=v.pool.filter(x=>!v.bans.includes(x));
+  $("vetoChoices").innerHTML=choices.map(name=>{const mp=mapProfile(name);return '<button class="map-choice" onclick="vetoAction(\''+name+'\')"><b>'+kind+" · "+name+'</b><span>'+mp.style+" · "+mp.desc+'</span><span>Your roster confidence: '+Math.round(S.roster.reduce((n,p)=>n+mapConf(p,name),0)/S.roster.length)+'/100</span></button>'}).join("");
+}
+function chooseStartingSide(choice){const v=S.veto;if(!v||v.step!==6)return;v.startingSide=choice===2?"T":"CT";launchMatch()}
+function vetoAction(name){
+  const v=S.veto;if(!v||v.step>=6||!v.pool.includes(name))return;
+  const kind=v.bo===1||[0,1,4,5].includes(v.step)?"BAN":"PICK";
+  if(kind==="BAN"){v.bans.push(name);v.pool=v.pool.filter(x=>x!==name)}  else{v.pickMe=name;v.pool=v.pool.filter(x=>x!==name)}
+  v.step++;  if(v.step>=6){v.maps=v.bo===1?[v.pool[0]]:[v.pickMe,v.pickAI,v.pool[0]];v.step=6}
+  renderVeto();
+}
+function applyTrainingWeek(){
+  S.roster.forEach(p=>{
+    const plan=ensureDev(p),planStat=devStat(plan),coachBonus=Math.floor((staffOf("Head Coach")?.skill||0)/45)+(S.facilities?.training||0);if(planStat)growStat(p,planStat,1+coachBonus);else ["aim","gs","men"].forEach(k=>growStat(p,k,0.5));
+    if(S.focus==="aim"){growStat(p,"aim",R(2,5)+Math.floor((staffOf("Head Coach")?.skill||0)/35)+(S.facilities?.training||0));p.morale=clamp(p.morale-3,0,100)}
+    if(S.focus==="gs")growStat(p,"gs",R(2,5)+Math.floor((staffOf("Head Coach")?.skill||0)/35)+(S.facilities?.training||0));
+    if(S.focus==="men"){growStat(p,"men",R(2,5)+Math.floor((staffOf("Head Coach")?.skill||0)/35)+(S.facilities?.training||0));p.morale=clamp(p.morale+2,0,100)}
+    if(S.focus==="rest"){p.morale=clamp(p.morale+15,0,100);p.fatigue=clamp((p.fatigue||0)-14,0,100);growStat(p,"aim",1);growStat(p,"gs",1);growStat(p,"men",1)}else p.fatigue=clamp((p.fatigue||0)+2,0,100);
+  });
+  S.bench.forEach(p=>{const plan=ensureDev(p),stat=devStat(plan);if(stat)growStat(p,stat,0.5);else ["aim","gs","men"].forEach(k=>growStat(p,k,0.25));});
+}
+function launchMatch(){
+  const fx=S.prepared,v=S.veto;if(!fx||!v)return;
+  applyTrainingWeek();
+  const prepBonus=S.prepReport&&S.prepReport.opponent===fx.opp.name?S.prepReport.bonus:0;const teamPower=power(S.roster)+prepBonus,majorBoost=fx.label.startsWith("Major")?4:0;
+  const o={name:fx.opp.name,power:Math.max(gp(fx.opp),teamPower+R(-3,5)+majorBoost+Math.min(3,(S.year-1)*.75))};
+  S.match={opp:o,bo:fx.bo,sw:0,sl:0,maps:[...v.maps],map:1,mapName:v.maps[0],me:0,them:0,round:0,streakMe:0,streakThem:0,controlMode:"important",startingSide:v.startingSide||"CT",tactic:(S.strategy==="aggressive"?"aggro":S.strategy==="disciplined"?"default":"default"),timeouts:2,tobuff:0,next:0,done:false,eco:newEco()};
+  S.veto=null;S.prepared=null;$("veto").style.display="none";$("match").style.display="block";showTab("play");$("feed").innerHTML="";
+  $("mTitle").textContent=`${fx.label} vs ${o.name} · Bo${fx.bo}`;setTimeout(()=>drawMap(makeDots(),0),0);
+  log(`Map veto complete: ${S.match.maps.join(" → ")}. You start on ${S.match.startingSide}; sides switch after round 12. ${o.name} (power ${Math.round(o.power)}) vs your team (power ${Math.round(power(S.roster))}). First to 13 rounds wins each map.`,"m");
+  render();draw();
+}
+const BUYPOW={pistol:0,full:0,force:-3.5,eco:-9},BUYN={pistol:"pistol",full:"full buy",force:"force buy",eco:"eco"};
+const newEco=()=>({me:800,them:800,lossMe:0,lossThem:0});
+function buyFor(m,side){if(m.round===0||m.round===12)return"pistol";const M=(m.eco||newEco())[side];
+  if(side==="me"){if(m.tactic==="save")return"eco";if(m.tactic==="force"&&M>=1500&&M<4700)return"force"}
+  return M>=4700?"full":M>=2400?"force":"eco"}
+function payEco(m,win,bm,bt){
+  const e=m.eco,cost={pistol:700,full:4500,force:2600,eco:400},lb=n=>Math.min(3400,1400+500*Math.max(0,n-1));
+  if(bm!=="full"||bt!=="full")log(`R${m.round}: ${BUYN[bm]} for you ($${Math.round(e.me)}), ${BUYN[bt]} for ${m.opp.name} ($${Math.round(e.them)}).`,"m");
+  e.me-=Math.min(e.me,cost[bm]*(win?.5:1));e.them-=Math.min(e.them,cost[bt]*(win?1:.5));
+  if(win){e.me+=3250;e.lossMe=0;e.lossThem++;e.them+=lb(e.lossThem)}else{e.them+=3250;e.lossThem=0;e.lossMe++;e.me+=lb(e.lossMe)}
+  e.me=Math.min(16000,e.me);e.them=Math.min(16000,e.them);
+  if(m.round===12)m.eco=newEco()}
+function isDecisionRound(m){return m.round===0||m.round===12||(m.eco&&buyFor(m,"me")!=="full")||m.round===5||m.round===11||m.me>=12||m.them>=12||m.streakMe>=3||m.streakThem>=3}
+function draw(){
+  const m=S.match;if(!m)return;if(!m.eco)m.eco=newEco();
+  const decision=isDecisionRound(m),mp=mapProfile(m.mapName);
+  $("score").innerHTML=`${m.me} – ${m.them}<small>${mp.name} · ${mp.style} · ${m.bo>1?`Map ${m.map}/${m.maps.length} · Series ${m.sw}-${m.sl} · `:""}Round ${Math.min(m.round+1,24)} · ${m.round<12?m.startingSide:(m.startingSide==="T"?"CT":"T")} side · Timeouts left: ${m.timeouts} · Money: you $${Math.round(m.eco.me)} / them $${Math.round(m.eco.them)} · next buy: ${BUYN[buyFor(m,"me")]}</small>`;
+  const c=$("ctrls");
+  if(m.done){c.innerHTML=`<button class="pri" onclick="finish()">${(m.me>m.them?m.sw+1:m.sw)>=(m.bo+1)/2||(m.me>m.them?m.sl:m.sl+1)>=(m.bo+1)/2?"Finish match":"Next map"}</button><button onclick="autoplayMatch()">⏩ Autoplay remaining match</button>`;return}
+  const T=[["aggro","Aggressive"],["default","Default"],["force","Force buy"],["save","Save / eco"]];
+  const tacticButtons=decision?T.map(([k,l])=>`<button class="${m.tactic==k?"sel":""}" onclick="S.match.tactic='${k}';draw()">${l}</button>`).join(""):"";
+  c.innerHTML=`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0"><label for="matchMode">Gameplay</label><select id="matchMode" onchange="setControlMode(this.value)" style="font:inherit;padding:8px;border-radius:8px;background:var(--btn);color:var(--text);border:1px solid var(--line)"><option value="round" ${m.controlMode==="round"?"selected":""}>Round by round</option><option value="important" ${(!m.controlMode||m.controlMode==="important")?"selected":""}>Important rounds</option><option value="map" ${m.controlMode==="map"?"selected":""}>Sim whole map</option></select></div><div class="decision"><b>${decision?"Tactical decision":"Automatic simulation"}</b><div class="note">${decision?`Key round: choose a plan for ${mp.name}. ${mp.style==="Aim duels"?"Aim-focused play gets a small boost.":mp.style==="Utility"?"Default play is steadier on this map.":mp.style==="Fast executes"?"Aggressive play gets a small boost.":"Tactics have different risk and reward."}`:"The match runs automatically until the next important round."}</div>${tacticButtons}</div><details style="margin:8px 0;padding:8px 10px;border:1px solid var(--line);border-radius:10px"><summary style="cursor:pointer;font-weight:650">Why are rounds going this way?</summary><div class="note" style="margin-top:8px">Your roster power: ${Math.round(power(S.roster))} · Opponent power: ${Math.round(m.opp.power)} · Your ${mp.name} familiarity: ${Math.round(S.roster.reduce((n,p)=>n+mapConf(p,mp.name),0)/S.roster.length)}/100. Results are influenced by player ratings and morale, map familiarity, analyst skill, map style, buy quality, tactics and streak momentum. There is still round-to-round variance, so a stronger team can lose individual rounds. The radar animation illustrates the statistical result rather than calculating every duel.</div></details>`+
+  `<div><button class="pri" ${m.busy?"disabled":""} onclick="advanceGameplay()">${m.controlMode==="round"?"Play next round":m.controlMode==="map"?"Sim whole map":decision?"Play important round + auto-sim":"Continue to important round"}</button><button ${m.busy?"disabled":""} onclick="autoplayMatch()">⏩ Autoplay match</button>${m.busy?'<button onclick="SKIP=true">Skip ⏭</button>':''}<button ${m.timeouts<1||m.busy?"disabled":""} onclick="timeout()">Call timeout</button><label for="matchSpeed">Speed</label><select id="matchSpeed" onchange="MATCH_SPEED=Number(this.value)" style="font:inherit;padding:8px;border-radius:8px;background:var(--btn);color:var(--text);border:1px solid var(--line)"><option value="7200" ${MATCH_SPEED===7200?"selected":""}>0.5× Slow</option><option value="3600" ${MATCH_SPEED===3600?"selected":""}>1× Normal</option><option value="1800" ${MATCH_SPEED===1800?"selected":""}>2× Fast</option><option value="900" ${MATCH_SPEED===900?"selected":""}>4× Very fast</option></select></div>`;
+}
+function advanceGameplay(){const m=S.match;if(!m||m.busy||m.done)return;if(m.controlMode==="map"){simToEnd();draw();return}if(m.controlMode==="round"){playRound(false);return}playRound(false,()=>{let n=0;while(!m.done&&!isDecisionRound(m)&&n++<24)playRound(true);draw()})}
+function timeout(){const m=S.match;if(m.timeouts<1)return;m.timeouts--;m.streakThem=0;m.tobuff=3;log("Timeout called. Opponent momentum reset, your team refocuses.","m");draw()}
+function playRound(instant,after){
+  const m=S.match;if(m.done||m.busy)return;
+  const profile=mapProfile(m.mapName);let mine=power(S.roster)+teamMapBonus(S.roster,m.mapName),theirs=m.opp.power+R(-2,2);mine+=(staffOf("Analyst")?.skill||0)/35;
+  let t=0;
+  if(m.tactic=="aggro")t+=R(-7,9)+(profile.style==="Fast executes"||profile.style==="Aggression"?2:0);else if(profile.style==="Utility"||profile.style==="Mid control")t+=1.5;
+  if(profile.style==="Aim duels")t+=(S.roster.reduce((n,p)=>n+p.aim,0)/S.roster.length-60)*0.12;
+  if(profile.style==="Rotations")t+=(S.roster.find(p=>p.role==="IGL")?.gs-60)*0.06;
+  if(!m.eco)m.eco=newEco();const bm=buyFor(m,"me"),bt=buyFor(m,"them");t+=BUYPOW[bm]-BUYPOW[bt];
+  if(m.tobuff>0){t+=3;m.tobuff--}
+  t+=Math.min(m.streakMe,3)*1.2-Math.min(m.streakThem,3)*1.2;
+  const p=1/(1+Math.exp(-(mine-theirs+t)/10));
+  let win=Math.random()<p;
+  // Bomb rounds can end in either a C4 explosion (T win) or a successful CT defuse.
+  m.roundEvent=null;
+  // The skill roll above decides who wins; the bomb scenario then follows from the winner and side.
+  const ownT=m.round<12?(m.startingSide==="T"):(m.startingSide!=="T"),tWins=win?ownT:!ownT;
+  if(!instant&&(tWins?Math.random()<.55:Math.random()<.38)){
+    const anchors=NAV_ANCHORS[m.mapName]||NAV_ANCHORS.Mirage;
+    const siteKey=m.tactic==="aggro"?(m.round%2?"b":"a"):(m.round%4<2?"a":"b");
+    m.roundEvent={type:"bomb",site:siteKey.toUpperCase(),bombPos:[anchors[siteKey][0]*320,anchors[siteKey][1]*220],plantAt:.72,defuseStart:.79,defuseEnd:.92,explodeAt:.97,outcome:tWins?"explode":"defuse"};
+  }
+  if(instant){apply(win)}else{animateRound(win,()=>apply(win))}
+  function apply(win){
+  // Resolve the round from the bomb outcome and the side your team is currently playing.
+  // A C4 explosion always awards T; a completed defuse always awards CT.
+  if(m.roundEvent?.type==="bomb"){
+    const teamIsT=m.round<12?(m.startingSide==="T"):(m.startingSide!=="T");
+    win=m.roundEvent.outcome==="explode"?teamIsT:!teamIsT;
+  }
+  m.busy=false;m.round++;payEco(m,win,bm,bt);
+  if(win){m.me++;m.streakMe++;m.streakThem=0;
+    const hero=weightedPick();hero.mvp++;
+    if(m.roundEvent?.type==="bomb"&&m.roundEvent.outcome==="defuse")log(`R${m.round}: Your team defuses the C4 at ${m.roundEvent.site} with seconds to spare!`,"w");
+    else if(m.roundEvent?.type==="bomb")log(`R${m.round}: C4 planted at ${m.roundEvent.site} and exploded! Your team wins the round.`,"w");
+    else log(`R${m.round}: ${pick([hero.name+" ("+hero.role+") wins a 1v"+R(2,3)+" clutch",hero.name+" opens with a triple",hero.name+" hits a huge "+(hero.role=="AWPer"?"AWP double":"spray")+" to seal the round","Your team wins after a full-site fight"])}.`,"w");
+  }else{m.them++;m.streakThem++;m.streakMe=0;
+    if(m.roundEvent?.type==="bomb"&&m.roundEvent.outcome==="defuse")log(`R${m.round}: Opponents defuse the C4 at ${m.roundEvent.site}; the retake succeeds.`,"l");
+    else if(m.roundEvent?.type==="bomb")log(`R${m.round}: Opponents plant at ${m.roundEvent.site}; the C4 explodes and they win.`,"l");
+    else log(`R${m.round}: ${pick([m.opp.name+" read the rotate and take it","Your team loses the retake",""+m.opp.name+" win the decisive duels","A mistimed peek costs the round"])}.`,"l");
+  }
+  m.roundEvent=null;
+  if(m.me==13||m.them==13){m.done=true;log(m.me==13?"VICTORY!":"DEFEAT.",m.me==13?"w":"l")}
+  draw();if(after)after();
+  }
+}
+let MATCH_SPEED=3600,SKIP=false;
+const INI={IGL:"I",AWPer:"A",Entry:"E",Lurker:"L",Support:"S"};
+const NAV_ANCHORS={
+"Mirage":{t:[.28125,.6818],ct:[.8594,.3545],a:[.225,.2773],b:[.53125,.7318],mid:[.50,.48]},
+"Inferno":{t:[.12,.74],ct:[.68,.38],a:[.88,.34],b:[.49,.20],mid:[.48,.50]},
+"Nuke":{t:[.12,.54],ct:[.82,.53],a:[.80,.70],b:[.58,.39],mid:[.52,.52]},
+"Ancient":{t:[.50,.90],ct:[.70,.12],a:[.80,.40],b:[.24,.23],mid:[.50,.48]},
+"Anubis":{t:[.50,.90],ct:[.55,.22],a:[.75,.20],b:[.28,.46],mid:[.50,.50]},
+"Dust II":{t:[.50,.91],ct:[.60,.20],a:[.84,.18],b:[.18,.18],mid:[.50,.50]},
+"Vertigo":{t:[.50,.89],ct:[.50,.16],a:[.20,.24],b:[.70,.60],mid:[.50,.44]}
+};
+const MIRAGE_ZONES={
+  // Coordinates use the same 320×220 space as player routes and the radar.
+  // Spawn zones match the green outlines; plant zones match the orange site outlines.
+  tSpawn:{x1:68,y1:134,x2:111,y2:166},
+  ctSpawn:{x1:260,y1:64,x2:291,y2:91},
+  a:{x1:57,y1:49,x2:86,y2:74},
+  b:{x1:156,y1:148,x2:185,y2:175}
+};
+function inRect(p,r){return p[0]>=r.x1&&p[0]<=r.x2&&p[1]>=r.y1&&p[1]<=r.y2}
+function inBombSite(map,site,p){
+  if(map==="Mirage")return inRect(p,MIRAGE_ZONES[(site||"A").toLowerCase()==="b"?"b":"a"]);
+  const a=NAV_ANCHORS[map]||NAV_ANCHORS.Mirage,center=a[(site||"A").toLowerCase()==="b"?"b":"a"];
+  return Math.hypot(p[0]-center[0]*320,p[1]-center[1]*220)<20;
+}
+const NAV={
+"Mirage":{ta:[[90,150],[105,130],[108,105],[95,82],[82,68],[72,61]],tb:[[90,150],[118,151],[140,157],[160,161],[170,161]],tm:[[90,150],[112,135],[135,120],[160,106]],ca:[[275,78],[235,72],[190,70],[145,68],[105,65],[72,61]],cb:[[275,78],[260,100],[235,125],[210,145],[185,158],[170,161]],cm:[[275,78],[240,85],[205,95],[160,106]]},
+"Inferno":{ta:[[38,163],[58,153],[75,139],[100,115],[130,95],[175,75],[240,75]],tb:[[38,163],[50,145],[65,125],[80,110],[105,90],[140,65]],tm:[[38,163],[70,150],[100,130],[150,115]],ca:[[218,84],[235,75],[250,65]],cb:[[218,84],[180,80],[140,65]],cm:[[218,84],[180,105],[150,115]]},
+"Nuke":{ta:[[38,119],[65,120],[90,125],[120,130],[150,145],[185,155],[220,155]],tb:[[38,119],[65,105],[90,90],[120,82],[150,78],[175,70]],tm:[[38,119],[70,119],[110,120],[150,125]],ca:[[282,117],[260,130],[240,150],[220,155]],cb:[[282,117],[245,95],[210,80],[175,70]],cm:[[282,117],[245,115],[200,120],[150,125]]},
+"Ancient":{ta:[[160,198],[160,175],[175,155],[195,135],[220,115],[250,95]],tb:[[160,198],[130,180],[105,155],[85,130],[75,100],[75,65]],tm:[[160,198],[160,170],[160,140],[160,110]],ca:[[204,26],[220,45],[240,65],[250,95]],cb:[[204,26],[170,35],[130,45],[100,65],[75,100]],cm:[[204,26],[185,50],[165,75],[160,110]]},
+"Anubis":{ta:[[160,198],[180,180],[205,160],[230,140],[250,115],[245,85],[230,60]],tb:[[160,198],[135,180],[110,160],[85,140],[65,115],[75,85],[95,60]],tm:[[160,198],[160,170],[160,140],[160,110]],ca:[[170,48],[190,55],[215,60],[230,60]],cb:[[170,48],[145,55],[120,60],[95,60]],cm:[[170,48],[165,75],[160,110]]},
+"Dust II":{ta:[[160,200],[175,180],[190,155],[205,130],[230,105],[255,80],[270,45]],tb:[[160,200],[140,180],[120,155],[95,130],[75,100],[65,70],[55,45]],tm:[[160,200],[160,175],[160,145],[160,115]],ca:[[192,44],[220,40],[250,40],[270,45]],cb:[[192,44],[150,45],[100,45],[55,45]],cm:[[192,44],[180,70],[165,90],[160,115]]},
+"Vertigo":{ta:[[160,196],[135,180],[110,160],[85,140],[70,115],[65,85],[75,55]],tb:[[160,196],[185,180],[210,165],[230,145],[230,120],[220,95],[220,70],[225,55]],tm:[[160,196],[160,170],[150,145],[145,120],[160,95]],ca:[[160,44],[135,48],[110,50],[85,55],[75,55]],cb:[[160,44],[180,65],[200,85],[220,105],[230,130],[225,150]],cm:[[160,44],[160,70],[150,90],[145,120]]}
+};
+const WALK_CACHE={};
+function radarWalkGrid(map){
+ const im=RADAR_CACHE[RADAR_URLS[map]||RADAR_URLS.Mirage];if(!im||!im.complete||!im.naturalWidth)return null;if(WALK_CACHE[map])return WALK_CACHE[map];
+ try{const n=56,cv=document.createElement("canvas");cv.width=n;cv.height=n;const cx=cv.getContext("2d",{willReadFrequently:true});cx.drawImage(im,0,0,n,n);const px=cx.getImageData(0,0,n,n).data,walk=new Uint8Array(n*n);for(let y=0;y<n;y++)for(let x=0;x<n;x++){const k=(y*n+x)*4;walk[y*n+x]=px[k+3]>60&&(px[k]+px[k+1]+px[k+2])>55?1:0}return WALK_CACHE[map]={n,walk}}catch(e){return null}
+}
+function radarPath(map,from,to){
+ const grid=radarWalkGrid(map);if(!grid)return null;const n=grid.n,walk=grid.walk,idx=(x,y)=>y*n+x;
+ const nearest=(u,v)=>{const sx=Math.max(0,Math.min(n-1,Math.round(u*(n-1)))),sy=Math.max(0,Math.min(n-1,Math.round(v*(n-1))));if(walk[idx(sx,sy)])return[sx,sy];for(let r=1;r<n;r++)for(let y=Math.max(0,sy-r);y<=Math.min(n-1,sy+r);y++)for(let x=Math.max(0,sx-r);x<=Math.min(n-1,sx+r);x++)if(Math.max(Math.abs(x-sx),Math.abs(y-sy))===r&&walk[idx(x,y)])return[x,y];return null};
+ const a=nearest(from[0],from[1]),b=nearest(to[0],to[1]);if(!a||!b)return null;const start=idx(a[0],a[1]),end=idx(b[0],b[1]),cost=new Float32Array(n*n),prev=new Int32Array(n*n),open=new Uint8Array(n*n),closed=new Uint8Array(n*n);cost.fill(Infinity);prev.fill(-1);cost[start]=0;open[start]=1;
+ const heuristic=q=>Math.hypot(q%n-end%n,Math.floor(q/n)-Math.floor(end/n)),dirs=[[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,-1],[-1,1],[1,1]];
+ for(let step=0;step<n*n;step++){let cur=-1,best=Infinity;for(let q=0;q<open.length;q++)if(open[q]&&!closed[q]){const f=cost[q]+heuristic(q);if(f<best){best=f;cur=q}}if(cur<0)break;if(cur===end)break;closed[cur]=1;const x=cur%n,y=Math.floor(cur/n);for(const [dx,dy] of dirs){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=n||yy>=n)continue;const q=idx(xx,yy);if(!walk[q]||closed[q])continue;if(dx&&dy&&(!walk[idx(x+dx,y)]||!walk[idx(x,y+dy)]))continue;const nc=cost[cur]+(dx&&dy?1.414:1);if(nc<cost[q]){cost[q]=nc;prev[q]=cur;open[q]=1}}}
+ if(start!==end&&prev[end]===-1)return null;const out=[];for(let q=end;q!==-1;q=prev[q]){out.push([q%n/(n-1)*320,Math.floor(q/n)/(n-1)*220]);if(q===start)break}out.reverse();return out.length>1?out:null
+}
+function routeFor(map,key){const n=NAV[map]||NAV.Mirage;return n[key]||n.tm}
+function routePoint(path,p){if(path.length===1)return path[0];const lengths=[];let total=0;for(let i=1;i<path.length;i++){const dx=path[i][0]-path[i-1][0],dy=path[i][1]-path[i-1][1],len=Math.hypot(dx,dy);lengths.push(len);total+=len}let dist=Math.max(0,Math.min(1,p))*total;for(let i=0;i<lengths.length;i++){if(dist<=lengths[i]){const a=path[i],b=path[i+1],k=lengths[i]?dist/lengths[i]:0;return[a[0]+(b[0]-a[0])*k,a[1]+(b[1]-a[1])*k]}dist-=lengths[i]}return path[path.length-1]}
+function makeDots(){
+ const m=S.match,map=m?.mapName||"Mirage",round=m?.round||0,ownT=round<12?(m?.startingSide==="T"):(m?.startingSide!=="T"),plan=m?.tactic||"default",anchors=NAV_ANCHORS[map]||NAV_ANCHORS.Mirage;
+ const site=plan==="aggro"?(round%2?"b":"a"):(round%4<2?"a":"b");
+ const mk=(side,i,p,lab)=>{const isT=side===0?ownT:!ownT,from=isT?anchors.t:anchors.ct;let target=isT?(p.role==="AWPer"?anchors.mid:p.role==="Lurker"?(site==="a"?anchors.b:anchors.a):anchors[site]):i===4?anchors.mid:i<2?anchors.a:anchors.b;
+ let path=radarPath(map,from,target);if(!path){const key=isT?(p.role==="AWPer"?"tm":site==="a"?"ta":"tb"):(i===4?"cm":i<2?"ca":"cb");path=routeFor(map,key).map(q=>[...q])}
+ if(!isT&&path.length>1){const last=path[path.length-1];path.push([Math.max(0,Math.min(320,last[0]+(i%2?2:-2))),Math.max(0,Math.min(220,last[1]+(i===4?0:(i%2?2:-2))))])}
+ return{side,lab,role:p.role,x0:path[0][0],y0:path[0][1],path,tx:path[path.length-1][0],ty:path[path.length-1][1],die:null,seed:i*7+side*17,isT,map,from,target}};
+ const own=S.roster.map((p,i)=>mk(0,i,p,INI[p.role])),roles=["Entry","AWPer","IGL","Lurker","Support"],opp=roles.map((role,i)=>mk(1,i,{role},["E","A","I","L","S"][i]));
+ const all=own.concat(opp);
+ // Spread players across the spawn area instead of stacking all five on one pixel.
+ all.forEach((d,i)=>{const lane=i%5,offsets=[[-9,-4],[-4,5],[2,-6],[7,4],[11,0]],o=offsets[lane];d.path=d.path.map(q=>[...q]);let sx=d.path[0][0]+o[0],sy=d.path[0][1]+o[1];if(map==="Mirage"){const z=MIRAGE_ZONES[d.isT?"tSpawn":"ctSpawn"];sx=Math.max(z.x1+1,Math.min(z.x2-1,sx));sy=Math.max(z.y1+1,Math.min(z.y2-1,sy))}d.path[0]=[Math.max(0,Math.min(320,sx)),Math.max(0,Math.min(220,sy))];d.x0=d.path[0][0];d.y0=d.path[0][1];d.stopT=1});
+ // Find the first real encounter and hold both players there: they can no longer run
+ // straight through one another and then shoot from the opposite side.
+ const contact=18,step=.01;
+ for(let ti=15;ti<=96;ti++){const tt=ti*step;
+   for(const a of own)for(const b of opp){
+     if(a.stopT<1||b.stopT<1)continue;
+     const pa=rawPos(a,tt),pb=rawPos(b,tt);
+     if(Math.hypot(pa[0]-pb[0],pa[1]-pb[1])<=contact&&lineOfSight(map,pa,pb)){a.stopT=tt;b.stopT=tt}
+   }
+ }
+ return all
+}
+function rawPos(d,tt){
+  let travel=Math.max(0,Math.min(1,(tt-.04)/.82));
+  if(d.role==="Lurker")travel=Math.pow(travel,1.28);
+  const eased=travel*travel*(3-2*travel);
+  const [x,y]=routePoint(d.path||[[d.x0,d.y0],[d.tx,d.ty]],eased);
+  const settle=tt>.82?Math.min(1,(tt-.82)/.18):0;
+  const sway=(d.role==="Lurker"?2.2:.6)*settle;
+  return[Math.max(0,Math.min(320,x+Math.sin((d.seed||0)+tt*12)*sway)),Math.max(0,Math.min(220,y+Math.cos((d.seed||0)+tt*12)*sway))];
+}
+function pos(d,tt){return rawPos(d,Math.min(tt,d.stopT??1))}
+function lineOfSight(map,a,b){
+ const grid=radarWalkGrid(map);if(!grid)return false;
+ const n=grid.n,walk=grid.walk;
+ const ax=Math.max(0,Math.min(n-1,Math.round(a[0]/320*(n-1)))),ay=Math.max(0,Math.min(n-1,Math.round(a[1]/220*(n-1))));
+ const bx=Math.max(0,Math.min(n-1,Math.round(b[0]/320*(n-1)))),by=Math.max(0,Math.min(n-1,Math.round(b[1]/220*(n-1))));
+ const steps=Math.max(Math.abs(bx-ax),Math.abs(by-ay));
+ for(let i=1;i<steps;i++){const x=Math.round(ax+(bx-ax)*i/steps),y=Math.round(ay+(by-ay)*i/steps);if(!walk[y*n+x])return false}
+ return true;
+}
+const RADAR_URLS={
+  "Mirage":"https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/images/radars/de_mirage_radar_psd.png",
+  "Inferno":"https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/images/radars/de_inferno_radar_psd.png",
+  "Nuke":"https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/images/radars/de_nuke_radar_psd.png",
+  "Ancient":"https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/images/radars/de_ancient_radar_psd.png",
+  "Anubis":"https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/images/radars/de_anubis_radar_psd.png",
+  "Dust II":"https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/images/radars/de_dust2_radar_psd.png",
+  "Vertigo":"https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/images/radars/de_vertigo_radar_psd.png"
+};
+const RADAR_CACHE={};let LAST_DOTS=[],LAST_T=0;
+function radarFor(name){
+  const url=RADAR_URLS[name]||RADAR_URLS.Mirage;
+  if(!RADAR_CACHE[url]){const im=new Image();im.crossOrigin="anonymous";im.onload=()=>{delete WALK_CACHE[name];if(S.match&&S.match.mapName===name)drawMap(LAST_DOTS,LAST_T)};im.onerror=()=>{im.failed=true};im.src=url;RADAR_CACHE[url]=im}
+  return RADAR_CACHE[url];
+}function drawMap(dots,t){
+  LAST_DOTS=dots||[];LAST_T=t||0;
+  const cv=document.getElementById("map");if(!cv)return;  const g=cv.getContext("2d"),cs=getComputedStyle(document.documentElement),c=n=>cs.getPropertyValue(n).trim();
+  g.setTransform(2,0,0,2,0,0);g.fillStyle=c("--card");g.fillRect(0,0,320,220);
+  const mapName=S.match?.mapName||"Mirage",im=radarFor(mapName),mx=50,my=0,mw=220,mh=220;
+  if(im&&im.complete&&im.naturalWidth){g.save();g.globalAlpha=.96;g.drawImage(im,mx,my,mw,mh);g.restore()}
+  else {g.fillStyle=c("--mute");g.font="11px system-ui";g.textAlign="center";g.fillText("Loading official CS2 radar…",160,110)}
+  // The real radar image is square, so gameplay markers are mapped into its square viewport.
+  const mapPos=d=>{const [x,y]=pos(d,t);return[mx+(x/320)*mw,y]};
+  // Visible C4 asset: carried to the selected site, planted, then detonated to end the round.
+  const bomb=S.match?.roundEvent;
+  const attackers=LAST_DOTS.filter(d=>d.isT&&(d.die===null||d.die>(bomb?.plantAt??1)));
+  const sitePoint=bomb?.type==="bomb"?bomb.bombPos:null;
+  // The C4 must be attached to a living attacker who reaches the selected site.
+  // Render it at that player's actual position at the plant checkpoint, not at a
+  // guessed static marker that can look detached from the movement on some maps.
+  const plantCarrier=!!sitePoint?attackers.map(d=>({d,q:pos(d,Math.max(0,Math.min(t,bomb.plantAt)))}))
+    .filter(v=>inBombSite(mapName,bomb.site,v.q))
+    .map(v=>({...v,dist:Math.hypot(v.q[0]-sitePoint[0],v.q[1]-sitePoint[1])}))
+    .sort((a,b)=>a.dist-b.dist)[0]:null;
+  const carrierReached=!!plantCarrier;
+  if(bomb?.type==="bomb"&&t>=bomb.plantAt&&carrierReached){
+    const [bx,by]=[mx+(plantCarrier.q[0]/320)*mw,my+(plantCarrier.q[1]/220)*mh];
+    if(bomb.outcome==="defuse"&&t>=bomb.defuseStart&&t<bomb.defuseEnd){
+      const progress=Math.max(0,Math.min(1,(t-bomb.defuseStart)/(bomb.defuseEnd-bomb.defuseStart)));
+      g.save();g.fillStyle="#d9273f";g.fillRect(bx-7,by-6,14,12);g.strokeStyle="#fff";g.lineWidth=1;g.strokeRect(bx-7,by-6,14,12);
+      g.fillStyle="#fff";g.font="bold 7px system-ui";g.textAlign="center";g.textBaseline="middle";g.fillText("C4",bx,by);
+      g.fillStyle="#10151c";g.fillRect(bx-23,by-22,46,6);g.fillStyle="#58d68d";g.fillRect(bx-22,by-21,44*progress,4);
+      g.fillStyle="#fff";g.font="bold 8px system-ui";g.textAlign="center";g.fillText("DEFUSING "+Math.floor(progress*100)+"%",bx,by-29);g.restore();
+    }else if(bomb.outcome==="defuse"&&t>=bomb.defuseEnd){
+      g.save();g.strokeStyle="#58d68d";g.lineWidth=3;g.beginPath();g.arc(bx,by,10,0,Math.PI*2);g.stroke();g.fillStyle="#fff";g.font="bold 8px system-ui";g.textAlign="center";g.fillText("DEFUSED",bx,by-15);g.restore();
+    }else if(t<bomb.explodeAt){
+      const pulse=.5+.5*Math.sin(t*35);
+      g.save();g.fillStyle="#d9273f";g.fillRect(bx-7,by-6,14,12);
+      g.strokeStyle="#fff";g.lineWidth=1;g.strokeRect(bx-7,by-6,14,12);
+      g.fillStyle="#fff";g.font="bold 7px system-ui";g.textAlign="center";g.textBaseline="middle";g.fillText("C4",bx,by);
+      g.fillStyle="#ff5268";g.globalAlpha=.7;g.beginPath();g.arc(bx,by,10+pulse*3,0,Math.PI*2);g.strokeStyle="#ff5268";g.stroke();g.restore();
+      g.fillStyle="#fff";g.font="bold 8px system-ui";g.textAlign="center";g.fillText("C4 PLANTED · "+bomb.site,bx,by-13);
+    }else{
+      const p=Math.min(1,(t-bomb.explodeAt)/.04),radius=8+p*28;
+      g.save();g.globalAlpha=1-p*.65;g.fillStyle="#ffb52e";g.beginPath();g.arc(bx,by,radius,0,Math.PI*2);g.fill();
+      g.strokeStyle="#ff4c35";g.lineWidth=3;g.beginPath();g.arc(bx,by,radius+5,0,Math.PI*2);g.stroke();
+      g.fillStyle="#fff";g.font="bold 10px system-ui";g.textAlign="center";g.textBaseline="middle";g.fillText("BOOM!",bx,by-22);g.restore();
+    }
+  }
+  // Draw firefights only for nearby opponents with a clear line of sight.
+  if(t>=.38&&t<=.94){
+    const friendly=dots.filter(d=>d.side===0&&(d.die===null||t<d.die));
+    const enemies=dots.filter(d=>d.side===1&&(d.die===null||t<d.die));
+    friendly.forEach(a=>enemies.forEach(b=>{
+      const [ax,ay]=pos(a,t),[bx,by]=pos(b,t),dist=Math.hypot(ax-bx,ay-by);
+      if(dist<=18&&lineOfSight(mapName,[ax,ay],[bx,by])){
+        const [x1,y1]=mapPos(a),[x2,y2]=mapPos(b);
+        g.save();g.globalAlpha=.55+.35*Math.abs(Math.sin(t*42+a.seed));g.strokeStyle=(Math.floor(t*22+a.seed)%2)?c("--bad"):c("--text");g.lineWidth=1.6;g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.stroke();
+        const pulse=.5+.5*Math.abs(Math.sin(t*55+b.seed));g.fillStyle="#ffffff";g.beginPath();g.arc(x1+(x2-x1)*pulse,y1+(y2-y1)*pulse,1.8,0,Math.PI*2);g.fill();g.restore();
+      }
+    }));
+  }
+  dots.forEach(d=>{
+    if(d.die!==null&&t>=d.die){
+      const [x,y]=mapPos(d);
+      if(t-d.die<0.07&&d.killer&&!d.noShot){const [kx,ky]=mapPos(d.killer);g.strokeStyle=c("--text");g.lineWidth=1.5;g.beginPath();g.moveTo(kx,ky);g.lineTo(x,y);g.stroke()}
+      g.strokeStyle=d.side?c("--bad"):c("--acc");g.globalAlpha=.75;g.lineWidth=2;g.beginPath();g.moveTo(x-5,y-5);g.lineTo(x+5,y+5);g.moveTo(x+5,y-5);g.lineTo(x-5,y+5);g.stroke();g.globalAlpha=1;
+    }else{
+      const [x0,y0]=mapPos(d),x=x0,y=y0+Math.sin(t*30+d.y0)*(t<.7?1.2:0);
+      g.fillStyle=d.side?c("--bad"):c("--acc");g.beginPath();g.arc(x,y,6,0,7);g.fill();
+      if(d.lab){g.fillStyle="#ffffff";g.font="bold 8px system-ui";g.textAlign="center";g.textBaseline="middle";g.fillText(d.lab,x,y+.5)}
+    }
+  });
+  const phase=t<.18?"SPAWN / SETUP":t<.68?(S.match?.tactic==="aggro"?"FAST EXECUTE":"EXECUTE / ROTATE"):t<.9?"ENGAGEMENTS":"ROUND RESULT";
+  g.fillStyle="rgba(8,10,16,.82)";g.fillRect(7,198,126,14);
+  g.fillStyle=c("--text");g.font="bold 8px system-ui";g.textAlign="left";g.textBaseline="middle";g.fillText(phase,12,205);
+  g.fillStyle=c("--text");g.font="bold 10px system-ui";g.textAlign="left";g.textBaseline="top";g.fillText(mapName.toUpperCase(),8,7);
+}
+
+function animateRound(win,done){
+  const m=S.match;
+  const radar=radarFor(m?.mapName||"Mirage");
+  if(radar&&!radar.complete&&!radar.failed){radar.addEventListener("load",()=>animateRound(win,done),{once:true});radar.addEventListener("error",()=>animateRound(win,done),{once:true});return}
+  m.busy=true;SKIP=false;draw();
+  const dots=makeDots(),me=dots.slice(0,5),th=dots.slice(5),ownT=m.round<12?(m.startingSide==="T"):(m.startingSide!=="T");
+  const phase=m.tactic==="aggro"?"fast execute":m.tactic==="save"?"eco / safe setup":m.tactic==="default"?"default execute":"tactical setup";
+  log(`R${m.round+1} setup: ${ownT?"Your team attack":"Your team defend"} · ${phase} on ${m.mapName}.`,"m");
+  // The round outcome is chosen in playRound so it also works in instant/whole-map simulation.
+  const bombRound=m.roundEvent?.type==="bomb";
+  const siteKey=(m.roundEvent?.site||"A").toLowerCase();
+  const kill=(arr,n,opp)=>{
+    const candidates=[...arr].sort((a,b)=>((a.seed*13)%19)-((b.seed*13)%19)).slice(0,n);
+    for(let ci=0;ci<candidates.length;ci++){
+      const d=candidates[ci];let best=null,bestDist=18,bestTime=0,backup=null,backupDist=Infinity,backupTime=.5;
+      for(let ti=0;ti<36;ti++){
+        const tt=.38+ti*.016,[x,y]=pos(d,tt);
+        for(const enemy of opp){
+          if(enemy.die!==null&&enemy.die<tt)continue;
+          const [ex,ey]=pos(enemy,tt),dist=Math.hypot(x-ex,y-ey),los=lineOfSight(m.mapName,[x,y],[ex,ey]);
+          if(dist<backupDist){backup=enemy;backupDist=dist;backupTime=tt}
+          if(los&&dist<bestDist){best=enemy;bestDist=dist;bestTime=tt}
+        }
+        if(best)break;
+      }
+      if(!best&&!bombRound&&n>=5){best=backup;bestTime=backupTime;d.noShot=true}
+      if(best){d.die=Math.min(bombRound?.84:.94,bestTime+(ci*.006));if(!d.noShot)d.killer=best}
+    }
+  };
+  if(bombRound){
+    kill(me,R(0,2),th);kill(th,R(0,2),me);
+    log(`C4 carrier moves onto ${siteKey.toUpperCase()} site…`,"m");
+  }else{
+    // In elimination rounds, the losing side is fully cleared before the result resolves.
+    kill(me,win?R(0,2):5,th);kill(th,win?5:R(0,2),me);
+  }
+  const D=MATCH_SPEED,t0=performance.now();
+  (function f(now){
+    const t=SKIP?1:Math.min(1,(now-t0)/D);
+    drawMap(dots,t);
+    if(t<1)requestAnimationFrame(f);
+    else{
+      if(m.roundEvent?.type==="bomb"){const b=m.roundEvent,aliveAttackers=dots.filter(d=>d.isT&&(d.die===null||d.die>b.plantAt));const carrier=aliveAttackers.map(d=>({d,q:pos(d,b.plantAt)})).filter(v=>inBombSite(m.mapName,b.site,v.q)).map(v=>({...v,dist:Math.hypot(v.q[0]-b.bombPos[0],v.q[1]-b.bombPos[1])})).sort((a,b)=>a.dist-b.dist)[0];if(!carrier){m.roundEvent=null;log("C4 plant cancelled: the attack never reached the selected site.","m")}else{b.bombPos=[carrier.q[0],carrier.q[1]]}}
+      if(m.roundEvent?.type==="bomb"&&m.roundEvent.outcome==="defuse")log(`DEFUSE COMPLETE at ${m.roundEvent.site}! The C4 is disabled.`,"m");
+      else if(m.roundEvent?.type==="bomb")log(`C4 detonated at ${m.roundEvent.site} — round over.`,"m");
+      else log("Round phase: engagements resolved.","m");
+      done()
+    }
+  })(t0);
+}
+function weightedPick(){const w=S.roster.map(p=>rating(p)*(p.role=="Entry"||p.role=="AWPer"?1.3:1));let r=Math.random()*w.reduce((a,b)=>a+b,0);for(let i=0;i<w.length;i++){r-=w[i];if(r<=0)return S.roster[i]}return S.roster[0]}
+function simToEnd(){let g=0;while(!S.match.done&&g++<40)playRound(true)}
+function autoplayMatch(){if(!S.match||S.match.busy)return;let guard=0;while(S.match&&guard++<5){const m=S.match;if(!m.done)simToEnd();if(S.match!==m)break;if(m.done)finish();else break}if(S.match){draw();render()}}
+function finish(){
+  const m=S.match,won=m.me>m.them;improveMapFamiliarity(m.mapName,won);won?m.sw++:m.sl++;
+  const need=(m.bo+1)/2;
+  if(m.sw<need&&m.sl<need){
+    log(`Map ${m.map} ${won?"won":"lost"} ${m.me}-${m.them}. Series ${m.sw}-${m.sl}. Next map...`,"m");
+    Object.assign(m,{map:m.map+1,mapName:m.maps[m.map],me:0,them:0,round:0,done:false,streakMe:0,streakThem:0,timeouts:2,tobuff:0,next:0,eco:newEco()});
+    log(`Next map: ${m.mapName}. Map confidence changes the matchup slightly.`,"m");drawMap(makeDots(),0);draw();return}
+  endSeries(m.sw>m.sl);
+}
+function endSeries(won){
+  const m=S.match,res=`${won?"Won":"Lost"} ${m.sw}-${m.sl} vs ${m.opp.name}`;const ps=S.roster.map(p=>({name:p.name,role:p.role,rating:clamp(Math.round(60+(rating(p)-power(S.roster))*1.1+R(-8,10)+(won?4:-2)),35,100),mvps:0})).sort((a,b)=>b.rating-a.rating),mv=ps[0];if(mv){mv.mvps=1;const p=S.roster.find(x=>x.name===mv.name);if(p)p.mvp++}S.lastMatchReport={game:"Counter-Strike 2",opponent:m.opp.name,label:"CS2 series",won,score:m.sw+"–"+m.sl,players:ps,mvp:mv?.name||"—",analysis:won?"Your team converted its advantage into a series win. Compare player ratings and map familiarity before the next veto.":"The series was lost. Review player ratings, fatigue, map familiarity and tactical preparation before the next match."};S.history.unshift({year:S.year,event:won?"Senior victory":"Senior defeat",detail:`${res} · ${m.label||"CS2 series"}`});if(S.history.length>30)S.history.length=30;recordTier2Week();
+  S.roster.forEach(p=>{let moraleShift=won?8:-Math.max(4,10-Math.floor((staffOf("Sports Psychologist")?.skill||0)/18));if(p.trait==="Leader")moraleShift+=1;if(p.trait==="Duelist"&&!won)moraleShift-=1;if(p.trait==="Steady")moraleShift= Math.round(moraleShift*0.7);p.morale=clamp(p.morale+moraleShift,0,100);p.form=clamp((p.form||0)+(won?1:-1),-3,3);p.fatigue=clamp((p.fatigue||0)+6,0,100);const k=pick(["aim","gs","men"]);growStat(p,k,R(1,2)+(won?1:0)+(S.facilities?.training||0>0?0:0))});
+  const fin=weekly(),travel=300;S.money+=fin.net-travel+(won?3500:1000);won?S.w++:S.l++;S.ai.forEach(t=>t.power+=R(0,1));
+  S.sponsors.forEach(x=>x.weeks--);const ended=S.sponsors.filter(x=>x.weeks<=0);ended.forEach(x=>news(`Sponsorship with ${x.name} expired.`));S.sponsors=S.sponsors.filter(x=>x.weeks>0);if(ended.length)S.sponsorMarket.push(...Array.from({length:ended.length},()=>makeSponsor()));
+  S.socialThisWeek=false;S.practicedThisWeek=false;S.scoutedThisWeek=false;S.prepReport=null;S.followers+=won?R(150,500):R(40,180);if(won&&S.roster.some(p=>p.trait==="Showman"))S.followers+=R(80,220);if(S.facilities?.studio)S.followers+=S.facilities.studio*R(30,90);Object.entries(S.divisions||{}).forEach(([k,d])=>{const rival=R(50,70),mine=d.roster.reduce((n,p)=>n+p.ovr,0)/5;const dwon=Math.random()<1/(1+Math.exp(-(mine-rival)/6));if(dwon){d.w++;S.money+=d.bonus;S.followers+=R(80,220)}else d.l++});
+  if(S.tier2.length){const t2Power=power(S.tier2),rival=50+R(0,20),t2won=Math.random()<1/(1+Math.exp(-(t2Power-rival)/5));S.tier2.forEach(p=>{growStat(p,pick(["aim","gs","men"]),R(1,2));p.morale=clamp(p.morale+(t2won?3:-2),0,100)});S.followers+=t2won?R(50,180):0;news(`Tier 2 ${t2won?"won":"lost"} its weekly development match (${Math.round(t2Power)} power).`)}
+  S.match=null;S.focus=null;$("match").style.display="none";
+  news(res+` (net ${fin.net-travel<0?"−":"+"}$${Math.abs(fin.net-travel).toLocaleString()} incl. $${travel} travel)`);advance(won);refreshMarket();autoEv();genEvent();if(S.money<-50000){S.over=true;news("Bankrupt! The organisation has fallen below the $50,000 debt limit.")}render();
+  if(S.phase!="off"&&!S.over)$("trainNote").textContent=res+". Pick next week's focus.";
+}
+function makeTierLeague(){const names=["Northstar Academy","Rivalry Youth","Pulse Juniors","Vertex Academy","Redline Futures","Nova Prospect","Ironclad Youth"];return{teams:[{name:"Your Tier 2",w:0,l:0,pts:0,power:Math.round(power(S.tier2)),mine:true},...names.map(name=>({name,w:0,l:0,pts:0,power:R(44,62),mine:false}))],weeks:0}}
+function recordTier2Week(){if(!S.t2League)S.t2League=makeTierLeague();const L=S.t2League;if(L.weeks>=7)return;const mine=L.teams.find(t=>t.mine);mine.power=Math.round(power(S.tier2));const rival=L.teams.filter(t=>!t.mine).sort(()=>Math.random()-.5)[L.weeks%6];const prob=1/(1+Math.exp(-(mine.power-rival.power)/7));const won=Math.random()<prob;if(won){mine.w++;mine.pts+=3;rival.l++}else{mine.l++;rival.w++;rival.pts+=3;}L.weeks++;S.tier2.forEach(p=>{growStat(p,pick(["aim","gs","men"]),R(1,2)+(won?1:0));p.morale=clamp(p.morale+(won?3:-2),0,100)});S.history.unshift({year:S.year,event:`Tier 2 ${won?"victory":"defeat"}`,detail:`${mine.name} ${won?"beat":"lost to"} ${rival.name}.`});if(S.history.length>30)S.history.length=30;if(L.weeks>=7){L.teams.sort((a,b)=>b.pts-a.pts||b.w-a.w);const rank=L.teams.findIndex(t=>t.mine);const prize=[5000,3000,1500,500][rank]||0;S.money+=prize;S.followers+=rank===0?900:rank<4?350:100;S.history.unshift({year:S.year,event:"Tier 2 season finished",detail:`Finished ${ord(rank)} in Tier 2${prize?` and earned $${prize.toLocaleString()}`:""}.`});news(`Tier 2 season complete: ${ord(rank)} place${prize?`, $${prize.toLocaleString()} prize`:""}.`);if(S.history.length>30)S.history.length=30}}
+function refreshOffers(){if(S.match||S.over)return;const pool=S.bench.filter(p=>p.yrs>0);S.transferOffers=pool.slice(0,3).map(p=>({playerId:p.id,playerName:p.name,club:pick(["Apex Crown","Neon Syndicate","Titan Rise","Void Gaming","Rogue Tide"]),fee:Math.round(valFor(p)*R(85,125)/100/100)*100}));news(S.transferOffers.length?"Rival clubs have sent new buyout offers for bench players.":"No rivals are interested in your current bench players.");renderEmpire()}
+function acceptOffer(id){const i=(S.transferOffers||[]).findIndex(o=>o.playerId===id),o=S.transferOffers[i];if(!o||S.match||S.over)return;const j=S.bench.findIndex(p=>p.id===id);if(j<0)return;const p=S.bench[j];S.bench.splice(j,1);S.money+=o.fee;S.transferOffers.splice(i,1);S.history.unshift({year:S.year,event:"Player sold",detail:`${p.name} transferred to ${o.club} for $${o.fee.toLocaleString()}.`});news(`${p.name} sold to ${o.club} for $${o.fee.toLocaleString()}.`);render()}
+function counterOffer(id){const o=(S.transferOffers||[]).find(x=>x.playerId===id);if(!o||S.match||S.over)return;o.fee=Math.round(o.fee*1.2/100)*100;o.countered=true;news(`Counter-offer sent to ${o.club}: $${o.fee.toLocaleString()} for ${o.playerName}.`);renderEmpire()}
+function setStrategy(k){if(S.match||S.over)return;S.strategy=k;news(`Team identity changed to ${({balanced:"Balanced",aggressive:"Aggressive",disciplined:"Disciplined",development:"Development-first"})[k]}.`);renderEmpire()}
+const FACILITY_DATA={training:{name:"Training centre",cost:5000,desc:"Improves weekly training gains.",max:3},bootcamp:{name:"Bootcamp",cost:4500,desc:"Improves team preparation and morale recovery.",max:3},studio:{name:"Content studio",cost:3500,desc:"Boosts audience growth and merchandise income.",max:3}};
+function upgradeFacility(k){const f=FACILITY_DATA[k],lvl=S.facilities[k]||0,cost=f.cost*(lvl+1);if(!f||lvl>=f.max||S.money<cost||S.match||S.over)return;S.money-=cost;S.facilities[k]=lvl+1;S.history.unshift({year:S.year,event:"Facility upgraded",detail:`${f.name} reached level ${lvl+1}.`});news(`${f.name} upgraded to level ${lvl+1}.`);render()}
+const GAME_DATA={cs2:{name:"Counter-Strike 2",cost:7000,weekly:950,bonus:1800},valorant:{name:"VALORANT",cost:6500,weekly:900,bonus:1700},overwatch:{name:"Overwatch",cost:6000,weekly:850,bonus:1500},league:{name:"League of Legends",cost:8000,weekly:1100,bonus:2200},rocket:{name:"Rocket League",cost:6000,weekly:800,bonus:1600}};
+const CAREER_PORTFOLIO_KEY="esportsOrgManagerPortfolioV1";
+let activeCareerId="career-"+Date.now(),activeCareerName="Main career",parentCareerId=null;
+function readCareerPortfolio(){try{const x=JSON.parse(localStorage.getItem(CAREER_PORTFOLIO_KEY)||"[]");return Array.isArray(x)?x:[]}catch(e){return[]}}
+function persistActiveCareer(){try{if(!S||!Array.isArray(S.roster))return;const list=readCareerPortfolio(),entry={id:activeCareerId,name:S.me?.name||activeCareerName||S.gameTitle||"Career",gameTitle:S.gameTitle||selectedGame||"CS2",state:JSON.parse(JSON.stringify(S)),mid:MID,parentCareerId,updatedAt:new Date().toISOString()};const i=list.findIndex(x=>x.id===activeCareerId);if(i>=0)list[i]=entry;else list.unshift(entry);localStorage.setItem(CAREER_PORTFOLIO_KEY,JSON.stringify(list.slice(0,30)))}catch(e){}}
+function renderCareerPortfolio(){persistActiveCareer();const host=$("menuContent"),list=readCareerPortfolio();host.innerHTML="<h2>CAREER PORTFOLIO</h2><p class=\"note\">Each organisation is an independent career with its own roster, finances and progress. Switch whenever you want.</p><div class=\"menu-actions\">"+list.map(x=>"<button class=\"menu-action "+(x.id===activeCareerId?"pri":"")+"\" onclick=\"switchCareer(\'"+x.id+"\')\"><strong>"+escapeText(x.name||x.gameTitle)+"</strong><span>"+escapeText(x.gameTitle||"Esports")+" · Year "+(x.state?.year||1)+" · "+(x.state?.w||0)+"W–"+(x.state?.l||0)+"L"+(x.id===activeCareerId?" · CURRENT":"")+"</span></button>").join("")+"</div><button onclick=\"showMenuPage(\'home\')\">← Main menu</button>"}
+function switchCareer(id){persistActiveCareer();const x=readCareerPortfolio().find(v=>v.id===id);if(!x?.state)return;S=x.state;MID=x.mid||MID;selectedGame=x.gameTitle||S.gameTitle||"CS2";S.gameTitle=selectedGame;activeCareerId=x.id;activeCareerName=x.name||S.me?.name||selectedGame;parentCareerId=x.parentCareerId||null;orgDraft={...(S.me||{})};migrateSave();hideTitleScreen();applyOrgBrand();render()}
+function launchDivisionCareer(k){const d=S.divisions?.[k],g=GAME_DATA[k];if(!d||!g||S.match||S.over)return;persistActiveCareer();const parent={...(S.me||{})};parentCareerId=activeCareerId;activeCareerId="career-"+Date.now()+"-"+Math.random().toString(36).slice(2,7);activeCareerName=d.teamName||g.name;selectedGame=g.name;orgDraft={...parent,name:d.teamName||g.name,tag:(d.teamName||g.name).replace(/[^A-Z0-9]/gi,"").slice(0,5).toUpperCase()||"TEAM"};newGame();S.me.name=d.teamName||g.name;S.me.tag=orgDraft.tag;S.roster=S.roster.map((p,i)=>{const src=d.roster[i]||{},v=Number(src.ovr)||60;return {...p,name:src.name||p.name,role:src.role||p.role,aim:v,gs:v,men:v,pot:v+R(2,10)}});S.history.unshift({year:S.year,event:"Division career launched",detail:"Began independently managing "+g.name+" from the parent organisation’s division."});activeCareerName=S.me.name;applyOrgBrand();render()}
+function expandGame(k){const g=GAME_DATA[k];if(!g||k===gameKey(S.gameTitle)||S.divisions[k]||S.money<g.cost||S.match||S.over)return;S.money-=g.cost;S.divisions[k]={name:g.name,teamName:(S.me?.tag||"ORG")+" "+g.name,w:0,l:0,weekly:g.weekly,bonus:g.bonus,roster:Array.from({length:5},(_,i)=>({name:pick(SYL)+pick(END),role:(GAME_PROFILES[k]?.roles||ROLES)[i],ovr:R(52,67)}))};S.history.unshift({year:S.year,event:"New division opened",detail:`Entered ${g.name}.`});news(`${g.name} division opened for $${g.cost.toLocaleString()}.`);render()}
+function editDivision(k){const d=S.divisions?.[k];if(!d)return;const name=prompt("Team name:",d.teamName||d.name);if(name===null)return;d.teamName=cleanOrgName(name,d.name||"Team");for(let i=0;i<d.roster.length;i++){const p=d.roster[i],n=prompt("Player "+(i+1)+" ("+p.role+") name:",p.name);if(n!==null)p.name=cleanOrgName(n,p.name)}news(d.teamName+" roster updated.");render()}
+function renderEmpire(){if(!S.facilities)S.facilities={training:0,bootcamp:0,studio:0};if(!S.divisions)S.divisions={};if(!S.history)S.history=[];if(!S.transferOffers)S.transferOffers=[];if(!S.t2League)S.t2League=makeTierLeague();const L=S.t2League;$("ecosystemStats").innerHTML=[["League week",`${Math.min(L.weeks,7)}/7`],["Tier 2 record",`${L.teams.find(t=>t.mine).w}W–${L.teams.find(t=>t.mine).l}L`],["Next prize",L.weeks>=7?"Season complete":"Up to $5,000"]].map(([a,b])=>`<div class="stat"><b>${b}</b><span>${a}</span></div>`).join("");$("ecosystemTable").innerHTML="<tr><th>#</th><th>Academy</th><th>Power</th><th>W</th><th>L</th><th>Pts</th></tr>"+[...L.teams].sort((a,b)=>b.pts-a.pts||b.w-a.w).map((t,i)=>`<tr class="${t.mine?"me":""}"><td>${i+1}</td><td>${t.name}</td><td>${Math.round(t.power)}</td><td>${t.w}</td><td>${t.l}</td><td>${t.pts}</td></tr>`).join("");$("ecosystemNote").textContent=L.weeks>=7?"Tier 2 season complete. Start the next senior season to reset the development league.":"The Tier 2 league simulates one fixture after each senior series.";
+$("transferDesk").innerHTML=(S.transferOffers||[]).map(o=>`<div class="step"><b>${o.club} → ${o.playerName}</b><span>Buyout offer: $${o.fee.toLocaleString()}${o.countered?" · Counter-offer sent":""}</span><div><button class="sm pri" ${S.match||S.over?"disabled":""} onclick="acceptOffer(${o.playerId})">Accept</button><button class="sm" ${S.match||S.over||o.countered?"disabled":""} onclick="counterOffer(${o.playerId})">Counter +20%</button></div></div>`).join("")||"<p class='note'>No active buyout offers. Request offers for eligible bench players.</p>";$("offerRefresh").disabled=S.match||S.over;
+const strategies=[["balanced","Balanced","Reliable all-round approach"],["aggressive","Aggressive","Slightly favours decisive, fast play"],["disciplined","Disciplined","Better on utility and rotation-heavy maps"],["development","Development-first","Young players receive a small match boost"]];$("strategyOptions").innerHTML=strategies.map(([k,n,d])=>`<button class="${S.strategy===k?"sel":""}" ${S.match||S.over?"disabled":""} onclick="setStrategy('${k}')">${n}</button>`).join("");$("strategyNote").textContent=`Current identity: ${strategies.find(x=>x[0]===S.strategy)?.[1]||"Balanced"}. Tactics complement rather than replace in-match decisions.`;
+const players=[...S.roster,...S.bench,...S.tier2];players.forEach(p=>{if(!p.trait)p.trait="Steady"});$("personalityTable").innerHTML="<tr><th>Player</th><th>Squad</th><th>Trait</th><th>Effect</th><th>Morale</th></tr>"+players.map(p=>`<tr><td>${p.name}</td><td>${S.roster.includes(p)?"Senior":S.bench.includes(p)?"Bench":"Tier 2"}</td><td>${p.trait}</td><td>${({Leader:"Better morale recovery",Duelist:"More affected by losses",Analyst:"Calm, tactical style",Showman:"Audience engagement",Steady:"Smaller morale swings"})[p.trait]||"Consistent"}</td><td>${p.morale??70}</td></tr>`).join("");
+$("facilityCards").innerHTML=Object.entries(FACILITY_DATA).map(([k,f])=>{const lvl=S.facilities[k]||0,cost=f.cost*(lvl+1);return `<div class="step"><b>${f.name} · Lv ${lvl}/${f.max}</b><span>${f.desc}</span><span>Next upgrade: $${cost.toLocaleString()}</span><button class="sm" ${lvl>=f.max||S.money<cost||S.match||S.over?"disabled":""} onclick="upgradeFacility('${k}')">${lvl>=f.max?"MAX LEVEL":"Upgrade"}</button></div>`}).join("");
+$("gameDivisions").innerHTML=(parentCareerId?'<div class="step"><b>Parent organisation</b><span>Return to the organisation this division was created from. Your division roster and finances remain saved there.</span><button class="sm pri" onclick="switchCareer(\''+parentCareerId+'\')">← Return to parent organisation</button></div>':"")+Object.entries(GAME_DATA).filter(([k])=>k!==gameKey(S.gameTitle)).map(([k,g])=>{const d=S.divisions?.[k];const head="<b>"+g.name+(d?" Division":"")+"</b>";const details=d?"Record "+d.w+"W–"+d.l+"L · 5 players · weekly operating cost $"+g.weekly.toLocaleString():"Setup $"+g.cost.toLocaleString()+" · weekly cost $"+g.weekly.toLocaleString()+" · estimated competition income $"+g.bonus.toLocaleString();const actions=d?'<b>'+escapeText(d.teamName||g.name)+'</b><span>'+(d.roster||[]).map(p=>escapeText(p.name)+" ("+escapeText(p.role)+", "+p.ovr+")").join(" · ")+'</span><button class="sm pri" onclick="launchDivisionCareer(\''+k+'\')">Manage team →</button><button class="sm" onclick="editDivision(\''+k+'\')">Edit roster</button>':'<button class="pri" '+(S.money<g.cost||S.match||S.over?"disabled":"")+' onclick="expandGame(&quot;'+k+'&quot;)">＋ Open division →</button><span>Game-specific roster roles are available. Setup and weekly operating costs apply.</span>';return '<div class="step">'+head+'<span>'+details+'</span>'+actions+'</div>'}).join("");
+$("careerStats").innerHTML=[["Seasons",S.seasonsCompleted||0],["Senior record",`${S.w}W–${S.l}L`],["Trophies",S.trophies],["Extra divisions",Object.keys(S.divisions).length]].map(([a,b])=>`<div class="stat"><b>${b}</b><span>${a}</span></div>`).join("");$("careerTable").innerHTML="<tr><th>Year</th><th>Event</th><th>Details</th></tr>"+(S.history||[]).slice(0,15).map(h=>`<tr><td>${h.year}</td><td>${h.event}</td><td>${h.detail}</td></tr>`).join("")||"<tr><td colspan=3>No career history yet.</td></tr>";
+}
+const SAVE_SLOTS_KEY="esportsOrgManagerSlotsV1",AUTO_SLOT="__autosave";
+let selectedGame="CS2",autosaveTimer=null;
+function readSaveSlots(){try{const v=JSON.parse(localStorage.getItem(SAVE_SLOTS_KEY)||"[]");return Array.isArray(v)?v:[]}catch(e){return[]}}
+function writeSaveSlots(slots){localStorage.setItem(SAVE_SLOTS_KEY,JSON.stringify(slots))}
+function packCareer(){return {version:13,state:S,mid:MID,gameTitle:S.gameTitle||selectedGame||"CS2",savedAt:new Date().toISOString()}}
+function saveStatus(msg){const el=$("saveStatus");if(el)el.textContent=msg}
+function saveGame(slotName){try{if(S.otherMatchReport){saveStatus("Continue the match report before saving your career.");return}if(S.match?.busy){saveStatus("Wait for the current round animation to finish before saving.");return}const slots=readSaveSlots(),name=slotName||prompt("Name this save slot:",(S.me?.name||"My Org")+" · Year "+S.year);if(!name)return;const entry={id:"slot-"+Date.now(),name:String(name).slice(0,60),data:packCareer(),updatedAt:new Date().toISOString()};const idx=slots.findIndex(x=>x.id===entry.id||x.name===entry.name);if(idx>=0){if(!confirm("A save with that name already exists. Overwrite it?"))return;entry.id=slots[idx].id;slots[idx]=entry}else slots.unshift(entry);writeSaveSlots(slots.slice(0,20));localStorage.setItem("esportsOrgManagerSaveV8",JSON.stringify(entry.data));saveStatus("Saved "+entry.name+" · Year "+S.year+".");news("Career saved to slot: "+entry.name+".")}catch(e){saveStatus("Save failed. Export a JSON backup and check available browser storage.")}}
+function restoreCareer(d){if(!d||!d.state||!Array.isArray(d.state.roster))throw Error("Invalid save");S=d.state;selectedGame=d.gameTitle||S.gameTitle||"CS2";S.gameTitle=selectedGame;orgDraft={...(S.me||{})};MID=Math.max(d.mid||1,...[...(S.roster||[]),...(S.bench||[]),...(S.tier2||[]),...(S.academy||[])].map(p=>(p.id||0)+1));migrateSave();applyOrgBrand();render();hideTitleScreen();scheduleAutosave();saveStatus("Loaded career · "+(S.me?.name||"Organisation")+" · Year "+S.year+".")}
+function legacyCareer(){for(const key of ["esportsOrgManagerSaveV8","esportsOrgManagerSaveV7"]){try{const d=JSON.parse(localStorage.getItem(key)||"null");if(d?.state?.roster)return d}catch(e){}}return null}
+function loadGame(){showMenuPage("saves")}
+function importSave(){document.getElementById("backupFile").click()}
+function escapeText(v){return String(v??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function renderSaveSlots(){const slots=readSaveSlots(),host=$("menuContent");if(!host)return;host.innerHTML='<h2>LOAD CAREER</h2><p class="note">Choose a save to load. Loading replaces the career currently open in memory.</p><div id="slotList"></div><div style="margin-top:16px"><button onclick="showMenuPage(\'home\')">← Main menu</button><button onclick="document.getElementById(\'backupFile\').click()">Import backup</button></div>';const list=$("slotList");let html=slots.filter(x=>x.id!==AUTO_SLOT).map((s,i)=>{const d=s.data||{},st=d.state||{};return '<div class="save-slot"><div><b>'+escapeText(s.name||"Career "+(i+1))+'</b><small>'+(st.gameTitle||d.gameTitle||"CS2")+' · Year '+(st.year||"?")+' · $'+Number(st.money||0).toLocaleString()+' · '+(s.updatedAt?new Date(s.updatedAt).toLocaleString():"Saved")+'</small></div><div><button class="sm pri" onclick="loadSlot(\''+s.id+'\')">Load</button><button class="sm" onclick="exportSlot(\''+s.id+'\')">Export</button><button class="sm" onclick="deleteSlot(\''+s.id+'\')">Delete</button></div></div>'}).join("");if(!html)html='<p class="note">No named save slots yet. You can still continue from an older save if one exists.</p>';const legacy=legacyCareer();if(legacy)html+='<div class="save-slot"><div><b>Legacy career</b><small>Imported from an earlier version · Year '+(legacy.state.year||"?")+'</small></div><button class="sm pri" onclick="loadLegacyCareer()">Load legacy save</button></div>';list.innerHTML=html}
+function loadSlot(id){try{const slot=readSaveSlots().find(x=>x.id===id);if(!slot)throw Error("Save not found");restoreCareer(slot.data)}catch(e){alert("Could not load that save. Your current career has not been changed.")}}
+function loadLegacyCareer(){try{restoreCareer(legacyCareer())}catch(e){alert("Could not load the older save.")}}
+function deleteSlot(id){const slots=readSaveSlots(),s=slots.find(x=>x.id===id);if(!s||!confirm("Delete save "+s.name+"? This cannot be undone."))return;writeSaveSlots(slots.filter(x=>x.id!==id));renderSaveSlots()}
+function exportSlot(id){const slot=readSaveSlots().find(x=>x.id===id);if(slot)downloadBackup(slot.data,slot.name)}
+function downloadBackup(data,name){const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=(String(name||"esports-career").replace(/[^a-z0-9-_ ]/gi,"").trim().replace(/\s+/g,"-")||"esports-career")+".json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+function exportSave(){try{downloadBackup(packCareer(),(S.me?.name||"esports-org")+"-year-"+S.year);saveStatus("Backup download started. Keep the JSON file somewhere safe.")}catch(e){saveStatus("Export failed. Try saving to a slot first.")}}
+function importSaveFile(file){if(!file)return;const reader=new FileReader();reader.onload=()=>{try{const d=JSON.parse(String(reader.result||""));if(!d?.state?.roster)throw Error("Invalid backup");const name=file.name.replace(/\.json$/i,"").slice(0,60)||"Imported career";const slots=readSaveSlots();restoreCareer(d);slots.unshift({id:"slot-"+Date.now(),name,data:packCareer(),updatedAt:new Date().toISOString()});writeSaveSlots(slots.slice(0,20));saveStatus("Imported and saved backup: "+name+".")}catch(e){alert("Import failed: this file is not a valid Esports Manager save. Your previous save slots are unchanged.")}};reader.onerror=()=>alert("Could not read that file.");reader.readAsText(file)}
+function continueCareer(){try{const slots=readSaveSlots(),auto=slots.find(x=>x.id===AUTO_SLOT),manual=slots.find(x=>x.id!==AUTO_SLOT&&x.data?.state),d=auto?.data||manual?.data||legacyCareer();if(d){restoreCareer(d);return}hideTitleScreen();saveStatus("No saved career found. Started a new CS2 career.")}catch(e){alert("Could not continue the last career.")}}
+function scheduleAutosave(){if(!S||S.otherMatchReport||$("menuOverlay")?.style.display!=="none"||S.match?.busy)return;clearTimeout(autosaveTimer);autosaveTimer=setTimeout(()=>{try{const slots=readSaveSlots(),data=packCareer(),entry={id:AUTO_SLOT,name:"Automatic save",data,updatedAt:new Date().toISOString()};const i=slots.findIndex(x=>x.id===AUTO_SLOT);if(i>=0)slots[i]=entry;else slots.unshift(entry);writeSaveSlots(slots.slice(0,20));localStorage.setItem("esportsOrgManagerSaveV8",JSON.stringify(data))}catch(e){saveStatus("Autosave unavailable: browser storage is full. Export a backup.")}},700)}
+let orgDraft={name:"Your Org",tag:"ORG",logo:"⚡",primaryColor:"#2ee68a",secondaryColor:"#171923"};
+function cleanOrgName(v,fallback){const s=String(v??"").replace(/[<>]/g,"").replace(/[^\p{L}\p{N} _.-]/gu,"").trim().slice(0,32);return s||fallback}
+function gameKey(name){const n=String(name||"CS2").toLowerCase();if(n==="valorant")return"valorant";if(n==="overwatch")return"overwatch";if(n.includes("league"))return"league";if(n.includes("rocket"))return"rocket";return"cs2"}function selectStartingGame(game){selectedGame=game;document.querySelectorAll(".menu-game").forEach(x=>{x.style.borderColor="var(--line)";x.querySelectorAll("button").forEach(b=>b.classList.remove("pri"))});const cards=[...document.querySelectorAll(".menu-game")];const card=cards.find(x=>{const h=x.querySelector("h3")?.textContent||"";return game==="CS2"?h.includes("Counter-Strike"):game==="Valorant"?h.toLowerCase().includes("valorant"):game==="Overwatch"?h==="Overwatch":game==="League of Legends"?h==="League of Legends":h==="Rocket League"});if(card){card.style.borderColor="var(--acc)";const btn=card.querySelector("button");if(btn)btn.classList.add("pri")}const h=$("orgPreviewName");if(h)h.textContent=$("orgNameInput")?.value||"Your Org"}
+function bindOrgPreview(){const ids=["orgNameInput","orgTagInput","orgLogoInput","orgPrimaryInput","orgSecondaryInput"];ids.forEach(id=>{const el=$(id);if(el)el.oninput=()=>{const n=$("orgPreviewName"),t=$("orgPreviewTag"),l=$("orgPreviewLogo"),p=$("orgPreview");if(n)n.textContent=$("orgNameInput").value||"Your Org";if(t)t.textContent=($("orgTagInput").value||"ORG").toUpperCase().slice(0,5);if(l)l.textContent=$("orgLogoInput").value;if(p){p.style.borderColor=$("orgPrimaryInput").value;p.style.background=$("orgSecondaryInput").value+"55"}}});}
+function createOrganization(){persistActiveCareer();orgDraft={name:cleanOrgName($("orgNameInput")?.value,"Your Org"),tag:cleanOrgName($("orgTagInput")?.value,"ORG").replace(/\s/g,"").toUpperCase().slice(0,5)||"ORG",logo:$("orgLogoInput")?.value||"⚡",primaryColor:/^#[0-9a-f]{6}$/i.test($("orgPrimaryInput")?.value)?$("orgPrimaryInput").value:"#2ee68a",secondaryColor:/^#[0-9a-f]{6}$/i.test($("orgSecondaryInput")?.value)?$("orgSecondaryInput").value:"#171923"};if(!confirm("Found "+orgDraft.name+" with "+selectedGame+" as your starting esport?"))return;activeCareerId="career-"+Date.now()+"-"+Math.random().toString(36).slice(2,7);activeCareerName=orgDraft.name;newGame();hideTitleScreen();applyOrgBrand();saveStatus("Organisation founded. Autosave is enabled.");scheduleAutosave()}
+function applyOrgBrand(){if(!S?.me)return;const m=S.me;m.tag=m.tag||"ORG";m.logo=m.logo||"⚡";m.primaryColor=/^#[0-9a-f]{6}$/i.test(m.primaryColor||"")?m.primaryColor:"#2ee68a";m.secondaryColor=/^#[0-9a-f]{6}$/i.test(m.secondaryColor||"")?m.secondaryColor:"#171923";document.documentElement.style.setProperty("--acc",m.primaryColor);document.documentElement.style.setProperty("--good",m.primaryColor);document.documentElement.style.setProperty("--org-primary",m.primaryColor);const l=$("orgBrandLogo"),n=$("orgBrandName"),t=$("orgBrandTag");if(l)l.textContent=m.logo;if(n)n.textContent=m.name||"Your Org";if(t)t.textContent=m.tag;if(n)n.style.color=m.primaryColor;if(l)l.style.color=m.primaryColor}function renderOrgIdentity(){const host=$("orgIdentity");if(!host)return;const m=S.me||{};host.innerHTML='<div class="menu-preview" style="border-color:'+m.primaryColor+';background:'+m.secondaryColor+'55"><span style="color:'+m.primaryColor+'">'+escapeText(m.logo||"⚡")+'</span><b>'+escapeText(m.name||"Your Org")+'</b><small>'+escapeText(m.tag||"ORG")+'</small></div><div class="org-edit-grid"><label>Organisation name<input id="editOrgName" maxlength="32" value="'+escapeText(m.name||"Your Org")+'"></label><label>Short tag<input id="editOrgTag" maxlength="5" value="'+escapeText(m.tag||"ORG")+'"></label><label>Logo / emblem<select id="editOrgLogo">'+["⚡","🐺","🐉","🦊","🦅","👑","🌙","🔥","💀","🌌","🛡️","🐍","🦈","🌩️","🎯","🚀"].map(x=>'<option '+(x===(m.logo||"⚡")?"selected":"")+'>'+x+'</option>').join("")+'</select></label><label>Primary colour<input id="editOrgPrimary" type="color" value="'+m.primaryColor+'"></label><label>Secondary colour<input id="editOrgSecondary" type="color" value="'+m.secondaryColor+'"></label></div><button class="pri" onclick="saveOrgIdentity()">Save organisation identity</button><div class="note">One organisation, one shared brand and finances, with a separate team and record for each game division.</div>'}
+function saveOrgIdentity(){const name=cleanOrgName($("editOrgName")?.value,"Your Org"),tag=cleanOrgName($("editOrgTag")?.value,"ORG").replace(/\s/g,"").toUpperCase().slice(0,5)||"ORG",logo=$("editOrgLogo")?.value||"⚡",primary=$("editOrgPrimary")?.value||"#2ee68a",secondary=$("editOrgSecondary")?.value||"#171923";S.me={...S.me,name,tag,logo,primaryColor:primary,secondaryColor:secondary};orgDraft={...S.me};applyOrgBrand();news("Organisation identity updated.");render()}
+function hasSavedCareer(){try{return readSaveSlots().some(x=>x.id===AUTO_SLOT&&x.data?.state?.roster||x.id!==AUTO_SLOT&&x.data?.state?.roster)||!!legacyCareer()}catch(e){return !!legacyCareer()}}
+function showTitleScreen(){showMenuPage("home")}
+function hideTitleScreen(){$("menuOverlay").style.display="none";showTab("dashboard")}
+function showMenuPage(page){const host=$("menuContent");$("menuOverlay").style.display="flex";if(page==="home"){host.innerHTML='<div class="menu-actions">'+(hasSavedCareer()?"<button class=\"menu-action pri\" onclick=\"continueCareer()\"><strong>▶ Continue Career</strong><span>Resume your most recent saved organisation</span></button>"+'':'')+'<button class="menu-action" onclick="showMenuPage(\'games\')"><strong>＋ New Career</strong><span>Choose the esport for your next save</span></button><button class="menu-action" onclick="showMenuPage(\'portfolio\')"><strong>🏢 Career Portfolio</strong><span>Switch between independently managed organisations</span></button><button class="menu-action" onclick="showMenuPage(\'saves\')"><strong>▤ Load Career</strong><span>Choose from your save slots</span></button><button class="menu-action" onclick="document.getElementById(\'backupFile\').click()"><strong>⇧ Import Backup</strong><span>Restore a JSON career backup</span></button><button class="menu-action" onclick="showMenuPage(\'guide\')"><strong>ⓘ How to Play</strong><span>Learn the basics of running an esports organisation</span></button></div><div class="menu-foot">Update 19.5 · Saves stay in this browser unless exported</div>';return}if(page==="guide"){host.innerHTML='<h2>HOW TO RUN YOUR ESPORTS ORG</h2><p class="note">You are the organisation manager. Winning matches matters, but keeping the business healthy and building for the future matters too.</p><div class="steps"><div class="step"><i>1</i><b>Build your roster</b><span>Check player ratings, roles and wages. Use the market to find upgrades, and keep an eye on contracts so key players do not leave unexpectedly.</span></div><div class="step"><i>2</i><b>Keep the books healthy</b><span>Watch cash, weekly income and wages in Finance. Sponsors and sensible spending help you survive weaker seasons. Avoid letting debt spiral.</span></div><div class="step"><i>3</i><b>Train with a plan</b><span>Use training and individual development focus to improve players over time. Potential limits growth, so do not expect every player to reach the top immediately.</span></div><div class="step"><i>4</i><b>Prepare for matches</b><span>Practice maps to build familiarity, choose a strategy that suits your team, and use the veto and starting-side choices carefully.</span></div><div class="step"><i>5</i><b>Grow the organisation</b><span>Use Empire to open divisions in other esports, invest in facilities and develop academy or Tier 2 talent. Expansion costs money, so grow when your finances can support it.</span></div><div class="step"><i>6</i><b>Think long term</b><span>Board objectives, season reviews and rival improvement make consistency important. A trophy is great, but sustainable finances and player development keep the org competitive.</span></div></div><div class="decision"><b>Beginner tip</b><p class="note">Start by checking your Finance and Squad tabs before spending. Improve the biggest weakness you can afford, then review the results after the next match week.</p></div><button class="pri" onclick="showMenuPage(\'games\')">Start a new career →</button><button onclick="showMenuPage(\'home\')">← Main menu</button>';return}if(page==="games"){host.innerHTML='<h2>CHOOSE YOUR STARTING ESPORT</h2><p class="note">Choose one of five playable esports. Each title has its own roles, map pool and match simulation, while organisation finances, staff and season progression are shared.</p><div class="menu-game-grid"><div class="menu-game"><div class="tag">Playable · Tactical FPS</div><h3>Counter-Strike 2</h3><p>Round-by-round tactics, economy, C4 objectives, map veto and Major competition.</p><button class="pri" onclick="selectStartingGame(\'CS2\')">Select CS2</button></div><div class="menu-game"><div class="tag">Playable · Tactical FPS</div><h3>VALORANT</h3><p>Agent-role lineups, attack/defence rounds, spike outcomes and map-specific reports.</p><button onclick="selectStartingGame(\'Valorant\')">Select VALORANT</button></div><div class="menu-game"><div class="tag">Playable · Objective shooter</div><h3>Overwatch</h3><p>Tank, Damage and Support compositions compete across control, escort, hybrid and push objectives.</p><button onclick="selectStartingGame(\'Overwatch\')">Select Overwatch</button></div><div class="menu-game"><div class="tag">Playable · MOBA</div><h3>League of Legends</h3><p>Lane roles, jungle control, kills, gold, towers, dragons, Baron and team fights.</p><button onclick="selectStartingGame(\'League of Legends\')">Select League</button></div><div class="menu-game"><div class="tag">Playable · Sports</div><h3>Rocket League</h3><p>Strikers, playmakers, defenders and goalkeepers compete through goals, shots, assists and saves.</p><button onclick="selectStartingGame(\'Rocket League\')">Select Rocket League</button></div></div><div class="menu-custom"><h3>CREATE YOUR ORGANISATION</h3><div class="menu-form-grid"><label>Organisation name<input id="orgNameInput" maxlength="32" value="Your Org" placeholder="e.g. Neon Forge"></label><label>Short tag<input id="orgTagInput" maxlength="5" value="ORG" placeholder="e.g. NFG"></label><label>Logo / emblem<select id="orgLogoInput"><option>⚡</option><option>🐺</option><option>🐉</option><option>🦊</option><option>🦅</option><option>👑</option><option>🌙</option><option>🔥</option><option>💀</option><option>🌌</option><option>🛡️</option><option>🐍</option><option>🦈</option><option>🌩️</option><option>🎯</option><option>🚀</option></select></label><label>Primary colour<input id="orgPrimaryInput" type="color" value="#2ee68a"></label><label>Secondary colour<input id="orgSecondaryInput" type="color" value="#171923"></label></div><div class="menu-preview" id="orgPreview"><span id="orgPreviewLogo">⚡</span><b id="orgPreviewName">Your Org</b><small id="orgPreviewTag">ORG</small></div><button class="pri" onclick="createOrganization()">Create organisation & start →</button><button onclick="showMenuPage(\'home\')">← Main menu</button></div>';bindOrgPreview();return}if(page==="saves"){renderSaveSlots();return}if(page==="portfolio"){renderCareerPortfolio();return}}
+function beginSelectedCareer(game){persistActiveCareer();activeCareerId="career-"+Date.now()+"-"+Math.random().toString(36).slice(2,7);activeCareerName=orgDraft?.name||game;selectedGame=game;showMenuPage("games");selectStartingGame(game)}
+function migrateSave(){S.circuit||={stage:0,points:0,event:activeSeasonFormat().events[0],history:[]};S.simWeek=Number(S.simWeek)||0;S.scoutRole||="Any";S.scoutRegion||="Global";[...(S.roster||[]),...(S.bench||[]),...(S.academy||[]),...(S.tier2||[])].forEach(p=>{p.devPlan||="balanced"});(S.youthMarket||[]).forEach(p=>{p.region||="Europe";p.devPlan||="balanced"});S.practiceMap||=activeMapPool()[0]?.name||"Mirage";S.practicedThisWeek=!!S.practicedThisWeek;S.scoutedThisWeek=!!S.scoutedThisWeek;S.prepReport||=null;S.facilities||={training:0,bootcamp:0,studio:0};S.divisions||={};S.history||=[];S.transferOffers||=[];S.strategy||="balanced";S.seasonsCompleted||=0;S.roster.forEach(p=>{p.trait||="Steady";p.form=clamp(Number(p.form)||0,-3,3);p.fatigue=clamp(Number(p.fatigue)||0,0,100)});(S.bench||[]).forEach(p=>p.trait||="Steady");(S.tier2||[]).forEach(p=>p.trait||="Steady");S.t2League||=makeTierLeague();S.events||=[];S.news||=[];S.sponsors||=[];S.sponsorMarket||=[];S.academy||=[];S.staff||=[];S.market||=[];}
+newGame();
+applyOrgBrand();
+showTitleScreen();
+</script>
+<script src="./multiplayer-config.js"></script>
+<script src="./multiplayer.js"></script>
+</body>
+</html>+Number(S.money||0).toLocaleString()+'</b><span>Cash balance</span></div>'}
+function ensureCircuit(){if(!S.circuit)S.circuit={stage:0,points:0,event:activeSeasonFormat().events[0],history:[]};if(!Number.isFinite(S.simWeek))S.simWeek=0;const ev=activeSeasonFormat().events;S.circuit.stage=Math.max(0,Math.min(S.circuit.stage||0,ev.length-1));S.circuit.event=ev[S.circuit.stage]}
+function tickCircuit(won){ensureCircuit();const f=activeSeasonFormat();const key=gameKey(S.gameTitle);const winPts={cs2:8,valorant:10,overwatch:8,league:10,rocket:8}[key]||8;S.circuit.points=Math.max(0,(S.circuit.points||0)+(won?winPts:2));S.simWeek=(S.simWeek||0)+1;S.circuit.history||=[];S.circuit.history.unshift({week:S.simWeek,event:S.circuit.event,result:won?"Win":"Loss",points:S.circuit.points});S.circuit.history=S.circuit.history.slice(0,20);if(S.simWeek%3===0&&S.circuit.stage<f.events.length-1){S.circuit.stage++;S.circuit.event=f.events[S.circuit.stage];news("Circuit update: "+S.circuit.event+". "+(key==="valorant"?"Championship Points remain in the race for Champions.":key==="rocket"?"Open and Major results contribute toward Worlds qualification.":"Season stage advanced."))}if(key==="valorant"&&S.circuit.stage===f.events.length-1){const qualified=S.circuit.points>=80;news(qualified?"Champions qualification secured through the season points race.":"Champions qualification is still at risk: keep earning Championship Points.")}if(key==="rocket"&&S.circuit.stage===f.events.length-1&&S.circuit.points>=70)news("RLCS points total is high enough for the simulated direct Worlds qualification target.");}
+function simulateSeason(mode){if(S.match||S.veto||S.otherMatchReport){$("simNote").textContent="Finish or close the current match report first, then simulate the calendar.";return}if(S.over){$("simNote").textContent="The organisation is bankrupt. Start a new career to continue.";return}if(S.phase==="off"){ $("simNote").textContent="The season is complete. Use Start Year in Matchday to begin the next season.";return}ensureCircuit();const startWeek=S.simWeek||0,startStage=S.circuit.stage;let target=mode==="weeks"?Math.max(1,Number($("simWeeks")?.value||4)):mode==="next"?Math.min(activeSeasonFormat().events.length-1,startStage+1):mode==="playoffs"?Math.max(startStage,activeSeasonFormat().events.findIndex(x=>/playoff|worlds|champions|final|major|msi/i.test(x))):activeSeasonFormat().events.length-1;let steps=0;const max=mode==="weeks"?Math.max(1,Number($("simWeeks")?.value||4)):40;while(steps<max&&S.phase!=="off"&&!S.over){if(mode!=="weeks"&&steps>0&&S.circuit.stage>=target)break;let won=false;if(S.phase==="league"){const L=S.lg;const pair=L.rounds[L.r]?.find(x=>x[0]===0||x[1]===0);if(!pair)break;const idx=pair[0]===0?pair[1]:pair[0],opp=L.t[idx]?.t;won=Math.random()<1/(1+Math.exp(-((power(S.roster)-(opp?.power||gp(opp)||55))/8)));}else if(S.phase==="major"){const M=S.mj;if(M.stage==="swiss"){const pair=M.prs?.find(x=>x[0].t.me||x[1].t.me);const opp=pair?(pair[0].t.me?pair[1].t:pair[0].t):null;won=Math.random()<1/(1+Math.exp(-((power(S.roster)-(gp(opp)||55))/8)))}else{const P=M.po;let opp=null;for(let i=0;i<P.t.length;i+=2)if(P.t[i].me||P.t[i+1].me){opp=P.t[i].me?P.t[i+1]:P.t[i];break}won=Math.random()<1/(1+Math.exp(-((power(S.roster)-(gp(opp)||55))/8)))}}else break;const fin=weekly();S.money+=fin.net-300+(won?3500:1000);won?S.w++:S.l++;S.roster.forEach(p=>{p.morale=clamp((p.morale||60)+(won?2:-1),0,100);p.fatigue=clamp((p.fatigue||0)+2,0,100);growStat(p,pick(["aim","gs","men"]),1)});S.ai.forEach(t=>t.power=clamp((t.power||55)+R(-1,2),42,96));tickCircuit(won);advance(won);steps++;if(S.money<-50000){S.over=true;news("Bankrupt! The organisation has fallen below the $50,000 debt limit.")}if(mode!=="weeks"&&S.circuit.stage>=target)break}const done=S.simWeek-startWeek;const milestone=activeSeasonFormat().events[S.circuit.stage]||"season end";$("simNote").textContent=done?("Simulated "+done+" week"+(done===1?"":"s")+". Now at "+milestone+". "+(S.phase==="off"?"Season complete.":"Review the updated standings, points and finances.")):"No weeks were simulated. Check your current match or season state.";render();showTab("season")}
 function sched(){let h="";
   if(S.phase=="league")h="<tr><th>#</th><th>League table</th><th>W</th><th>L</th><th>Pts</th></tr>"+[...S.lg.t].sort((a,b)=>b.pts-a.pts||b.w-a.w).map((x,i)=>`<tr class="${x.t.me?"me":""}"><td>${i+1}</td><td>${x.t.name}${i<4?" ✓":""}</td><td>${x.w}</td><td>${x.l}</td><td>${x.pts}</td></tr>`).join("");
   else if(S.phase=="major"){const M=S.mj;
