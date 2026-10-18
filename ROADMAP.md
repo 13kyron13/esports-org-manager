@@ -901,3 +901,126 @@ This track translates research into original esports-specific design goals. The 
 - Community feedback on MyNBA — recurring complaints about roster AI, progression, rules fidelity and bugs; treat as anecdotal signals rather than representative measurements: https://www.reddit.com/r/NBA2k/comments/1ttbujx/what_new_mynba_features_would_you_like_to_see_in/
 - Community discussion on franchise mode's long-term value and historic customisation: https://www.reddit.com/r/NBA2k/comments/wse8fv/mynba_eras_will_only_really_work_if_they_get/
 
+## Track M — Story Mode: founder-inspired campaigns and branching arcs
+
+**Narrative direction:** Tell original, fictional stories informed by publicly documented experiences of esports founders, team owners, players and staff. Use real accounts to understand pressures and trade-offs, not to copy identifiable people's private lives or present invented dialogue/events as fact. Do not use real people, team branding, direct quotes, or a recognisable one-to-one retelling in a commercial campaign without appropriate permission/legal review. Favour composite characters and fictional organisations.
+
+### M1. Founder paths and the opening premise
+
+- [ ] Let the player choose or inherit a founder background that shapes early strengths, blind spots, contacts and starting constraints:
+  - Former pro player: credibility with talent and competitive instincts, but possible gaps in business operations.
+  - Commercial/marketing operator: sponsor and partnership skills, but less competitive knowledge.
+  - Community organiser: loyal grassroots following, limited capital and small staff.
+  - Content creator: audience reach and brand identity, with pressure to stay entertaining.
+  - Coach/analyst: scouting and player development knowledge, with weaker sales/finance skills.
+  - Investor-backed executive: access to capital and expectations from a board or investors.
+  - Small regional owner: limited resources, close community ties and strong local knowledge.
+- [ ] Let backgrounds affect opportunities rather than lock the player into a fixed ending; all paths must remain viable.
+- [ ] Start with a concrete founding problem, not a long exposition dump: a roster opportunity, a tournament qualification deadline, an expiring sponsor, a former teammate asking for help, or a small organisation at risk of folding.
+- [ ] Establish a small core cast with distinct motives: co-founder, competitive lead, player representative, first signing, commercial contact and a sceptical board/investor where appropriate.
+
+### M2. Founder-inspired story arcs
+
+#### Arc A — The bootstrapped underdog
+
+- [ ] Inspiration: Steve Arhancet's first-person account of Team Liquid's 2016 League of Legends season describes relying on cash flow while competing against better-funded teams, investing in staff and player development, exceeding expectations, and later encountering problems during an overseas bootcamp amid insufficient support capacity.
+- [ ] Fictional arc: the player has limited cash and must choose between expensive star talent, a deeper support structure, or patient scouting and development.
+- [ ] Branches: an unexpected competitive breakthrough; a promising roster destabilised by inadequate operations; a budget crisis that forces a sale; or a sustainable team that wins more slowly.
+- [ ] Gameplay systems: cash-flow forecasts, wage commitments, staff capacity, scouting uncertainty, travel planning, player welfare and delegation.
+- [ ] Avoid implying that spending less always wins or that a particular real-life outcome had one simple cause.
+
+#### Arc B — From player to founder
+
+- [ ] Inspiration: Matthew “Nadeshot” Haag's public accounts and 100 Thieves' history show how a former competitor can build a broader identity through competitive teams, content, creators, apparel and community.
+- [ ] Fictional arc: the founder's personal reputation attracts an audience, but the organisation must learn to exist beyond the founder's personality.
+- [ ] Branches: a loyal community supports a growing brand; attention outpaces the team's operational capacity; fans criticise unexplained roster decisions; or the organisation builds a broader identity that survives a competitive slump.
+- [ ] Gameplay systems: content calendars, creator contracts, brand identity, merchandise launches, fan sentiment, roster communications, commercial revenue and founder dependency.
+- [ ] Include trade-offs between transparency, privacy, competitive confidentiality and audience expectations.
+
+#### Arc C — The people behind the roster
+
+- [ ] Inspiration: public accounts from Cloud9 leadership describe investment in staff, player welfare, routines and support, illustrating that a competitive roster depends on the wider organisation.
+- [ ] Fictional arc: results improve, but the team is stretched by travel, workload, role conflicts or missing support staff.
+- [ ] Branches: invest in support and protect long-term performance; push for short-term results at the cost of trust; or rebuild routines after a difficult season.
+- [ ] Gameplay systems: staff capacity, workload, practice quality, rest, team culture, travel operations, conflict resolution and player retention.
+- [ ] Treat wellbeing respectfully; do not make distress a spectacle or present burnout as a badge of honour.
+
+#### Arc D — The business is bigger than prize money
+
+- [ ] Inspiration: owner interviews and industry reporting describe organisations depending on sponsorships and partnerships, with tournament winnings often too uncertain to support a whole business.
+- [ ] Fictional arc: the team reaches a major final just as a sponsor delays a payment or declines renewal; the trophy brings attention but does not automatically solve the cash-flow problem.
+- [ ] Branches: secure a less glamorous recurring partner; invest in content and community; cut costs responsibly; sell a division; seek an investor with conditions; or take a risky bet on a high-profile roster.
+- [ ] Gameplay systems: receivables, contract deliverables, revenue concentration, sponsor fit, cash runway, investor control and cost restructuring.
+- [ ] Distinguish cash, booked revenue, profit and prize winnings in the player's financial decisions.
+
+#### Arc E — The merger and the changing founder
+
+- [ ] Inspiration: public founder and executive interviews describe mergers, investor partnerships, delegation, organisational restructuring and changing responsibilities as teams grow.
+- [ ] Fictional arc: the founder who once made every decision must choose whether to delegate to a professional general manager or remain personally involved.
+- [ ] Branches: delegate successfully; hire the wrong executive; clash with a co-founder over identity; accept investment with new board expectations; or merge with a rival and negotiate whose culture survives.
+- [ ] Gameplay systems: decision authority, staff competence, board trust, equity/ownership, budgets, brand identity and change management.
+- [ ] Make delegation a real choice: it saves time but requires oversight and may produce decisions the player would not personally make.
+
+#### Arc F — The audience wants answers
+
+- [ ] Inspiration: Nadeshot's public account of early 100 Thieves roster communication describes audience backlash when the organisation did not explain changes as fans expected.
+- [ ] Fictional arc: fans demand an explanation for a roster move while management is constrained by confidential negotiations and player privacy.
+- [ ] Branches: communicate the reasoning without exposing private details; say too little and lose trust; overpromise and risk later credibility; or establish a consistent communications policy.
+- [ ] Gameplay systems: fan sentiment, media, trust, confidentiality, sponsor sensitivity, player relationships and reputation.
+- [ ] Avoid a simplistic “always disclose everything” rule; measure trust over time and distinguish honesty from revealing confidential information.
+
+#### Arc G — A team becomes a culture
+
+- [ ] Inspiration: founder and coach interviews across esports describe identity, community, staff and player relationships as part of what makes an organisation distinctive.
+- [ ] Fictional arc: an organisation becomes known for a particular style of play and team culture, but success attracts stars whose expectations may not fit that identity.
+- [ ] Branches: protect the existing culture; evolve it deliberately; split into divisions with distinct identities; or discover that “family” language is being used to avoid professional boundaries.
+- [ ] Gameplay systems: leadership, role expectations, staff philosophy, team norms, recruitment fit and conflict resolution.
+- [ ] Show culture through concrete behaviours and policies, not a single abstract morale score.
+
+### M3. Branching narrative architecture
+
+- [ ] Store narrative events as data: unique ID, prerequisites, triggering world-state facts, involved characters, choices, immediate effects, delayed effects, cooldowns, and follow-up event IDs.
+- [ ] Make outcomes depend on the player's previous actions and the state of the organisation, including finances, results, promises, relationships, staff capacity, reputation and calendar.
+- [ ] Track objective history separately from character interpretation: the same event can be remembered differently by different people.
+- [ ] Support long-running threads that may resolve many weeks or seasons later; show the player enough context to understand the callback.
+- [ ] Give important choices multiple plausible responses rather than a hidden correct answer. Outcomes can be mixed, uncertain or delayed.
+- [ ] Ensure branches rejoin where appropriate so the narrative does not grow exponentially; preserve meaningful differences through changed relationships, resources, opportunities and dialogue.
+- [ ] Add state validation and narrative debugging tools to reveal why an event triggered, why a choice was available, and which consequences were applied.
+- [ ] Make critical story events save/load safe, skippable, replayable through summaries, and robust to changed rosters or staff.
+- [ ] Separate narrative presentation from authoritative simulation changes; cinematic scenes never silently alter contracts, finances or match results.
+
+### M4. Character writing and player agency
+
+- [ ] Build original composite characters with goals, strengths, contradictions, communication styles, boundaries and evolving relationships.
+- [ ] Let characters disagree for understandable reasons; avoid reducing them to “good” and “bad” advisers.
+- [ ] Give the player options for direct, diplomatic, transparent, cautious or ambitious leadership, without tying every option to a simplistic morality meter.
+- [ ] Include consequences for promises, fairness, communication, role clarity and follow-through.
+- [ ] Make important decisions understandable before confirmation where possible; communicate uncertainty rather than hiding all outcomes behind random punishment.
+- [ ] Offer recovery and reconciliation routes when plausible, alongside irreversible consequences where the situation warrants them.
+- [ ] Use fictional names, teams, dialogue and events; keep a research notebook mapping each inspiration to a broad theme and source, not a copied scene.
+
+### M5. Story Mode vertical slice and validation
+
+- [ ] Prototype one short opening chapter built around a bootstrapped founder and an uncertain roster opportunity.
+- [ ] Include at least three substantial decisions, two character relationship threads, one delayed consequence, and several believable endings or chapter continuations.
+- [ ] Test a successful path, a struggling path and a recovery path; make sure none is a cosmetic reskin of the same outcome.
+- [ ] Use placeholder cinematics and dialogue first; validate writing, pacing and simulation integration before commissioning a large set of 3D scenes.
+- [ ] Provide subtitles, dialogue history, adjustable text speed, skippable scenes and a concise recap after major events.
+- [ ] Test the same scenario under different finances, match outcomes, character traits and prior promises to ensure branching feels reactive.
+- [ ] Gather playtest feedback on whether players understand why events happened and whether choices feel consequential but fair.
+
+### M6. Research references for founder-inspired storytelling
+
+- Steve Arhancet, Team Liquid — first-person reflection on the difficult 2016 LoL season, cash-flow constraints, staff structure, player development and a poorly supported overseas bootcamp: https://teamliquid.com/news/2016/09/26/a-year-of-lessons-by-steve-arhancet
+- Steve Arhancet / Team Liquid — interview on the organisation's development and leadership: https://teamliquid.com/news/2015/02/19/thorin-talks-with-liquid112-on-reflections
+- Team Liquid — infrastructure and support-staff overview: https://teamliquid.com/news/2017/01/14/building-the-team-liquid-infrastructure
+- Matthew “Nadeshot” Haag — Sports Business Journal profile on audience understanding and the early public-communication challenge around roster changes: https://www.sportsbusinessjournal.com/Journal/Issues/2019/04/01/In-Depth/Haag/
+- 100 Thieves — official organisation history, including creator, apparel and competitive milestones: https://100thieves.com/pages/about
+- Jack Etienne / Cloud9 — founder interview on early esports involvement, business skills and organisational development: https://esports.gg/news/league-of-legends/jack-etienne-serena-williams-training-grounds/
+- Cloud9 — official organisation overview and its stated focus on player welfare and development: https://cloud9.gg/about/
+- Esports Insider — industry leaders on revenue predictability, sponsorships and financial sustainability: https://esportsinsider.com/2024/07/esports-team-finances-2024-winter
+- Forbes — reporting on the disconnect between championship success and financial security during the esports downturn: https://www.forbes.com/sites/mattcraig/2023/12/28/why-esports-must-keep-leveling-down-in-2024/
+- GamesBeat — Steve Arhancet interview discussing bootstrapping, a merger, investment and facilities: https://gamesbeat.com/why-team-liquid-participated-in-the-esports-world-cup-in-saudi-arabia-steve-arhancet-interview/
+
+**Research and ethics note:** Public interviews are partial perspectives, often told years after the events. Treat them as inspiration for plausible pressures, not proof that one person or decision alone caused a result. Cross-check important claims, distinguish reported facts from interpretation, and create fictional composite storylines rather than dramatising real people's private experiences.
+
