@@ -1,0 +1,454 @@
+From 7f0038ea55bd43f0307578beceb9c8b801e1a91a Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Sun, 18 Oct 2026 01:10:23 +0000
+Subject: [PATCH] Update 19.6: apply weekly training in every game, tidy repo
+
+---
+ ...w-track-J-to-roadmap-and-update-stat.patch | 132 ------------------
+ ...ce-pass-slower-stat-growth-potential.patch | 109 ---------------
+ ...8.8-CS2-economy-and-bomb-round-logic.patch | 108 --------------
+ README.md                                     |  10 +-
+ index.html                                    |  11 +-
+ 5 files changed, 15 insertions(+), 355 deletions(-)
+ delete mode 100644 0001-Add-design-review-track-J-to-roadmap-and-update-stat.patch
+ delete mode 100644 0001-Update-8.9-balance-pass-slower-stat-growth-potential.patch
+ delete mode 100644 0002-Update-8.8-CS2-economy-and-bomb-round-logic.patch
+
+diff --git a/0001-Add-design-review-track-J-to-roadmap-and-update-stat.patch b/0001-Add-design-review-track-J-to-roadmap-and-update-stat.patch
+deleted file mode 100644
+index 3435d69..0000000
+--- a/0001-Add-design-review-track-J-to-roadmap-and-update-stat.patch
++++ /dev/null
+@@ -1,132 +0,0 @@
+-From 9120a5790df0246f9368fa8400ceaae6bf3e8e84 Mon Sep 17 00:00:00 2001
+-From: Claude <noreply@anthropic.com>
+-Date: Sat, 17 Oct 2026 06:02:13 +0000
+-Subject: [PATCH 1/2] Add design-review track J to roadmap and update status to
+- 8.8
+-
+----
+- README.md  | 12 +++++-------
+- ROADMAP.md | 51 +++++++++++++++++++++++++++++++++++++++++++++++----
+- 2 files changed, 52 insertions(+), 11 deletions(-)
+-
+-diff --git a/README.md b/README.md
+-index 47fcde4..769b21d 100644
+---- a/README.md
+-+++ b/README.md
+-@@ -1,18 +1,16 @@
+- # Esports Org Manager
+- 
+--A browser-based esports organisation management game. The current repository build is **Update 8.2 — CS2 Movement & Navigation**.
+-+A browser-based esports organisation management game. The current repository build is **Update 8.8 — CS2 Economy & Bomb Round Logic**.
+- 
+- ## Play
+- 
+- Open [index.html](./index.html) in a modern desktop browser. The game is a standalone HTML file and does not require a build step or package installation.
+- 
+--## Current build: Update 8.2
+-+## Current build: Update 8.8
+- 
+--- Added map-specific waypoint routes for Mirage, Inferno, Nuke, Ancient, Anubis, Dust II, and Vertigo.
+--- Added separate T and CT spawn routes and a side switch after the first 12 rounds.
+--- Added role-aware movement, including lurker pacing, mid support, site attacks, and defensive holds.
+--- Added visible spawn/setup, execute/rotate, engagement, and round-result phases.
+--- Preserved the existing manager systems and match controls.
+-+- Added a team economy: pistol rounds, eco, force and full buys, win and loss-bonus income, a half-time reset and a Force buy tactic. The next buy type and both teams' money show in the match header.
+-+- Bomb outcomes now follow the round winner and side. Previously a bomb round overrode the skill roll, so the T side won regardless of team strength.
+-+- Existing systems from earlier updates: waypoint movement for seven CS2 maps with side switching (8.2–8.3), C4 plant, explosion and defuse (8.5–8.6), and full-match autoplay (8.7).
+- 
+- ## Known limitations
+- 
+-diff --git a/ROADMAP.md b/ROADMAP.md
+-index 91e2e65..fe5e0bb 100644
+---- a/ROADMAP.md
+-+++ b/ROADMAP.md
+-@@ -10,12 +10,16 @@ The game should reward smart long-term decisions rather than simply buying the h
+- 
+- ## Current repository status
+- 
+--**Current build documented by the repository:** Update 8.2 — CS2 Movement & Navigation.
+-+**Current build documented by the repository:** Update 8.8 — CS2 Economy & Bomb Round Logic.
+- 
+--Implemented first pass, according to the current build notes:
+-+Implemented, according to the commit history and current build notes:
+- - Map-specific waypoint routes for Mirage, Inferno, Nuke, Ancient, Anubis, Dust II and Vertigo.
+- - Separate Terrorist/Counter-Terrorist spawn routes and side switch after 12 rounds.
+- - Role-aware movement such as lurker pacing, mid support, site attacks and defensive holds.
+-+- Update 8.3: spawn spacing, line-of-sight-gated firefights and close-range contact for eliminations.
+-+- Updates 8.5–8.6: C4 plant, explosion and defuse outcomes with radar rendering and animation.
+-+- Update 8.7: autoplay for a whole match.
+-+- Update 8.8: team economy (pistol, eco, force and full buys, loss bonus, half-time reset, a Force buy tactic) and bomb outcomes that now follow the round winner and side instead of overriding the skill roll.
+- - Visible spawn/setup, execute/rotate, engagement and round-result phases.
+- 
+- Known limitations / follow-up:
+-@@ -51,6 +55,7 @@ Earlier conversation roadmap items (finances, market/transfers, contracts/drama,
+- | Multi-game expansion | Valorant first, then other titles | Planned |
+- | Living world | Meta shifts, rivalries, drama, player careers and rival ecosystems | Planned |
+- | Quality & longevity | Saves, balance, accessibility, testing and polish | Ongoing |
+-+| Design-review additions       | Circuit tiers, role proficiency, roster rules, legal/integrity, presentation | Planned                                            |
+- 
+- ## Track A — Core management foundation
+- 
+-@@ -109,11 +114,11 @@ Earlier conversation roadmap items (finances, market/transfers, contracts/drama,
+- - [ ] Replace brittle hard-coded movement with reusable, map-specific navigation data where practical.
+- - [ ] Better path choice around chokepoints, blocked routes, sites, mid and teammate positions.
+- - [ ] Reactive rotations based on spotted enemies, bomb information, sound/intel and remaining time.
+--- [ ] Bomb planting, plant-site choice, plant timing, defuse attempts, retakes and round-end conditions.
+-+- [ ] Bomb planting, plant-site choice, plant timing, defuse attempts, retakes and round-end conditions. *(Partly done: Updates 8.5–8.6 added plant/explode/defuse; 8.8 ties outcomes to the winner. Player-driven plant timing and retake logic still planned.)*
+- - [ ] Round should not end just because some players are dead if the bomb is planted and can still explode; bomb explosion/defuse must be handled correctly.
+- - [ ] Utility simulation: smokes, flashes, HE grenades, molotovs/incendiaries and counter-utility at a sensible abstraction level.
+- - [ ] Individual engagements using aim, reaction, positioning, utility, weapon, range, role and pressure rather than only a single team-power roll.
+--- [ ] Weapon/economy logic, save decisions, force buys, full buys and side-specific rules.
+-+- [ ] Weapon/economy logic, save decisions, force buys, full buys and side-specific rules. *(Partly done in Update 8.8: team-level economy. Per-player weapons, drops and kept gear are still planned.)*
+- - [ ] Spectator clarity: combat log, kill feed, bomb timer and phase indicators.
+- - [ ] Keep a fast statistical mode available so deeper simulation does not make autoplay painfully slow.
+- 
+-@@ -360,6 +365,44 @@ These are optional ideas beyond the previously agreed roadmap. Prioritise only w
+- - [ ] **Advanced ownership decisions:** sell a stake, merge organisations or acquire another division.
+- - [ ] **Retired-player transition:** former pros can become coaches, analysts or academy mentors.
+- 
+-+## Track J — Additions from design review
+-+
+-+These items were identified after comparing the original concept with this roadmap. Most are planned, not implemented. Verify against `index.html` before marking anything complete.
+-+
+-+### J1. Competitive ladder and roster rules
+-+
+-+- [ ] **Circuit tiers and qualifying path:** Tier 3, Tier 2 and Tier 1 events with open qualifiers, invites and ranking-based seeding, so the climb into Majors is part of the game.
+-+- [ ] **Roster continuity rule:** ranking points and invites depend on how much of the roster stays together, which discourages constant transfers.
+-+- [ ] **Scrims against other teams:** scrim partners improve map confidence, but risk leaking tendencies to rivals. Choosing partners becomes a decision.
+-+- [ ] **LAN vs online:** some players thrive or choke on stage; home-crowd advantage at big events.
+-+- [ ] **Rivalry derbies:** matches against a main rival carry extra hype, prize money and morale swings.
+-+- [ ] **Silly season:** an off-season transfer window with rumours, leaks and bidding wars.
+-+
+-+### J2. Players
+-+
+-+- [ ] **Role proficiency and retraining:** a skill level per role (rifler, AWP, IGL, lurker, support and so on), improved through scrims, so players can be retrained into new roles. This was part of the original concept.
+-+- [ ] **Player traits:** visible and hidden traits such as clutch, consistent, leader, mentor, injury-prone or difficult, which scouting can uncover over time. (A basic trait field exists in the current build; expand it.)
+-+- [ ] **Detailed player stats:** rating, ADR, opening duels, KAST, clutch record and impact, feeding awards, valuations and post-match reviews.
+-+- [ ] **Relationship web:** duos and friend groups, in-roster rivals and players who want to follow a friend to another organisation.
+-+- [ ] **Role scarcity:** good IGLs and supports are rare, and stars need the right teammates, so roster building is a puzzle rather than "buy the highest ratings".
+-+
+-+### J3. Business, legal and world events
+-+
+-+- [ ] **Legal and integrity problems:** contract disputes, tampering, match-fixing or cheating bans, plus visa and tax issues, handled as rare and explainable events.
+-+- [ ] **Prize splits and revenue share:** how prize money is divided between organisation, players and staff, with player revenue-share demands.
+-+- [ ] **Investors and franchising:** funding rounds, investors who expect returns, and franchised league slots that can be bought or lost.
+-+- [ ] **Wildcard events:** a tournament is cancelled, a patch lands mid-event, a rival disbands or a sponsor goes bankrupt.
+-+
+-+### J4. Presentation and platform
+-+
+-+- [ ] **Caster commentary and highlights:** generated lines during matches, replayable highlight moments and map heatmaps built from simulated movement.
+-+- [ ] **Playstyle identity:** roster makeup gives the team a readable style that rivals can scout and counter.
+-+- [ ] **Explained coach suggestions** so newer players can learn CS concepts while playing.
+-+- [ ] **Ironman mode:** one save, no reloading.
+-+- [ ] **Organisation legacy:** retired numbers, a museum screen and a history of the biggest moments.
+-+- [ ] **Mobile and touch support:** the current build targets desktop browsers.
+-+- [ ] **Distribution:** optional desktop packaging (Electron or Tauri) and release on itch.io or Steam.
+-+
+- ## Suggested implementation order
+- 
+- This order prioritises foundational systems and avoids building later features on unstable simulation logic.
+--- 
+-2.43.0
+-
+diff --git a/0001-Update-8.9-balance-pass-slower-stat-growth-potential.patch b/0001-Update-8.9-balance-pass-slower-stat-growth-potential.patch
+deleted file mode 100644
+index e743d7b..0000000
+--- a/0001-Update-8.9-balance-pass-slower-stat-growth-potential.patch
++++ /dev/null
+@@ -1,109 +0,0 @@
+-From 16c9de6b3b635607e68d22095dce0001d196009f Mon Sep 17 00:00:00 2001
+-From: Claude <noreply@anthropic.com>
+-Date: Sat, 17 Oct 2026 06:20:03 +0000
+-Subject: [PATCH] Update 8.9: balance pass (slower stat growth, potential
+- ceiling, rival ramp, softer win curve)
+-
+----
+- README.md  | 9 +++++++--
+- ROADMAP.md | 5 +++--
+- index.html | 8 ++++----
+- 3 files changed, 14 insertions(+), 8 deletions(-)
+-
+-diff --git a/README.md b/README.md
+-index 769b21d..640cad7 100644
+---- a/README.md
+-+++ b/README.md
+-@@ -1,12 +1,17 @@
+- # Esports Org Manager
+- 
+--A browser-based esports organisation management game. The current repository build is **Update 8.8 — CS2 Economy & Bomb Round Logic**.
+-+A browser-based esports organisation management game. The current repository build is **Update 8.9 — Balance Pass**.
+- 
+- ## Play
+- 
+- Open [index.html](./index.html) in a modern desktop browser. The game is a standalone HTML file and does not require a build step or package installation.
+- 
+--## Current build: Update 8.8
+-+## Current build: Update 8.9
+-+
+-+- Balance pass: stat growth now slows from about 70 upward and stalls once a player reaches their potential, so rosters no longer all hit 99 by year 3. Rival teams ramp up slightly with each year, and round results use a softer win curve so upsets happen more often.
+-+- Measured with an automated passive manager over 6 seasons: roughly a 47% win rate, average stats near 90 by year 5 and trophies that are hard to win. A manager who uses sponsors, staff, map practice and tactics should do noticeably better.
+-+
+-+### Update 8.8
+- 
+- - Added a team economy: pistol rounds, eco, force and full buys, win and loss-bonus income, a half-time reset and a Force buy tactic. The next buy type and both teams' money show in the match header.
+- - Bomb outcomes now follow the round winner and side. Previously a bomb round overrode the skill roll, so the T side won regardless of team strength.
+-diff --git a/ROADMAP.md b/ROADMAP.md
+-index fe5e0bb..87ecf20 100644
+---- a/ROADMAP.md
+-+++ b/ROADMAP.md
+-@@ -10,7 +10,7 @@ The game should reward smart long-term decisions rather than simply buying the h
+- 
+- ## Current repository status
+- 
+--**Current build documented by the repository:** Update 8.8 — CS2 Economy & Bomb Round Logic.
+-+**Current build documented by the repository:** Update 8.9 — Balance Pass.
+- 
+- Implemented, according to the commit history and current build notes:
+- - Map-specific waypoint routes for Mirage, Inferno, Nuke, Ancient, Anubis, Dust II and Vertigo.
+-@@ -19,6 +19,7 @@ Implemented, according to the commit history and current build notes:
+- - Update 8.3: spawn spacing, line-of-sight-gated firefights and close-range contact for eliminations.
+- - Updates 8.5–8.6: C4 plant, explosion and defuse outcomes with radar rendering and animation.
+- - Update 8.7: autoplay for a whole match.
+-+- Update 8.9: slower stat growth near the top, a potential ceiling on development, a yearly rival ramp and a softer round-win curve.
+- - Update 8.8: team economy (pistol, eco, force and full buys, loss bonus, half-time reset, a Force buy tactic) and bomb outcomes that now follow the round winner and side instead of overriding the skill roll.
+- - Visible spawn/setup, execute/rotate, engagement and round-result phases.
+- 
+-@@ -123,7 +124,7 @@ Earlier conversation roadmap items (finances, market/transfers, contracts/drama,
+- - [ ] Keep a fast statistical mode available so deeper simulation does not make autoplay painfully slow.
+- 
+- ### B5. Balance and testing
+--- [ ] Calibrate team power so new organisations can compete but not dominate instantly.
+-+- [ ] Calibrate team power so new organisations can compete but not dominate instantly. *(First pass in Update 8.9; keep re-testing as new systems land. Money balance for passive play is still harsh and needs its own pass.)*
+- - [ ] Rival strength scales across seasons without becoming an unbeatable wall.
+- - [ ] Reduce excessive per-series rival growth and make yearly progression understandable.
+- - [ ] Test edge cases: overtime, forfeits, disconnect-like interruptions, missing players, tied scores and series completion.
+-diff --git a/index.html b/index.html
+-index dfc2f95..1978323 100644
+---- a/index.html
+-+++ b/index.html
+-@@ -3,7 +3,7 @@
+- <head>
+- <meta charset="utf-8">
+- <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+--<title>Esports Org Manager – Update 8.8</title>
+-+<title>Esports Org Manager – Update 8.9</title>
+- <style>
+- :root{--bg:#0a0a0f;--card:#14141c;--text:#f2f3f7;--mute:#8d93a3;--line:#242430;--acc:#2ee68a;--on:#04130a;--good:#2ee68a;--bad:#ff5d6c;--btn:#1d1d28;
+- box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+-@@ -107,7 +107,7 @@ const salFor=p=>Math.max(300,Math.round(500+(ovr(p)-57)*35));
+- const valFor=p=>Math.round(Math.max(1500,(ovr(p)-45)**2*40+(p.age<22?Math.max(0,p.pot-ovr(p))*300:0))/100)*100;
+- const sellPrice=p=>Math.round(valFor(p)*0.8/100)*100;
+- const weekly=()=>{const wages=[...S.roster,...S.bench].reduce((s,p)=>s+p.sal,0)+(S.staff||[]).reduce((s,p)=>s+p.sal,0)+(S.tier2||[]).reduce((s,p)=>s+p.sal,0);const ops=Math.max(700,1200+(S.academy||[]).length*250+(S.merch?350:0)-(S.facilities?.bootcamp||0)*150);const gameOps=Object.values(S.divisions||{}).reduce((n,d)=>n+(d.weekly||0),0);const sponsor=(S.sponsors||[]).reduce((n,x)=>n+x.pay,0);const merch=S.merch?Math.round(100+S.followers/180+(S.facilities?.studio||0)*100):0;const inc=4000+sponsor+merch;return{inc,wages,ops:ops+gameOps,net:inc-wages-ops-gameOps,sponsor,merch}};
+--function growStat(p,k,amount){const v=p[k];const factor=v>=97?0.2:v>=93?0.4:v>=88?0.65:v>=80?0.82:1;p[k]=clamp(v+Math.max(0,Math.round(amount*factor)),0,99)}
+-+function growStat(p,k,amount){const v=p[k];let f=v>=96?.1:v>=92?.22:v>=87?.4:v>=80?.6:v>=70?.8:1;if(p.pot&&ovr(p)>=p.pot)f*=.5;p[k]=clamp(v+Math.floor(Math.max(0,amount)*f+Math.random()),0,99)}
+- function mapConf(p,mapName){return p.maps?.[mapName]??60}
+- function teamMapBonus(roster,mapName){return roster.reduce((n,p)=>n+(mapConf(p,mapName)-60),0)/roster.length*0.22}
+- function mapProfile(name){return MAPS.find(x=>x.name===name)||MAPS[0]}
+-@@ -328,7 +328,7 @@ function launchMatch(){
+-     if(S.focus==="rest"){p.morale=clamp(p.morale+15,0,100);growStat(p,"aim",1);growStat(p,"gs",1);growStat(p,"men",1)}
+-   });
+-   const teamPower=power(S.roster),majorBoost=fx.label.startsWith("Major")?4:0;
+--  const o={name:fx.opp.name,power:Math.max(gp(fx.opp),teamPower+R(-3,5)+majorBoost)};
+-+  const o={name:fx.opp.name,power:Math.max(gp(fx.opp),teamPower+R(-3,5)+majorBoost+Math.min(3,(S.year-1)*.75))};
+-   S.match={opp:o,bo:fx.bo,sw:0,sl:0,maps:[...v.maps],map:1,mapName:v.maps[0],me:0,them:0,round:0,streakMe:0,streakThem:0,controlMode:"important",tactic:(S.strategy==="aggressive"?"aggro":S.strategy==="disciplined"?"default":"default"),timeouts:2,tobuff:0,next:0,done:false,eco:newEco()};
+-   S.veto=null;S.prepared=null;$("veto").style.display="none";$("match").style.display="block";showTab("play");$("feed").innerHTML="";
+-   $("mTitle").textContent=`${fx.label} vs ${o.name} · Bo${fx.bo}`;setTimeout(()=>drawMap(makeDots(),0),0);
+-@@ -371,7 +371,7 @@ function playRound(instant,after){
+-   if(!m.eco)m.eco=newEco();const bm=buyFor(m,"me"),bt=buyFor(m,"them");t+=BUYPOW[bm]-BUYPOW[bt];
+-   if(m.tobuff>0){t+=3;m.tobuff--}
+-   t+=Math.min(m.streakMe,3)*1.2-Math.min(m.streakThem,3)*1.2;
+--  const p=1/(1+Math.exp(-(mine-theirs+t)/8));
+-+  const p=1/(1+Math.exp(-(mine-theirs+t)/10));
+-   let win=Math.random()<p;
+-   // Bomb rounds can end in either a C4 explosion (T win) or a successful CT defuse.
+-   m.roundEvent=null;
+--- 
+-2.43.0
+-
+diff --git a/0002-Update-8.8-CS2-economy-and-bomb-round-logic.patch b/0002-Update-8.8-CS2-economy-and-bomb-round-logic.patch
+deleted file mode 100644
+index 745bb88..0000000
+--- a/0002-Update-8.8-CS2-economy-and-bomb-round-logic.patch
++++ /dev/null
+@@ -1,108 +0,0 @@
+-From d290098f765476c7eaaf9876ed00c2b2f8d80e5e Mon Sep 17 00:00:00 2001
+-From: Claude <noreply@anthropic.com>
+-Date: Sat, 17 Oct 2026 06:02:13 +0000
+-Subject: [PATCH 2/2] Update 8.8: CS2 economy and bomb round logic
+-
+----
+- index.html | 42 ++++++++++++++++++++++++++----------------
+- 1 file changed, 26 insertions(+), 16 deletions(-)
+-
+-diff --git a/index.html b/index.html
+-index 6455b22..dfc2f95 100644
+---- a/index.html
+-+++ b/index.html
+-@@ -3,7 +3,7 @@
+- <head>
+- <meta charset="utf-8">
+- <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+--<title>Esports Org Manager – Update 8.7</title>
+-+<title>Esports Org Manager – Update 8.8</title>
+- <style>
+- :root{--bg:#0a0a0f;--card:#14141c;--text:#f2f3f7;--mute:#8d93a3;--line:#242430;--acc:#2ee68a;--on:#04130a;--good:#2ee68a;--bad:#ff5d6c;--btn:#1d1d28;
+- box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+-@@ -329,20 +329,32 @@ function launchMatch(){
+-   });
+-   const teamPower=power(S.roster),majorBoost=fx.label.startsWith("Major")?4:0;
+-   const o={name:fx.opp.name,power:Math.max(gp(fx.opp),teamPower+R(-3,5)+majorBoost)};
+--  S.match={opp:o,bo:fx.bo,sw:0,sl:0,maps:[...v.maps],map:1,mapName:v.maps[0],me:0,them:0,round:0,streakMe:0,streakThem:0,controlMode:"important",tactic:(S.strategy==="aggressive"?"aggro":S.strategy==="disciplined"?"default":"default"),timeouts:2,tobuff:0,next:0,done:false};
+-+  S.match={opp:o,bo:fx.bo,sw:0,sl:0,maps:[...v.maps],map:1,mapName:v.maps[0],me:0,them:0,round:0,streakMe:0,streakThem:0,controlMode:"important",tactic:(S.strategy==="aggressive"?"aggro":S.strategy==="disciplined"?"default":"default"),timeouts:2,tobuff:0,next:0,done:false,eco:newEco()};
+-   S.veto=null;S.prepared=null;$("veto").style.display="none";$("match").style.display="block";showTab("play");$("feed").innerHTML="";
+-   $("mTitle").textContent=`${fx.label} vs ${o.name} · Bo${fx.bo}`;setTimeout(()=>drawMap(makeDots(),0),0);
+-   log(`Map veto complete: ${S.match.maps.join(" → ")}. ${o.name} (power ${Math.round(o.power)}) vs your team (power ${Math.round(power(S.roster))}). First to 13 rounds wins each map.`,"m");
+-   render();draw();
+- }
+--function isDecisionRound(m){return m.round===0||m.round===5||m.round===11||m.me>=12||m.them>=12||m.streakMe>=3||m.streakThem>=3}
+-+const BUYPOW={pistol:0,full:0,force:-3.5,eco:-9},BUYN={pistol:"pistol",full:"full buy",force:"force buy",eco:"eco"};
+-+const newEco=()=>({me:800,them:800,lossMe:0,lossThem:0});
+-+function buyFor(m,side){if(m.round===0||m.round===12)return"pistol";const M=(m.eco||newEco())[side];
+-+  if(side==="me"){if(m.tactic==="save")return"eco";if(m.tactic==="force"&&M>=1500&&M<4700)return"force"}
+-+  return M>=4700?"full":M>=2400?"force":"eco"}
+-+function payEco(m,win,bm,bt){
+-+  const e=m.eco,cost={pistol:700,full:4500,force:2600,eco:400},lb=n=>Math.min(3400,1400+500*Math.max(0,n-1));
+-+  if(bm!=="full"||bt!=="full")log(`R${m.round}: ${BUYN[bm]} for you ($${Math.round(e.me)}), ${BUYN[bt]} for ${m.opp.name} ($${Math.round(e.them)}).`,"m");
+-+  e.me-=Math.min(e.me,cost[bm]*(win?.5:1));e.them-=Math.min(e.them,cost[bt]*(win?1:.5));
+-+  if(win){e.me+=3250;e.lossMe=0;e.lossThem++;e.them+=lb(e.lossThem)}else{e.them+=3250;e.lossThem=0;e.lossMe++;e.me+=lb(e.lossMe)}
+-+  e.me=Math.min(16000,e.me);e.them=Math.min(16000,e.them);
+-+  if(m.round===12)m.eco=newEco()}
+-+function isDecisionRound(m){return m.round===0||m.round===12||(m.eco&&buyFor(m,"me")!=="full")||m.round===5||m.round===11||m.me>=12||m.them>=12||m.streakMe>=3||m.streakThem>=3}
+- function draw(){
+--  const m=S.match;if(!m)return;
+-+  const m=S.match;if(!m)return;if(!m.eco)m.eco=newEco();
+-   const decision=isDecisionRound(m),mp=mapProfile(m.mapName);
+--  $("score").innerHTML=`${m.me} – ${m.them}<small>${mp.name} · ${mp.style} · ${m.bo>1?`Map ${m.map}/${m.maps.length} · Series ${m.sw}-${m.sl} · `:""}Round ${Math.min(m.round+1,24)} · Timeouts left: ${m.timeouts}</small>`;
+-+  $("score").innerHTML=`${m.me} – ${m.them}<small>${mp.name} · ${mp.style} · ${m.bo>1?`Map ${m.map}/${m.maps.length} · Series ${m.sw}-${m.sl} · `:""}Round ${Math.min(m.round+1,24)} · Timeouts left: ${m.timeouts} · Money: you $${Math.round(m.eco.me)} / them $${Math.round(m.eco.them)} · next buy: ${BUYN[buyFor(m,"me")]}</small>`;
+-   const c=$("ctrls");
+-   if(m.done){c.innerHTML=`<button class="pri" onclick="finish()">${(m.me>m.them?m.sw+1:m.sw)>=(m.bo+1)/2||(m.me>m.them?m.sl:m.sl+1)>=(m.bo+1)/2?"Finish match":"Next map"}</button><button onclick="autoplayMatch()">⏩ Autoplay remaining match</button>`;return}
+--  const T=[["aggro","Aggressive"],["default","Default"],["save","Save / eco"]];
+-+  const T=[["aggro","Aggressive"],["default","Default"],["force","Force buy"],["save","Save / eco"]];
+-   const tacticButtons=decision?T.map(([k,l])=>`<button class="${m.tactic==k?"sel":""}" onclick="S.match.tactic='${k}';draw()">${l}</button>`).join(""):"";
+-   c.innerHTML=`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0"><label for="matchMode">Gameplay</label><select id="matchMode" onchange="setControlMode(this.value)" style="font:inherit;padding:8px;border-radius:8px;background:var(--btn);color:var(--text);border:1px solid var(--line)"><option value="round" ${m.controlMode==="round"?"selected":""}>Round by round</option><option value="important" ${(!m.controlMode||m.controlMode==="important")?"selected":""}>Important rounds</option><option value="map" ${m.controlMode==="map"?"selected":""}>Sim whole map</option></select></div><div class="decision"><b>${decision?"Tactical decision":"Automatic simulation"}</b><div class="note">${decision?`Key round: choose a plan for ${mp.name}. ${mp.style==="Aim duels"?"Aim-focused play gets a small boost.":mp.style==="Utility"?"Default play is steadier on this map.":mp.style==="Fast executes"?"Aggressive play gets a small boost.":"Tactics have different risk and reward."}`:"The match runs automatically until the next important round."}</div>${tacticButtons}</div>`+
+-   `<div><button class="pri" ${m.busy?"disabled":""} onclick="advanceGameplay()">${m.controlMode==="round"?"Play next round":m.controlMode==="map"?"Sim whole map":decision?"Play important round + auto-sim":"Continue to important round"}</button><button ${m.busy?"disabled":""} onclick="autoplayMatch()">⏩ Autoplay match</button>${m.busy?'<button onclick="SKIP=true">Skip ⏭</button>':''}<button ${m.timeouts<1||m.busy?"disabled":""} onclick="timeout()">Call timeout</button><button onclick="FAST=!FAST;draw()">${FAST?"⏩ Fast":"▶ Normal"}</button></div>`;
+-@@ -353,28 +365,26 @@ function playRound(instant,after){
+-   const m=S.match;if(m.done||m.busy)return;
+-   const profile=mapProfile(m.mapName);let mine=power(S.roster)+teamMapBonus(S.roster,m.mapName),theirs=m.opp.power+R(-2,2);mine+=(staffOf("Analyst")?.skill||0)/35;
+-   let t=0;
+--  if(m.tactic=="aggro")t+=R(-7,9)+(profile.style==="Fast executes"||profile.style==="Aggression"?2:0);else if(m.tactic=="save")t-=10;else if(profile.style==="Utility"||profile.style==="Mid control")t+=1.5;
+-+  if(m.tactic=="aggro")t+=R(-7,9)+(profile.style==="Fast executes"||profile.style==="Aggression"?2:0);else if(profile.style==="Utility"||profile.style==="Mid control")t+=1.5;
+-   if(profile.style==="Aim duels")t+=(S.roster.reduce((n,p)=>n+p.aim,0)/S.roster.length-60)*0.12;
+-   if(profile.style==="Rotations")t+=(S.roster.find(p=>p.role==="IGL")?.gs-60)*0.06;
+--  t+=m.next;m.next=m.tactic=="save"?6:0;
+-+  if(!m.eco)m.eco=newEco();const bm=buyFor(m,"me"),bt=buyFor(m,"them");t+=BUYPOW[bm]-BUYPOW[bt];
+-   if(m.tobuff>0){t+=3;m.tobuff--}
+-   t+=Math.min(m.streakMe,3)*1.2-Math.min(m.streakThem,3)*1.2;
+-   const p=1/(1+Math.exp(-(mine-theirs+t)/8));
+-   let win=Math.random()<p;
+-   // Bomb rounds can end in either a C4 explosion (T win) or a successful CT defuse.
+-   m.roundEvent=null;
+--  const ownT=m.round<12;
+--  const bombRound=Math.random()<.30;
+--  if(bombRound){
+-+  // The skill roll above decides who wins; the bomb scenario then follows from the winner and side.
+-+  const ownT=m.round<12,tWins=(win===ownT);
+-+  if(tWins?Math.random()<.55:Math.random()<.38){
+-     const anchors=NAV_ANCHORS[m.mapName]||NAV_ANCHORS.Mirage;
+-     const siteKey=m.tactic==="aggro"?(m.round%2?"b":"a"):(m.round%4<2?"a":"b");
+--    const defused=Math.random()<.35;
+--    m.roundEvent={type:"bomb",site:siteKey.toUpperCase(),bombPos:[anchors[siteKey][0]*320,anchors[siteKey][1]*220],plantAt:.40,defuseStart:.57,defuseEnd:.83,explodeAt:.88,outcome:defused?"defuse":"explode"};
+--    win=defused?!ownT:ownT;
+-+    m.roundEvent={type:"bomb",site:siteKey.toUpperCase(),bombPos:[anchors[siteKey][0]*320,anchors[siteKey][1]*220],plantAt:.40,defuseStart:.57,defuseEnd:.83,explodeAt:.88,outcome:tWins?"explode":"defuse"};
+-   }
+-   if(instant){apply(win)}else{animateRound(win,()=>apply(win))}
+-   function apply(win){
+--  m.busy=false;m.round++;
+-+  m.busy=false;m.round++;payEco(m,win,bm,bt);
+-   if(win){m.me++;m.streakMe++;m.streakThem=0;
+-     const hero=weightedPick();hero.mvp++;
+-     if(m.roundEvent?.type==="bomb"&&m.roundEvent.outcome==="defuse")log(`R${m.round}: Your team defuses the C4 at ${m.roundEvent.site} with seconds to spare!`,"w");
+-@@ -605,7 +615,7 @@ function finish(){
+-   const need=(m.bo+1)/2;
+-   if(m.sw<need&&m.sl<need){
+-     log(`Map ${m.map} ${won?"won":"lost"} ${m.me}-${m.them}. Series ${m.sw}-${m.sl}. Next map...`,"m");
+--    Object.assign(m,{map:m.map+1,mapName:m.maps[m.map],me:0,them:0,round:0,done:false,streakMe:0,streakThem:0,timeouts:2,tobuff:0,next:0});
+-+    Object.assign(m,{map:m.map+1,mapName:m.maps[m.map],me:0,them:0,round:0,done:false,streakMe:0,streakThem:0,timeouts:2,tobuff:0,next:0,eco:newEco()});
+-     log(`Next map: ${m.mapName}. Map confidence changes the matchup slightly.`,"m");drawMap(makeDots(),0);draw();return}
+-   endSeries(m.sw>m.sl);
+- }
+--- 
+-2.43.0
+-
+diff --git a/README.md b/README.md
+index 43e894f..eff899b 100644
+--- a/README.md
++++ b/README.md
+@@ -1,12 +1,18 @@
+ # Esports Org Manager
+ 
+-A browser-based esports organisation management game. The current repository build is **Update 19.0 — Multi-Game Simulation & Living Esports World**.
++A browser-based esports organisation management game. The current repository build is **Update 19.6 — Bug-fix release** on top of Update 19.0 — Multi-Game Simulation & Living Esports World.
+ 
+ ## Play
+ 
+ https://13kyron13.github.io/esports-org-manager/
+ 
+-## Current build: Update 19.0 — Multi-Game Simulation & Living Esports World
++## Current build: Update 19.6 (bug fixes)
++
++- **Fixed:** weekly training (Aim drills, Game sense, Mental coaching, Rest) only worked in CS2. In VALORANT, Overwatch, League of Legends and Rocket League the focus buttons did nothing except Rest, so non-CS2 teams barely improved. All games now share one training routine, including coach and facility bonuses and bench development.
++- **Tested:** automated browser play through three seasons in each of the five games with no JavaScript errors.
++- **Housekeeping:** removed stray `.patch` files from the repository root.
++
++## Update 19.0 details — Multi-Game Simulation & Living Esports World
+ 
+ - **Playable starting games:** Counter-Strike 2, VALORANT, Overwatch, League of Legends and Rocket League can be selected for a new career.
+ - **Game-specific systems:** each title has its own roster roles and map pool. VALORANT simulates round scores and spike events; Overwatch reports objective progress, team fights, eliminations and healing; League reports kills, gold, towers, dragons and Baron; Rocket League reports goals, shots, saves and assists.
+diff --git a/index.html b/index.html
+index 0991ee8..f149efd 100644
+--- a/index.html
++++ b/index.html
+@@ -3,7 +3,7 @@
+ <head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+-<title>Esports Manager – Update 19.5</title>
++<title>Esports Manager – Update 19.6</title>
+ <style>
+ :root{--bg:#0a0a0f;--card:#14141c;--text:#f2f3f7;--mute:#8d93a3;--line:#242430;--acc:#2ee68a;--on:#04130a;--good:#2ee68a;--bad:#ff5d6c;--btn:#1d1d28;
+ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@@ -356,7 +356,7 @@ function banOtherMap(name){const v=S.otherVeto;if(!v||v.stage!=="ban"||!v.pool.i
+ function pickOtherMap(name){const v=S.otherVeto;if(!v||v.stage!=="pick"||v.picks.includes(name)||v.bans.includes(name)||!v.pool.includes(name))return;v.picks.push(name);if(v.picks.length===3)launchOtherSeries();else renderOtherVeto()}
+ function roleImpact(p,k){const r=p.role,b={valorant:{Duelist:p.aim*.035,Initiator:p.gs*.035,Controller:p.gs*.025,Sentinel:p.men*.03,Flex:(p.aim+p.gs+p.men)/3*.015},overwatch:{Tank:p.men*.04,Damage:p.aim*.04,Support:p.men*.025+p.gs*.015},league:{Top:p.men*.02,Jungle:p.gs*.04,Mid:p.gs*.035,ADC:p.aim*.04,Support:p.men*.025+p.gs*.015},rocket:{Striker:p.aim*.04,Playmaker:p.gs*.035,Defender:p.men*.035,Goalkeeper:p.men*.04,Flex:(p.aim+p.gs+p.men)/3*.02}};return b[k]?.[r]||0}
+ function simulateOtherMap(k,name,team,opp){const mp=mapProfile(name),fam=S.roster.reduce((n,p)=>n+((p.maps&&p.maps[name])||60),0)/5,tac=S.strategy==="aggressive"?1.2:S.strategy==="disciplined"?.9:S.strategy==="development"?.3:.5,rb=S.roster.reduce((n,p)=>n+roleImpact(p,k),0)/5*.07,pw=clamp(1/(1+Math.exp(-((team-opp)+(fam-60)*.055+tac+rb)/8)),.08,.92),won=Math.random()<pw;let line="",stats={};if(k==="valorant"){let a=0,b=0,n=0;while(n++<30&&!(a>=13&&a-b>=2)&&!(b>=13&&b-a>=2)){if(Math.random()<pw)a++;else b++}if(a===b){if(won)a++;else b++}if(won&&a<b)[a,b]=[13,11];if(!won&&b<a)[a,b]=[11,13];stats={kills:R(48,78),plants:R(4,10),defuses:R(0,3)};line="Rounds "+a+"–"+b+" · "+stats.plants+" spike plants · "+stats.defuses+" defuses"}else if(k==="overwatch"){stats={teamFights:won?R(8,13):R(3,8),eliminations:R(65,130),healing:R(18000,42000)};line=(mp.style==="Control"?"Control points ":"Objective checkpoints ")+(won?"2–0":"0–2")+" · Team fights "+stats.teamFights+" · "+stats.eliminations+" eliminations"}else if(k==="league"){stats={kills:won?R(15,32):R(6,20),gold:won?R(2500,12500):-R(2500,9000),towers:won?R(7,11):R(1,6),dragons:won?R(2,4):R(0,2),baron:won?R(1,2):R(0,1)};line="Kills "+stats.kills+" · Gold "+(stats.gold>0?"+":"−")+Math.abs(stats.gold).toLocaleString()+" · Towers "+stats.towers+" · Dragons "+stats.dragons+" · Baron "+stats.baron}else{let a=won?R(2,5):R(0,3),b=won?R(0,3):R(2,5);if(a===b){if(won)a++;else b++}stats={goals:a,shots:won?R(7,15):R(3,10),saves:R(3,10),assists:R(0,5)};line="Goals "+a+"–"+b+" · Shots "+stats.shots+" · Saves "+stats.saves+" · Assists "+stats.assists}const perf=S.roster.map(p=>({name:p.name,role:p.role,rating:clamp(Math.round(55+(rating(p)-team)*1.1+R(-12,15)+(won?4:-1)+roleImpact(p,k)*.2),35,100)})).sort((a,b)=>b.rating-a.rating);return{map:name,won,probability:Math.round(pw*100),line,stats,performance:perf,mvp:perf[0]?.name||"—"}}
+-function launchOtherSeries(){const v=S.otherVeto;if(!v||v.picks.length<3)return;const k=gameKey(S.gameTitle),prof=GAME_PROFILES[k],fx=v.fx;S.roster.forEach(p=>{const stat=devStat(ensureDev(p));if(stat)growStat(p,stat,1);if(S.focus==="rest"){p.fatigue=clamp((p.fatigue||0)-14,0,100);p.morale=clamp(p.morale+8,0,100)}else p.fatigue=clamp((p.fatigue||0)+2,0,100)});const team=power(S.roster)+(S.prepReport&&S.prepReport.opponent===fx.opp.name?S.prepReport.bonus:0),opp=Math.max(gp(fx.opp),team+R(-5,5)+Math.min(3,(S.year-1)*.5));let w=0,l=0,maps=[];for(let i=0;i<3&&w<2&&l<2;i++){const m=simulateOtherMap(k,v.picks[i],team,opp+R(-2,2));maps.push(m);if(m.won)w++;else l++}const won=w>l,players=S.roster.map(p=>{const rows=maps.flatMap(m=>m.performance).filter(x=>x.name===p.name),avg=Math.round(rows.reduce((n,x)=>n+x.rating,0)/Math.max(1,rows.length)),mvps=maps.filter(m=>m.mvp===p.name).length;return{name:p.name,role:p.role,rating:avg,mvps}}).sort((a,b)=>b.rating-a.rating),mvp=players[0];if(mvp){const p=S.roster.find(x=>x.name===mvp.name);if(p)p.mvp+=Math.max(1,mvp.mvps)}S.lastMatchReport={game:prof.name,year:S.year,opponent:fx.opp.name,label:fx.label,won,score:w+"–"+l,maps,players,mvp:mvp?.name||"—",teamPower:Math.round(team),oppPower:Math.round(opp)};S.otherMatchReport=S.lastMatchReport;S.otherVeto=null;S.prepared=null;S.veto=null;$("veto").style.display="none";$("match").style.display="block";const host=$("otherMatchUI");host.style.display="block";["score","map","mapDiagramNote","ctrls","feed"].forEach(id=>$(id).style.display="none");host.innerHTML='<h2>'+prof.name+' · Match report</h2><div class="stats"><div class="stat"><b>'+w+'–'+l+'</b><span>Series score</span></div><div class="stat"><b>'+(won?"VICTORY":"DEFEAT")+'</b><span>'+fx.label+'</span></div><div class="stat"><b>'+mvp.name+'</b><span>Series MVP</span></div></div><p class="note">Team power '+Math.round(team)+' · Opponent power '+Math.round(opp)+' · Maps '+v.picks.join(" → ")+'</p>'+maps.map((m,i)=>'<div class="step"><b>Map '+(i+1)+' · '+m.map+' · '+(m.won?"WIN":"LOSS")+'</b><span>'+m.line+'</span><span>Estimated win chance: '+m.probability+'%</span></div>').join("")+'<h3>Player performance</h3><div class="tw"><table><tr><th>Player</th><th>Role</th><th>Rating</th><th>MVPs</th></tr>'+players.map(p=>'<tr><td>'+escapeText(p.name)+'</td><td>'+escapeText(p.role)+'</td><td>'+p.rating+'</td><td>'+p.mvps+'</td></tr>').join("")+'</table></div><p class="note">'+prof.name+' report includes role bonuses, map familiarity and game-specific objective statistics.</p><button class="pri" onclick="closeOtherReport()">Continue career →</button>';saveStatus("Match report ready. Continue to advance the season.");scheduleAutosave()}
++function launchOtherSeries(){const v=S.otherVeto;if(!v||v.picks.length<3)return;const k=gameKey(S.gameTitle),prof=GAME_PROFILES[k],fx=v.fx;applyTrainingWeek();const team=power(S.roster)+(S.prepReport&&S.prepReport.opponent===fx.opp.name?S.prepReport.bonus:0),opp=Math.max(gp(fx.opp),team+R(-5,5)+Math.min(3,(S.year-1)*.5));let w=0,l=0,maps=[];for(let i=0;i<3&&w<2&&l<2;i++){const m=simulateOtherMap(k,v.picks[i],team,opp+R(-2,2));maps.push(m);if(m.won)w++;else l++}const won=w>l,players=S.roster.map(p=>{const rows=maps.flatMap(m=>m.performance).filter(x=>x.name===p.name),avg=Math.round(rows.reduce((n,x)=>n+x.rating,0)/Math.max(1,rows.length)),mvps=maps.filter(m=>m.mvp===p.name).length;return{name:p.name,role:p.role,rating:avg,mvps}}).sort((a,b)=>b.rating-a.rating),mvp=players[0];if(mvp){const p=S.roster.find(x=>x.name===mvp.name);if(p)p.mvp+=Math.max(1,mvp.mvps)}S.lastMatchReport={game:prof.name,year:S.year,opponent:fx.opp.name,label:fx.label,won,score:w+"–"+l,maps,players,mvp:mvp?.name||"—",teamPower:Math.round(team),oppPower:Math.round(opp)};S.otherMatchReport=S.lastMatchReport;S.otherVeto=null;S.prepared=null;S.veto=null;$("veto").style.display="none";$("match").style.display="block";const host=$("otherMatchUI");host.style.display="block";["score","map","mapDiagramNote","ctrls","feed"].forEach(id=>$(id).style.display="none");host.innerHTML='<h2>'+prof.name+' · Match report</h2><div class="stats"><div class="stat"><b>'+w+'–'+l+'</b><span>Series score</span></div><div class="stat"><b>'+(won?"VICTORY":"DEFEAT")+'</b><span>'+fx.label+'</span></div><div class="stat"><b>'+mvp.name+'</b><span>Series MVP</span></div></div><p class="note">Team power '+Math.round(team)+' · Opponent power '+Math.round(opp)+' · Maps '+v.picks.join(" → ")+'</p>'+maps.map((m,i)=>'<div class="step"><b>Map '+(i+1)+' · '+m.map+' · '+(m.won?"WIN":"LOSS")+'</b><span>'+m.line+'</span><span>Estimated win chance: '+m.probability+'%</span></div>').join("")+'<h3>Player performance</h3><div class="tw"><table><tr><th>Player</th><th>Role</th><th>Rating</th><th>MVPs</th></tr>'+players.map(p=>'<tr><td>'+escapeText(p.name)+'</td><td>'+escapeText(p.role)+'</td><td>'+p.rating+'</td><td>'+p.mvps+'</td></tr>').join("")+'</table></div><p class="note">'+prof.name+' report includes role bonuses, map familiarity and game-specific objective statistics.</p><button class="pri" onclick="closeOtherReport()">Continue career →</button>';saveStatus("Match report ready. Continue to advance the season.");scheduleAutosave()}
+ function closeOtherReport(){const r=S.otherMatchReport;if(!r)return;const won=r.won;S.history.unshift({year:S.year,event:won?"Senior victory":"Senior defeat",detail:r.game+" · "+r.score+" vs "+r.opponent+" · MVP "+r.mvp});if(S.history.length>30)S.history.length=30;S.roster.forEach(p=>{p.form=clamp((p.form||0)+(won?1:-1),-3,3);p.fatigue=clamp((p.fatigue||0)+6,0,100);p.morale=clamp((p.morale||70)+(won?7:-6),0,100)});const fin=weekly(),travel=750;S.money+=fin.net-travel+(won?2000:0);won?S.w++:S.l++;S.sponsors.forEach(x=>x.weeks--);const ended=S.sponsors.filter(x=>x.weeks<=0);ended.forEach(x=>news("Sponsorship with "+x.name+" expired."));S.sponsors=S.sponsors.filter(x=>x.weeks>0);if(ended.length)S.sponsorMarket.push(...Array.from({length:ended.length},()=>makeSponsor()));S.socialThisWeek=false;S.practicedThisWeek=false;S.scoutedThisWeek=false;S.prepReport=null;S.followers+=won?R(150,500):R(40,180);recordTier2Week();news(r.game+" "+(won?"victory":"defeat")+" "+r.score+" vs "+r.opponent+" · MVP "+r.mvp+".");S.otherMatchReport=null;$("otherMatchUI").style.display="none";["score","map","mapDiagramNote","ctrls","feed"].forEach(id=>$(id).style.display="");$("match").style.display="none";advance(won);refreshMarket();autoEv();genEvent();if(S.money<-10000){S.over=true;news("Bankrupt!")}S.focus=null;render();if(S.phase!=="off"&&!S.over)$("trainNote").textContent=r.game+" "+(won?"victory":"defeat")+" recorded. Review the report, then choose next week's focus.";scheduleAutosave()}
+ function updateRivalWorld(){if(!S.ai?.length)return;S.ai.forEach(t=>t.power=clamp((t.power||55)+R(-1,2),42,96));S.rivalWeeks=(S.rivalWeeks||0)+1;if(S.rivalWeeks%4===0){const t=pick(S.ai),up=Math.random()<.62,change=R(2,5)*(up?1:-1);t.power=clamp(t.power+change,42,96);const ev=up?"signed a promising player and improved team power":"released an underperforming player and rebuilt";news(t.name+" "+ev+" ("+(change>0?"+":"")+change+" power).");S.history.unshift({year:S.year,event:"Rival roster move",detail:t.name+" · "+ev});if(S.history.length>30)S.history.length=30}}
+ 
+@@ -399,8 +399,7 @@ function vetoAction(name){
+   v.step++;  if(v.step>=6){v.maps=v.bo===1?[v.pool[0]]:[v.pickMe,v.pickAI,v.pool[0]];v.step=6}
+   renderVeto();
+ }
+-function launchMatch(){
+-  const fx=S.prepared,v=S.veto;if(!fx||!v)return;
++function applyTrainingWeek(){
+   S.roster.forEach(p=>{
+     const plan=ensureDev(p),planStat=devStat(plan),coachBonus=Math.floor((staffOf("Head Coach")?.skill||0)/45)+(S.facilities?.training||0);if(planStat)growStat(p,planStat,1+coachBonus);else ["aim","gs","men"].forEach(k=>growStat(p,k,0.5));
+     if(S.focus==="aim"){growStat(p,"aim",R(2,5)+Math.floor((staffOf("Head Coach")?.skill||0)/35)+(S.facilities?.training||0));p.morale=clamp(p.morale-3,0,100)}
+@@ -409,6 +408,10 @@ function launchMatch(){
+     if(S.focus==="rest"){p.morale=clamp(p.morale+15,0,100);p.fatigue=clamp((p.fatigue||0)-14,0,100);growStat(p,"aim",1);growStat(p,"gs",1);growStat(p,"men",1)}else p.fatigue=clamp((p.fatigue||0)+2,0,100);
+   });
+   S.bench.forEach(p=>{const plan=ensureDev(p),stat=devStat(plan);if(stat)growStat(p,stat,0.5);else ["aim","gs","men"].forEach(k=>growStat(p,k,0.25));});
++}
++function launchMatch(){
++  const fx=S.prepared,v=S.veto;if(!fx||!v)return;
++  applyTrainingWeek();
+   const prepBonus=S.prepReport&&S.prepReport.opponent===fx.opp.name?S.prepReport.bonus:0;const teamPower=power(S.roster)+prepBonus,majorBoost=fx.label.startsWith("Major")?4:0;
+   const o={name:fx.opp.name,power:Math.max(gp(fx.opp),teamPower+R(-3,5)+majorBoost+Math.min(3,(S.year-1)*.75))};
+   S.match={opp:o,bo:fx.bo,sw:0,sl:0,maps:[...v.maps],map:1,mapName:v.maps[0],me:0,them:0,round:0,streakMe:0,streakThem:0,controlMode:"important",startingSide:v.startingSide||"CT",tactic:(S.strategy==="aggressive"?"aggro":S.strategy==="disciplined"?"default":"default"),timeouts:2,tobuff:0,next:0,done:false,eco:newEco()};
+-- 
+2.43.0
+

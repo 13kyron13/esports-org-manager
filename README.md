@@ -1,12 +1,18 @@
 # Esports Org Manager
 
-A browser-based esports organisation management game. The current repository build is **Update 19.0 — Multi-Game Simulation & Living Esports World**.
+A browser-based esports organisation management game. The current repository build is **Update 19.6 — Bug-fix release** on top of Update 19.0 — Multi-Game Simulation & Living Esports World.
 
 ## Play
 
 https://13kyron13.github.io/esports-org-manager/
 
-## Current build: Update 19.0 — Multi-Game Simulation & Living Esports World
+## Current build: Update 19.6 (bug fixes)
+
+- **Fixed:** weekly training (Aim drills, Game sense, Mental coaching, Rest) only worked in CS2. In VALORANT, Overwatch, League of Legends and Rocket League the focus buttons did nothing except Rest, so non-CS2 teams barely improved. All games now share one training routine, including coach and facility bonuses and bench development.
+- **Tested:** automated browser play through three seasons in each of the five games with no JavaScript errors.
+- **Housekeeping:** removed stray `.patch` files from the repository root.
+
+## Update 19.0 details — Multi-Game Simulation & Living Esports World
 
 - **Playable starting games:** Counter-Strike 2, VALORANT, Overwatch, League of Legends and Rocket League can be selected for a new career.
 - **Game-specific systems:** each title has its own roster roles and map pool. VALORANT simulates round scores and spike events; Overwatch reports objective progress, team fights, eliminations and healing; League reports kills, gold, towers, dragons and Baron; Rocket League reports goals, shots, saves and assists.
