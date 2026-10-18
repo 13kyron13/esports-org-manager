@@ -35,6 +35,14 @@ The game should reward smart long-term decisions rather than simply buying the h
 
 Update 20 is being implemented in stages, keeping the current career systems and save data working as each screen is upgraded. Phase 1 has an initial browser implementation; Phase 2 is underway and still needs live-browser regression testing.
 
+#### Phase 2 — Season simulation and esport-specific circuits (initial implementation)
+
+- [x] Add a season simulation panel with selectable week counts and milestone actions (next event, playoffs, season end).
+- [x] Add a per-game 2026 circuit guide for CS2, VALORANT, Overwatch, League of Legends and Rocket League, including qualification concepts and a simplified career championship-points tracker.
+- [ ] Replace the shared legacy league/major progression with fully distinct per-game event engines and qualification rules; validate each title through multi-season browser playtests.
+- [ ] Tune simulated income, development, results and points so long simulations remain fair and do not bypass meaningful management decisions.
+- **Research sources:** Valve’s CS2 Regional Standings / Major rulebooks; Riot’s VCT and LoL Esports 2026 handbooks; Blizzard’s OWCS 2026 season format; Psyonix’s RLCS 2026 season announcement. The in-game guide is a high-level abstraction and does not yet reproduce every region-specific rule or slot count.
+
 #### Career and story features
 
 1. **Career story layer**
