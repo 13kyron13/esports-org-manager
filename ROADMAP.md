@@ -32,6 +32,52 @@ The game should reward smart long-term decisions rather than simply buying the h
 - Optional quality-of-life additions: searchable player/transfer databases, favourites/shortlists, filters, bulk actions, autosave indicators and richer save-slot previews.
 - Keep the core game free of pay-to-win mechanics; “premium experience” means production quality, clarity and depth rather than paid advantages.
 
+## Confirmed future priorities — Match Simulation, Awards & Career Depth
+
+These five feature groups have been added to the roadmap. They are planned work, not claims that every feature is already implemented. Multiplayer has been reported as working, so preserve the existing multiplayer career flow and avoid unnecessary rewrites while building these systems.
+
+### 1. Deeper, more believable match simulation
+- [ ] Make player attributes, roles, teamwork, morale, form, fatigue, map/game familiarity and tactical choices influence match outcomes in clear, balanced ways.
+- [ ] Add meaningful team tactics and counter-tactics, with results that can create plausible upsets without relying on arbitrary hidden bonuses.
+- [ ] Expand round-by-round or map-by-map match reports with key events and concise explanations of why the result happened.
+- [ ] Keep simulation rules consistent between single-player and multiplayer, and ensure shared multiplayer results remain identical for every participant.
+- [ ] Add repeatable balance tests across multiple seasons, roster strengths and tactics; document known limits of automated non-CS2 simulations.
+
+### 2. Player awards, records and league history
+- [ ] Award season MVP and Rookie of the Year using season performance, not overall rating alone.
+- [ ] Create All-Pro / All-League selections by role or position for each supported esport.
+- [ ] Track career and season statistics, records, award history, team achievements and notable milestones.
+- [ ] Build a history/records view so players can compare seasons, remember champions and follow standout careers.
+- [ ] Make awards and records work across supported games and shared multiplayer seasons.
+
+### 3. More meaningful roster management
+- [ ] Expand contract negotiations with salary, duration, role, playing-time expectations and other appropriate terms.
+- [ ] Add transparent buyouts and transfer fees, rival offers, contract expiry decisions and player retention choices.
+- [ ] Model player development and decline over time, with potential, age, coaching, playtime and form affecting progression.
+- [ ] Let AI organisations make plausible transfers and roster changes based on budget, role needs, performance and long-term plans.
+- [ ] Improve team chemistry and role conflicts so roster choices involve trade-offs beyond simply selecting the highest-rated players.
+
+### 4. Sponsors, brand and organisation finances
+- [ ] Add sponsor offers with requirements, contract lengths, payouts and clear performance or reputation conditions.
+- [ ] Make organisation reputation, competitive results, fan popularity and brand identity affect sponsor interest and deal value.
+- [ ] Add optional merchandise and community/content income streams, balanced against costs and organisational scale.
+- [ ] Show sponsor obligations, payment schedules, progress and missed-target consequences clearly in the finance dashboard.
+- [ ] Keep sponsor income and bonuses balanced across multiple seasons and avoid making one income source an automatic win condition.
+
+### 5. Smarter AI organisations and long-term rivals
+- [ ] Give rival organisations distinct budgets, ambitions, roster needs and competitive strengths.
+- [ ] Improve AI roster building so teams recruit for role fit, potential, performance and affordability rather than rating alone.
+- [ ] Let rivals react to results, player availability and changing team strength, creating believable rebuilds and competitive cycles.
+- [ ] Track recurring rivalries, head-to-head records, major upsets, championship runs and other long-term storylines.
+- [ ] Ensure AI progression stays competitive but fair over multiple seasons, with visible news/history explaining important changes.
+
+### Suggested sequencing
+1. Improve and balance match simulation, with explainable outcomes and repeatable tests.
+2. Add season awards, records and historical summaries on top of reliable match statistics.
+3. Deepen contracts, transfers, player progression and team chemistry.
+4. Add sponsor deals and connected brand/finance systems.
+5. Improve AI roster decisions and long-term rival behaviour, then tune the whole ecosystem across multi-season careers.
+
 ### Update 13.3 — CS2-Only Playable Build
 
 - **Implemented:** CS2 is the only selectable starting esport; VALORANT, Overwatch and League of Legends show disabled “Coming soon” cards until dedicated title-specific systems are ready.
