@@ -33,7 +33,7 @@ The game should reward smart long-term decisions rather than simply buying the h
 
 ### Update 20.0 — The Big Update: Career Depth & UI Overhaul (Planned)
 
-Update 20 is a collection of planned features and design goals, not a claim that these systems already exist. Build it in stages, keeping the current career systems and save data working as each screen is upgraded.
+Update 20 is being implemented in stages, keeping the current career systems and save data working as each screen is upgraded. Phase 1 has an initial browser implementation; Phase 2 is underway and still needs live-browser regression testing.
 
 #### Career and story features
 
@@ -79,7 +79,9 @@ The visual direction is inspired by the information hierarchy and polish of F1 M
 
 - [ ] **Career hub dashboard:** replace the initial tab-heavy feel with a home dashboard featuring a prominent Next Match hero card (opponent, form, countdown and primary action), plus compact tiles for squad, finances, inbox and standings.
 - [ ] **Persistent navigation shell:** add a top bar with organisation crest/name, in-game date, cash, board confidence and a clear Continue/Next action; move main destinations into a left sidebar.
-- [ ] **Player cards:** present players with portrait or fallback avatar, role, overall rating, form, fatigue and morale indicators. Keep dense tables available as a secondary list view for efficient management.
+- [x] **Player cards — first pass:** present senior starters and bench players as responsive cards with role, overall rating, form, fatigue, morale, potential, MVP count and contract salary. Keep the existing roster table available as a hidden fallback while the new cards are validated.
+- [ ] **Player profiles and portraits:** add profile entry points, portrait/fallback avatar art, attributes, career history and richer development details.
+- [ ] **Potential development upgrades:** allow managers to spend organisation funds to raise a senior player’s potential ceiling in controlled increments, capped at 99. Implemented as a first pass; balance and save-compatibility still need browser testing.
 - [ ] **Consistent visual system:** use a dark, readable base, the organisation's chosen primary colour as an accent, consistent spacing and a clear heading font. Apply the organisation theme consistently without sacrificing contrast or accessibility.
 - [ ] **Purposeful motion:** use restrained count-up numbers, standings transitions and pre-match lineup/countdown moments. Respect reduced-motion preferences and keep animations from delaying actions.
 - [ ] **Broadcast-style match centre:** improve team identity, scoreboard, timeline, map/series progress, momentum and relevant statistics around the existing simulation. Presentation must not pretend an automated simulation is live round-by-round gameplay.
@@ -91,10 +93,15 @@ The visual direction is inspired by the information hierarchy and polish of F1 M
 #### Recommended implementation stages
 
 1. **Phase 1 — Career shell and hub:** build the persistent top bar, sidebar and dashboard/Next Match card first. Embed or route to existing screens so all current management systems continue to work.
-2. **Phase 2 — Squad presentation:** add player cards and profile entry points, keeping the existing list/table workflows available.
+2. **Phase 2 — Squad presentation and sandbox balance:** introduce player cards, add a paid potential-ceiling upgrade, and tune recurring income, operating costs, match travel and the bankruptcy threshold so the default career feels like a sandbox management game rather than financial survival. Add profile entry points next; validate multi-season balance and older saves in-browser.
 3. **Phase 3 — Match centre:** improve the pre-match and post-match presentation, timeline and highlights on top of the current simulation rules.
 4. **Phase 4 — Career story layer:** add the inbox, board expectations, press moments, scouting progression, season reviews, awards, trophy cabinet and Hall of Fame.
 5. **Phase 5 — Polish and options:** add difficulty modes, shareable season recaps, accessibility refinements, responsive layouts and final multi-season regression/balance checks.
+
+#### Sandbox economy requirement
+
+- [ ] **Avoid forced bankruptcy:** the default career should support experimentation, roster building and optional expansion. Finance remains meaningful, but ordinary weak seasons must not create a near-guaranteed game over. Re-check income, wages, travel, sponsor revenue and optional division costs across at least three seasons and all five games.
+- [ ] **Potential upgrades must be transparent:** show the cost and increase before purchase, cap potential at 99, and persist upgrades in existing save formats.
 
 #### Update 20 guardrails
 
