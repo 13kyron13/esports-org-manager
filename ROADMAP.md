@@ -735,3 +735,169 @@ This order prioritises foundational systems and avoids building later features o
 - Update 8.2 navigation is a substantial first pass, not pixel-perfect navmesh pathfinding.
 - Do not mark a feature complete solely because it appeared in an earlier conversation or prototype file; verify it in the current repository.
 - This roadmap is deliberately broad. It is a long-term direction, not a promise that every optional idea will be implemented in one update.
+
+## Track K — Three-mode game structure
+
+**Vision:** Sandbox offers creative freedom, Manager Mode offers the enduring core simulation (including multiplayer), and Story Mode delivers a character-led, branching journey through the realities of building an esports organisation. These are distinct experiences built on shared rules and compatible data concepts where technically appropriate. This is a design roadmap; none of the items below should be considered implemented until verified in the relevant build.
+
+### K1. Shared simulation foundation
+
+- [ ] Define a versioned, documented world-state/data model for organisations, divisions, players, staff, contracts, finances, competitions, relationships, events and historical records.
+- [ ] Keep simulation rules separate from UI presentation and narrative/cinematic presentation.
+- [ ] Use a deterministic or reproducibly seeded simulation path for tests, with explicit handling of random events.
+- [ ] Create a simulation event log: record what happened, when, why, and which systems were affected; use it for debugging, news, recaps and story triggers.
+- [ ] Preserve existing browser careers and multiplayer. Add safe, versioned save migrations and regression tests before changing persisted structures.
+- [ ] Share rules and data contracts between the browser and Godot versions where useful; do not force code reuse across different architectures when it increases risk.
+- [ ] Provide clear simulation explanations so users can understand important match, transfer, development and financial outcomes.
+
+### K2. Sandbox Mode — unrestricted organisation creator
+
+- [ ] Add a dedicated mode with no mandatory budget or progression restrictions, plus optional custom starting money, salary rules, difficulty, progression speed and world settings.
+- [ ] Allow editing/creation of organisations, divisions, players, staff, sponsors, rivals, competitions and tournament formats within supported data rules.
+- [ ] Offer an organisation/scenario editor with starting conditions, objectives, restrictions, rosters and custom rules.
+- [ ] Add a Scenario Lab for testing ideas such as superstar rosters with poor chemistry, academy-only teams, financial challenges or rival superteams.
+- [ ] Support instant simulation of matches, tournaments, seasons and multi-season histories, with speed controls and clear warnings when advancing large amounts of time.
+- [ ] Allow users to save, duplicate, reset, export/import and share scenarios in a validated format; reject malformed or incompatible data safely.
+- [ ] Make sandbox edits explicit and reversible where possible; distinguish a sandbox career from competitive multiplayer careers.
+- [ ] Consider community-created scenarios and mod-friendly data files after save validation, security and core simulation stability are proven.
+
+### K3. Manager Mode — core career and multiplayer
+
+- [ ] Keep this as the main long-term management experience: scouting, contracts, transfers, player development, staff, finances, sponsors, brand, divisions, facilities, competition and organisation growth.
+- [ ] Give the world independent progression: AI organisations recruit, develop prospects, hire staff, change strategies, experience financial pressure and pursue their own goals.
+- [ ] Add clear career setup choices for difficulty, simulation detail, financial realism, event frequency and automation.
+- [ ] Support optional delegation to staff, showing the proposed action and expected trade-offs before confirmation.
+- [ ] Build a configurable career calendar and weekly decision hub that prioritises actionable decisions over notification spam.
+- [ ] Keep multiplayer rules authoritative and synchronised: common match outcomes, contracts, transfers, finances and world progression must resolve consistently for all participants.
+- [ ] Define multiplayer pause/turn ownership, offline/late-player handling, save ownership, reconnect behaviour and exploit prevention before adding complex shared-world systems.
+- [ ] Ensure sandbox-only editing and narrative-only benefits cannot create unfair advantages in multiplayer.
+
+### K4. Story Mode — branching narrative and Godot presentation
+
+- [ ] Build a small vertical slice first: one organisation, a compact cast, a short opening chapter, a limited set of branching decisions and several distinct outcomes.
+- [ ] Let storylines arise from actual simulation state (results, cash flow, contracts, relationships, promises, reputation and board objectives), not just fixed scene order.
+- [ ] Create reusable event definitions with trigger conditions, dialogue/scene content, player choices, immediate effects, delayed effects, cooldowns and follow-up conditions.
+- [ ] Separate narrative triggers and outcomes from Godot 3D scenes; cinematics present consequences and should not secretly mutate game state.
+- [ ] Give characters personalities, ambitions, relationships, trust and a memory of important events and management promises.
+- [ ] Track both the event and each character's interpretation of it; different personalities can respond differently to the same decision.
+- [ ] Support multiple viable paths: competitive dynasty, underdog development, media/content brand, player-first culture, recovery/comeback, sale/merger or other believable outcomes.
+- [ ] Make choices have understandable trade-offs without guaranteeing a single correct path or punishing players with arbitrary hidden effects.
+- [ ] Use cinematic scenes selectively: important signings, difficult conversations, major matches, sponsor/ownership meetings, turning points and endings; keep routine events concise and skippable.
+- [ ] Add accessibility options for subtitles, text speed, scene skipping, reduced motion and replaying key story summaries.
+- [ ] Test branching paths for continuity, state consistency, unreachable outcomes and save/load correctness.
+
+### K5. Organisation legacy across modes
+
+- [ ] Track persistent organisational history: former players/staff/owners, trophies, records, transfers, academy graduates, sponsorships, crises, rivalries and ownership changes.
+- [ ] Let former players and staff progress into later roles where suitable, including coaching, scouting, management or rival organisations.
+- [ ] Build a timeline, trophy cabinet, Hall of Fame and season/year-in-review summaries.
+- [ ] Use history as input for Story Mode callbacks and as an optional archive in Manager and Sandbox modes.
+- [ ] Allow sandbox scenarios to generate alternate histories without overwriting the user's other careers.
+
+### K6. Delivery order and guardrails
+
+1. Stabilise Manager Mode and existing saves/multiplayer before adding major new dependencies.
+2. Define the shared data model, event log and repeatable simulation tests.
+3. Implement Sandbox editing and scenario saving on top of the proven simulation.
+4. Prototype Story Mode with a small branching narrative before investing in a large volume of 3D assets.
+5. Expand the narrative library, character memory, organisational legacy and cinematic production only after the vertical slice proves engaging.
+6. Test every mode for balance, usability, save compatibility and long-run simulation consistency.
+- [ ] Never let cinematic scope delay core simulation quality.
+- [ ] Never claim a mode or feature is implemented based on a roadmap entry alone.
+
+## Track L — Lessons from sports management and franchise games
+
+This track translates research into original esports-specific design goals. The cited games are references for patterns, not templates to copy wholesale. Feature details can change between yearly releases; verify current behaviour before using a specific version as a benchmark.
+
+### L1. Career hub, weekly rhythm and actionable decisions
+
+- [ ] Create a central hub that answers: what matters now, what happens next, what needs a decision, and what happens if I ignore it?
+- [ ] Organise the career into readable cycles (week, event, transfer window, season, offseason) with a clear next action and the ability to delegate or advance time.
+- [ ] Prioritise meaningful events over dozens of low-value emails. Group routine updates and surface urgent deadlines separately.
+- [ ] Let users tune detail: concise summaries for quick progression and deeper reports for players who want full simulation detail.
+- [ ] Keep the main hub useful on both quiet weeks and high-stakes tournament weeks.
+
+### L2. Staff identity, delegation and trust
+
+- [ ] Give coaches, scouts, analysts and executives distinct skills, preferences, judgement quality and development paths.
+- [ ] Let the player delegate tasks with visible scope, spending limits, selection criteria and a preview of the staff recommendation.
+- [ ] Show why staff recommended an action, its assumptions and uncertainty; allow the user to override it.
+- [ ] Model owner/board trust and staff credibility through promises kept, goals met and sensible communication.
+- [ ] Let delegation save time but introduce understandable trade-offs based on staff competence and workload.
+
+### L3. Recruitment, contracts and AI roster logic
+
+- [ ] Make scouting information incomplete and probabilistic: regional knowledge, sample size, role fit, personality fit and potential uncertainty should be visible.
+- [ ] Base recruitment on a roster plan, tactical/role needs, age/career stage, budget, contract length, chemistry and future availability—not overall rating alone.
+- [ ] Give AI teams coherent squad plans, roster-size limits, budget constraints and follow-up actions after signing or selling a player.
+- [ ] Add credible contract negotiations, player/agent expectations, competing offers, renewal deadlines, buyouts and role/playing-time promises.
+- [ ] Prevent obvious AI errors such as collecting redundant starters, ignoring required roles, overspending without a plan or leaving suitable free agents unused.
+- [ ] Add a transfer/roster audit test suite and multi-season simulation tests for AI decision quality.
+
+### L4. Player development, identity and team dynamics
+
+- [ ] Model development as a combination of potential, coaching, practice quality, role fit, competitive experience, workload, confidence and opportunity.
+- [ ] Make development non-linear and plausible: prospects can stall, break out, change roles or exceed expectations; stars do not all progress to elite ratings automatically.
+- [ ] Give players understandable motivations, leadership, team influence, career ambitions and responses to management promises.
+- [ ] Track squad hierarchy, mentoring, friendships, tensions and role competition without allowing chemistry to overwhelm demonstrated skill.
+- [ ] Ensure players can react to being benched, sold, promoted, overworked or treated fairly.
+- [ ] Provide a clear development report that distinguishes current ability, estimated potential, recent growth and uncertainty.
+
+### L5. Tactics, preparation and explainable competition
+
+- [ ] Give each esport a distinct tactical/preparation model instead of copying football or motorsport mechanics literally.
+- [ ] Add opponent dossiers based on prior matches, maps, roles, tendencies and sample size; let analysts improve confidence and reduce uncertainty.
+- [ ] Make preparation choices compete for limited time: opponent analysis, practice, rest, role changes and team-building cannot all be maximised simultaneously.
+- [ ] Explain match outcomes through relevant factors and events, including role fit, tactics, form, fatigue, map familiarity, opponent adaptation and variance.
+- [ ] Make every match report answer both “what happened?” and “what can I do about it?”
+- [ ] Ensure match presentation communicates the actual simulation and never invents gameplay events that did not occur.
+
+### L6. Finance, ownership and long-term constraints
+
+- [ ] Separate cash balance, operating profit/loss, committed future wages, transfer instalments, sponsor receivables and forecast runway.
+- [ ] Add meaningful but understandable ownership/board expectations, annual budgets and strategic directives.
+- [ ] Give financial decisions delayed consequences: expensive renewals can restrict future recruitment; investment may improve development or commercial reach but take time to pay off.
+- [ ] Offer realistic recovery paths such as selling a player, reducing scope, finding investment, restructuring or exiting a division before a sudden game-over.
+- [ ] Add optional stricter rules for players who want harder financial realism while keeping the default career sustainable and learnable.
+- [ ] Use multi-season automated balance tests for wages, revenue, player values, AI budgets and competitive parity.
+
+### L7. Customisation, historical starts and scenario replay
+
+- [ ] Let Sandbox users configure league size, roster rules, tournament format, salary rules, development speed, AI behaviour and starting date/conditions where supported.
+- [ ] Add challenge scenarios with a clear premise, objective, constraints and optional medal/rating based on how well the player performs.
+- [ ] Allow users to replay a historic or generated turning point as an alternate scenario, where data exists.
+- [ ] Preserve custom settings in save metadata and show them clearly when loading or sharing a career.
+- [ ] Prioritise flexible scenario creation over an expensive hand-authored catalogue of one-off challenges.
+
+### L8. Immersion and presentation with purpose
+
+- [ ] Use a clean information hierarchy inspired by the best management hubs: one primary action, contextual detail and optional deeper views.
+- [ ] Use visual moments (trophy celebrations, banners, season reviews, roster reveals, important negotiations) to celebrate outcomes created by the simulation.
+- [ ] Make team/league history visible through records, honours, banners and former-player connections.
+- [ ] Keep dense tables available for power users while offering summaries, filters and explanations for everyone else.
+- [ ] Prefer accurate, context-aware presentation over a high volume of generic commentary or cinematic scenes.
+
+### L9. QA principles derived from franchise-game failure patterns
+
+- [ ] Simulation correctness takes priority over adding more modes or cosmetic content.
+- [ ] Add automated tests for plausible AI roster composition, budgets, contract logic, player development curves, awards and league statistics.
+- [ ] Run large seeded simulations and compare distributions (wins, player ratings, wages, roster sizes, awards, finances) against documented expected ranges.
+- [ ] Build tools to inspect why an AI team made a move or why a player developed, rather than relying on guesswork.
+- [ ] Use data-driven rules and versioned tuning parameters so balance fixes do not require risky UI rewrites.
+- [ ] Keep a known-issues list and validate new updates in real browser/game builds before marking them complete.
+
+### Research references informing this track
+
+- Football Manager 2024 Console feature overview — dynamics, player buy-in, training, mentoring, smarter transfers and a career timeline: https://www.footballmanager.com/features/football-manager-2024-console-new-features-unveiled
+- Football Manager 2024 recruitment and finance design notes: https://www.footballmanager.com/features/smarter-transfers-squad-building-and-finance
+- PC Gamer's Football Manager 2024 review — strong emotional attachment and long-term immersion, alongside a warning about information overload and menu friction: https://www.pcgamer.com/football-manager-2024-review/
+- EA SPORTS Madden NFL 26 Franchise deep dive — weekly coaching decisions, staff, preparation and making games feel different: https://www.ea.com/games/madden-nfl/madden-nfl-26/news/madden-26-gridiron-notes-franchise-deep-dive
+- EA SPORTS Madden NFL Franchise guide — weekly hub and emergent decisions: https://help.ea.com/en/articles/madden-nfl/madden-franchise-mode/
+- EA SPORTS FC 26 Career features — live challenges, an evolving manager market and off-pitch events: https://www.ea.com/games/ea-sports-fc/fc-26/features/fc-26-career-mode
+- EA SPORTS FC 25 Career Mode deep dive — live start points, scouting, development and tactical customisation: https://www.ea.com/games/ea-sports-fc/fc-25/news/pitch-notes-fc-25-career-mode-deep-dive
+- F1 / Frontier, F1 Manager 2024 — Create A Team, sponsorships, mentality, affiliates and Race Replay: https://corp.formula1.com/f1-manager-2024-to-launch-23-july-including-new-create-a-team-mode/
+- NBA 2K27 MyNBA announcement — community-requested franchise tools, contract negotiation, GM trust, league rule changes and long-form legacy play: https://newsroom-anz.2k.com/news/nbar-2k27-mynba-answers-the-community-with-a-back-to-basics-franchise-overhaul-and-modern-cba-rules
+- NBA 2K26 MyNBA overview — simulation speed options and season directives: https://newsroom.2k.com/news/endless-possibilities-await-as-mynba-levels-up-in-nbar-2k26
+- Community feedback on MyNBA — recurring complaints about roster AI, progression, rules fidelity and bugs; treat as anecdotal signals rather than representative measurements: https://www.reddit.com/r/NBA2k/comments/1ttbujx/what_new_mynba_features_would_you_like_to_see_in/
+- Community discussion on franchise mode's long-term value and historic customisation: https://www.reddit.com/r/NBA2k/comments/wse8fv/mynba_eras_will_only_really_work_if_they_get/
+
