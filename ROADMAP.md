@@ -10,7 +10,17 @@ The game should reward smart long-term decisions rather than simply buying the h
 
 ## Current repository status
 
-### Update 19.0 — Multi-Game Simulation & Living Esports World
+### Update 19.6 — Training Fix & Multi-Season Validation
+
+- **Training bug fixed:** weekly training options — Aim drills, Game sense and Mental coaching, as well as Rest — now work in CS2, VALORANT, Overwatch, League of Legends and Rocket League. All five games use the shared training routine, including coach and facility bonuses.
+- **Validation reported:** three seasons were played in a real browser for each of the five games, including contracts, events, map vetoes and season rollover; no JavaScript errors were observed during those runs.
+- **Balance observation:** League of Legends passive bot power was reported to increase from 55 before the training fix to 79 after it. Passive-bot win rates were roughly 45–58% in the tested runs. These are useful initial checks, not proof of final balance.
+- **Known tuning note:** non-CS2 balance still needs tuning. Fatigue can rise substantially when the manager never schedules rest, which can also affect morale.
+- **Multiplayer validation boundary:** `multiplayer.js` was syntax-checked, but the multiplayer flow was not independently end-to-end tested in this validation pass because it requires the live backend. Multiplayer is reported to be working; preserve the existing flow and avoid unnecessary rewrites.
+- **Repository housekeeping:** stray root-level `.patch` files were removed, and the displayed update title and README version were brought to 19.6.
+- **Remaining QA:** continue regression checks on saves and older careers, and tune non-CS2 training/match balance across longer runs.
+
+### Update 19.0 baseline — Multi-Game Simulation & Living Esports World
 
 - **Update 16 implemented:** CS2 and non-CS2 careers show a persistent latest-match report with player performance ratings, MVP and post-match analysis. Non-CS2 matches also generate game-specific map-by-map scorelines and objective/stat summaries. Form, fatigue and morale respond to results.
 - **Update 17 implemented:** the existing league/championship schedule can now be played from any supported starting esport; the match path routes into the selected game's scoring model.
@@ -19,18 +29,80 @@ The game should reward smart long-term decisions rather than simply buying the h
 - **Playable titles:** CS2, VALORANT, Overwatch, League of Legends and Rocket League are selectable. Each has a distinct role list and map pool; non-CS2 games have a dedicated map ban/pick and automated best-of-three simulation with game-specific statistics.
 - **Division support:** Rocket League has been added to the organisation expansion catalogue; all listed games can be opened as divisions with game-specific roles.
 - **Known limitation:** non-CS2 matches are automated series simulations with detailed result/stat reports, not live round-by-round visual gameplay. Some legacy organisation systems still use shared abstractions and need deeper per-title balancing.
-- **Validation:** JavaScript syntax check passed. Full browser playtesting, old-save migration checks, map-veto interaction tests and multi-season balance tests remain outstanding.
+- **Validation at that milestone:** JavaScript syntax check passed; the full browser and multi-season checks described in Update 19.6 were not yet part of that earlier status.
 
-### Update 20.0 — Premium Experience (Planned)
+### Update 20.0 — The Big Update: Career Depth & UI Overhaul (Planned)
 
-- Complete visual redesign with a polished esports broadcast-inspired dashboard, modular widgets, subtle transitions and consistent visual hierarchy.
-- Rich player cards with headshots/illustrations, role badges, form/fatigue indicators, career history, performance graphs and comparison tools.
-- Interactive match centre with live timelines, objective/round events, map progress, momentum, tactical pauses and post-match highlights.
-- Better competition presentation: bracket visualisations, season calendar, standings, qualification scenarios, trophy cabinet and historical records.
-- Organisation HQ with custom branding throughout the game, configurable dashboard layouts, staff/facility visuals and clearer financial forecasting.
-- Accessibility and usability pass: responsive desktop/mobile layouts, readable colour contrast, keyboard support, tooltips, confirmation flows and reduced-motion options.
-- Optional quality-of-life additions: searchable player/transfer databases, favourites/shortlists, filters, bulk actions, autosave indicators and richer save-slot previews.
-- Keep the core game free of pay-to-win mechanics; “premium experience” means production quality, clarity and depth rather than paid advantages.
+Update 20 is a collection of planned features and design goals, not a claim that these systems already exist. Build it in stages, keeping the current career systems and save data working as each screen is upgraded.
+
+#### Career and story features
+
+1. **Career story layer**
+   - [ ] Give each season a narrative arc: preseason board expectations, a meaningful midseason turning point and an end-of-season review.
+   - [ ] Make the story respond to actual results, finances, roster changes and objectives rather than replaying the same scripted events.
+
+2. **Weekly inbox and decisions**
+   - [ ] Create a weekly inbox for important messages from the board, players, agents and sponsors.
+   - [ ] Include meaningful choices, deadlines, costs and consequences; prioritise actionable items over notification spam.
+
+3. **Press conferences and media**
+   - [ ] Add pre-match media moments for important fixtures and rivalries.
+   - [ ] Let choices affect morale, board trust, rival hype or reputation in clear, balanced ways.
+
+4. **Player personalities and relationships**
+   - [ ] Add readable player personalities, leadership and a dressing-room relationship web, including friendships, mentors and clashes.
+   - [ ] Make relationships influence chemistry and decisions without letting hidden or arbitrary effects overpower player skill.
+
+5. **Scouting network and world map**
+   - [ ] Present scouting regions in a world-map or regional-network view.
+   - [ ] Let assignments take time and reveal prospects gradually, with regional knowledge and hidden-potential discoveries.
+
+6. **Match moments and highlights**
+   - [ ] Generate a concise highlight reel after each series, including simulation-grounded clutches, comebacks and decisive performances.
+   - [ ] Save notable moments to the organisation's history so they can be revisited later.
+
+7. **Trophy cabinet and Hall of Fame**
+   - [ ] Build a trophy cabinet, club legends and retired-number features where appropriate.
+   - [ ] Add a year-in-review summary of champions, awards, records and the organisation's biggest moments.
+
+8. **Difficulty and career modes**
+   - [ ] Offer Story, Standard and Ironman career modes, each with clearly explained balance settings and save rules.
+   - [ ] Make difficulty choices fair and transparent; Ironman should clearly explain its save limitations before a career starts.
+
+9. **Shareable season recap**
+   - [ ] Create an exportable season recap image showing the final table, MVP, trophies and key achievements.
+   - [ ] Ensure generated recaps remain readable and accurate for each supported esport and division.
+
+#### UI overhaul: esports management broadcast presentation
+
+The visual direction is inspired by the information hierarchy and polish of F1 Manager and FC career modes, while keeping a distinctive esports identity. The goal is a clean, high-quality management interface—not a superficial reskin.
+
+- [ ] **Career hub dashboard:** replace the initial tab-heavy feel with a home dashboard featuring a prominent Next Match hero card (opponent, form, countdown and primary action), plus compact tiles for squad, finances, inbox and standings.
+- [ ] **Persistent navigation shell:** add a top bar with organisation crest/name, in-game date, cash, board confidence and a clear Continue/Next action; move main destinations into a left sidebar.
+- [ ] **Player cards:** present players with portrait or fallback avatar, role, overall rating, form, fatigue and morale indicators. Keep dense tables available as a secondary list view for efficient management.
+- [ ] **Consistent visual system:** use a dark, readable base, the organisation's chosen primary colour as an accent, consistent spacing and a clear heading font. Apply the organisation theme consistently without sacrificing contrast or accessibility.
+- [ ] **Purposeful motion:** use restrained count-up numbers, standings transitions and pre-match lineup/countdown moments. Respect reduced-motion preferences and keep animations from delaying actions.
+- [ ] **Broadcast-style match centre:** improve team identity, scoreboard, timeline, map/series progress, momentum and relevant statistics around the existing simulation. Presentation must not pretend an automated simulation is live round-by-round gameplay.
+- [ ] **Clear screen hierarchy:** give each screen one obvious primary action, use sticky next-step actions where useful, and keep individual cards focused rather than overcrowded.
+- [ ] **Competition and organisation presentation:** connect standings, season calendar, brackets, finance forecasts, staff/facilities and history to the career hub.
+- [ ] **Accessibility and quality of life:** support responsive layouts, keyboard navigation, visible focus, tooltips, useful empty states, confirmations for destructive actions, readable contrast, search/filtering and autosave status.
+- [ ] **Keep the current game intact:** existing management screens should continue working inside the new shell during the transition. Do not replace contracts, saves, finances, divisions or multiplayer with mock UI.
+
+#### Recommended implementation stages
+
+1. **Phase 1 — Career shell and hub:** build the persistent top bar, sidebar and dashboard/Next Match card first. Embed or route to existing screens so all current management systems continue to work.
+2. **Phase 2 — Squad presentation:** add player cards and profile entry points, keeping the existing list/table workflows available.
+3. **Phase 3 — Match centre:** improve the pre-match and post-match presentation, timeline and highlights on top of the current simulation rules.
+4. **Phase 4 — Career story layer:** add the inbox, board expectations, press moments, scouting progression, season reviews, awards, trophy cabinet and Hall of Fame.
+5. **Phase 5 — Polish and options:** add difficulty modes, shareable season recaps, accessibility refinements, responsive layouts and final multi-season regression/balance checks.
+
+#### Update 20 guardrails
+
+- [ ] Preserve existing careers and migrate save data safely; never silently discard older save fields.
+- [ ] Keep single-player and multiplayer career rules consistent where they share systems, and preserve the working multiplayer flow.
+- [ ] Build the new shell around existing screens first; refactor simulation logic only when a concrete need and regression tests justify it.
+- [ ] Verify each phase in the actual browser build before marking it complete.
+- [ ] “Premium experience” means presentation, clarity and depth—not paid advantages or pay-to-win mechanics.
 
 ## Confirmed future priorities — Match Simulation, Awards & Career Depth
 
