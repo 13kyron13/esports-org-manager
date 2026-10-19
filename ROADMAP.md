@@ -10,6 +10,14 @@ The game should reward smart long-term decisions rather than simply buying the h
 
 ## Current repository status
 
+### Update 20.1 — Cross-Game Map Centre & Division Roster Fix
+
+- **Implemented in the browser build:** extra-division careers now build their active match roster directly from that division's saved five players and ratings, rather than copying the parent organisation's roster into the performance report.
+- **Implemented in the browser build:** non-CS2 series reports now show a game-specific schematic map for every played map, with the relevant layout concept (FPS lanes/sites, Overwatch objective route/control point, League lanes and neutral objectives, or Rocket League arena/ball position), side/objective legend, map result, estimated win chance and top map ratings.
+- **Existing CS2 map centre preserved:** CS2 continues to use its radar/map simulation and tactical match controls. The other titles use purpose-built schematic diagrams that reflect their distinct objective types; these are not official map assets or a live 3D simulation.
+- **Next depth pass:** make the non-CS2 map diagrams progress through a short sequence of simulation-grounded moments (site pressure, objective contest, lane/objective swing, or shot/goal chance), then connect those moments to player roles, tactics and the final map statistics. Keep the match result authoritative in the simulation and ensure the visualisation never changes it.
+- **Validation status:** code was committed; a full interactive browser regression run is still required for CS2 and each of VALORANT, Overwatch, League of Legends and Rocket League, including switching between parent and division careers and checking that reported player names/ratings match the active division.
+
 ### Update 19.6 — Training Fix & Multi-Season Validation
 
 - **Training bug fixed:** weekly training options — Aim drills, Game sense and Mental coaching, as well as Rest — now work in CS2, VALORANT, Overwatch, League of Legends and Rocket League. All five games use the shared training routine, including coach and facility bonuses.
